@@ -1,3 +1,5 @@
+import {spriteUrl} from './national-sprites.js';
+import {catalogSize} from './game-registry.js';
 import { gen4 } from "./gen4-assets.js";
 import { monster, gamePoints, quests } from "./game.js";
 import {
@@ -24,15 +26,15 @@ export function setupTrainerUI({ getState, btn, esc, sheet }) {
     "--hgss-menu",
     `url("${gen4.menu}")`,
   );
-  const sprite = (id) =>
-    `<img class="pokemon-sprite" src="${gen4[id]}" alt="" width="96" height="96">`;
+  const sprite = (id,shiny=false) =>
+    `<img class="pokemon-sprite" src="${spriteUrl(id,shiny)}" alt="" width="96" height="96">`;
   const scenery = () =>
     `<svg class="ds-scenery" viewBox="${getState().theme === "dark" ? "586" : "70"} 1218 254 158" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><image href="${gen4.locations}" width="1773" height="1673"/></svg>`;
   function status() {
     const g = getState().game;
     if (!g) return "";
     const m = monster(g.collection.find((m) => m.base === g.buddy));
-    return `<div class="trainer-strip"><span>${sprite(m.id)}<strong>${esc(m.name)} · Lv. ${m.level}</strong></span><span>${g.paused ? "Abenteuer pausiert" : `${m.level === 100 ? "Level 100" : 20 - (m.xp % 20) + " EP bis Level " + (m.level + 1)} · ${g.discovered.length}/251`}</span></div>`;
+    return `<div class="trainer-strip"><span>${sprite(m.id,m.shiny)}<strong>${m.shiny?"✨ ":""}${esc(m.name)} · Lv. ${m.level}</strong></span><span>${g.paused ? "Abenteuer pausiert" : `${m.level === 100 ? "Level 100" : 20 - (m.xp % 20) + " EP bis Level " + (m.level + 1)} · ${g.discovered.length}/${catalogSize()}`}</span></div>`;
   }
   function home() {
     const s = getState(),
@@ -43,7 +45,7 @@ export function setupTrainerUI({ getState, btn, esc, sheet }) {
       earned = g.earned[today()] || [],
       points = regionPoints(g),
       place = regionWorld(g).placeAt(points);
-    return `<section class="ds-hero">${scenery()}<div class="hero-copy"><span class="eyebrow">${activeRegion(g).toUpperCase()} · ${esc(place.name)}</span><h2>Zusammen geht’s weiter.</h2><p>${g.paused ? "Dein Abenteuer ruht. Dein Team wartet auf dich." : `${m.name} begleitet dich. Noch ${3 - (points % 3)} Routinepunkte bis zur nächsten Begegnung.`}</p>${btn("Mein Team öffnen", "game", "primary")}</div>${sprite(m.id)}</section><section class="daily-routines"><div class="section-head"><h2>Deine drei Tagesroutinen</h2><strong>${earned.length}/3</strong></div><div class="daily-grid">${quests(
+    return `<section class="ds-hero">${scenery()}<div class="hero-copy"><span class="eyebrow">${activeRegion(g).toUpperCase()} · ${esc(place.name)}</span><h2>Zusammen geht’s weiter.</h2><p>${g.paused ? "Dein Abenteuer ruht. Dein Team wartet auf dich." : `${m.name} begleitet dich. Noch ${3 - (points % 3)} Routinepunkte bis zur nächsten Begegnung.`}</p>${btn("Mein Team öffnen", "game", "primary")}${btn("Eier & Brutstation", "egg-open", "secondary")}</div>${sprite(m.id,m.shiny)}</section><section class="daily-routines"><div class="section-head"><h2>Deine drei Tagesroutinen</h2><strong>${earned.length}/3</strong></div><div class="daily-grid">${quests(
       s,
       today(),
     )
@@ -65,7 +67,7 @@ export function setupTrainerUI({ getState, btn, esc, sheet }) {
     if (!g) return home();
     const p = regionProgress(g);
     return `${home().split('<section class="daily-routines">')[0]}<div class="touch-grid">${[
-      ["Pokédex", "game-dex", "food", g.discovered.length + "/251 entdeckt"],
+      ["Pokédex", "game-dex", "food", g.discovered.length + "/" + catalogSize() + " entdeckt"],
       ["Karte & Regionen", "game-regions", "journey", "Kanto und Johto"],
       [
         "Orden & Liga",
@@ -79,6 +81,7 @@ export function setupTrainerUI({ getState, btn, esc, sheet }) {
         "profile",
         "Deine langfristige Reise",
       ],
+      ["Eier & Brutstation", "egg-open", "food", "3 Brutplätze · echte Schritte"],
       ["Trainerpass", "trainer-pass", "home", "Deine gesammelten Erfolge"],
     ]
       .map(

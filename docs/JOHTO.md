@@ -1,5 +1,7 @@
 # Johto ab 0.5.0
 
+Seit 0.9.0 ergänzt die [Brutstation](EGGS.md) alle 1.025 Nationaldex-Grundarten und Shinys. Die folgenden Regeln beschreiben weiterhin die bestehenden Kanto-/Johto-Reisen.
+
 100 zusätzliche Pokémon (Nationaldex 152–251), deutsche Namen, Gen-II-Typen und statische Originalsprites offline. Der Pokédex zeigt Kanto, Johto oder alle 251. Entwicklungen mit Freundschaft, Tausch und Gegenständen sind vereinfacht; benötigte Level stehen im Detailfenster. Rabauz kann vor Level 20 Kicklee, Nockchan oder Kapoera als Wunschentwicklung wählen. Die bestehenden Kanto-Pfade werden nicht rückwirkend verändert: etwa Iksbat, Stahlos und Scherox sind separat fangbar, statt alte Begleiter unerwartet umzuwandeln.
 
 ## Reise und Langzeitfortschritt

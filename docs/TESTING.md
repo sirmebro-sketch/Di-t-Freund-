@@ -92,3 +92,10 @@ Erster Android-Prüflauf für die neue native OCR und aggregierten Health-Abfrag
 ## Version 0.8.2 · Hintergrundkante
 
 38 Module syntaxgeprüft, 70 Unit-Tests und der bestehende Trainings-/Atmosphäre-Browserablauf erfolgreich. Hellen und dunklen Hintergrund bei 393 Pixeln Breite separat gerendert und visuell auf die vorher sichtbare Rahmenkante geprüft. Keine neue Hardwarefunktion. CI prüft wie bisher alle Browserabläufe, Android-Build, Lint und feste Signatur.
+
+## Version 0.9.0 · Eier & Nationaldex
+
+- 52 App-Module syntaxgeprüft, 76 Unit-Tests erfolgreich. Die sechs neuen Domänentests prüfen 1.025 Artendatensätze, 2.050 Sprite-PNGs, Entwicklungsgraphen, spätere Begleiter/Kämpfe, idempotente Tages-/Wochen-/Monats-/Meilensteinbelohnungen, drei Brutplätze, frische Schritt-Basis, Korrekturen, Pausen, Tageswechsel, Shiny-Garantie, Duplikate, Migration und ungültige Sicherungen.
+- Neuer Browserablauf `tests/eggs-ui.mjs`: native Schritt-Lesung simuliert, drei Eier, erster Abgleich ohne rückwirkende Schritte, Schlupf, fehlgeschlagener Schreibversuch ohne Datenverlust, Gen-IX-Shiny als Begleiter, Umschalten auf Normal, Reload und Dekodierung aller 2.050 offline gebündelten Sprites. Brutstation bei 320/393/1280 Pixeln ohne horizontalen Überlauf; ausgewählte helle/dunkle Ansichten ohne automatisch erkannte WCAG2-A/AA-Verstöße. Screenshots visuell geprüft. Keine vollständige Barrierefreiheitszertifizierung.
+- Die bisherigen zwölf Browserprogramme bleiben Teil der CI; zusammen mit dem Ei-Ablauf dreizehn. Android-Build/Lint und feste Signatur werden separat vom Workflow geprüft.
+- Echtes Samsung-Gerät weiterhin erforderlich: Samsung Health → Health Connect → FitDex, erster Brut-Abgleich, späterer Schrittzuwachs und App-Rückkehr. Browsermocks beweisen keine tatsächliche Datenlieferung durch Samsung Health.

@@ -1,0 +1,13 @@
+import * as g1 from './national-assets-1.js';
+import * as g2 from './national-assets-2.js';
+import * as g3 from './national-assets-3.js';
+import * as g4 from './national-assets-4.js';
+import * as g5 from './national-assets-5.js';
+import * as g6 from './national-assets-6.js';
+import * as g7 from './national-assets-7.js';
+import * as g8 from './national-assets-8.js';
+import * as g9 from './national-assets-9.js';
+const packs=[g1,g2,g3,g4,g5,g6,g7,g8,g9];
+export const normalSprites=Object.assign({},...packs.map(p=>p.normal));
+export const shinySprites=Object.assign({},...packs.map(p=>p.shiny));
+export const spriteUrl=(id,shiny=false)=>(shiny?shinySprites:normalSprites)[id];

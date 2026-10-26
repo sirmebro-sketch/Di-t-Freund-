@@ -1,3 +1,5 @@
+import {setupEggUI} from './egg-ui.js';
+import {syncHatchery} from './egg-game.js';
 import {setupNutritionBalance} from './nutrition-balance-ui.js';
 import {setupTrends} from './trends-ui.js';
 import { setupAtmosphere } from './atmosphere.js';
@@ -129,6 +131,7 @@ function commit(mutator, preserveCompletion = false) {
   try {
     if (!preserveCompletion) invalidateCompletedDays(state, next);
     if (!preserveCompletion) syncGame(next, today());
+    syncHatchery(next, today());
     validateState(next);
     const raw = JSON.stringify(next);
     if (window.Android) {
@@ -140,6 +143,8 @@ function commit(mutator, preserveCompletion = false) {
       gameUI.celebrate(previous, next);
       trainerUI.celebrate(previous, next);
     }
+    eggUI?.celebrate(previous, next);
+    if(preserveCompletion)eggUI?.refresh();
     return true;
   } catch (e) {
     notify("Nicht gespeichert: " + e.message);
@@ -156,7 +161,7 @@ function sheet(title, html) {
   pendingPlan = null;
   const d = $("#sheet");
   const reward = document.querySelector("#reward");
-  d.innerHTML = `<div class="sheet-head"><h2 id="sheet-title">${esc(title)}</h2>${btn("×", "close", "icon-button", 'aria-label="Schließen"')}</div>${reward && !reward.hidden ? `<aside class="inline-reward">${reward.innerHTML}</aside>` : ""}${html}`;
+  d.innerHTML = `<div class="sheet-head"><h2 id="sheet-title">${esc(title)}</h2>${btn("×", "close", "icon-button", 'aria-label="Schließen"')}</div>${reward && !reward.hidden ? `<div class="inline-reward" role="status">${reward.innerHTML}</div>` : ""}${html}`;
   d.setAttribute("aria-labelledby", "sheet-title");
   if (!d.open) d.showModal();
   d.scrollTop = 0;
@@ -694,7 +699,9 @@ const trainerUI = setupTrainerUI({ getState: () => state, btn, esc, sheet });
 const atmosphere = setupAtmosphere({getState:()=>state,commit,render,sheet,btn,select,num,notify,esc});
 const trendsUI = setupTrends({getState:()=>state,today,render,btn,esc,fmt,sheet});
 const nutritionBalance = setupNutritionBalance({getState:()=>state,getDate:()=>date,today,fmt,esc,btn,sheet});
+const eggUI=setupEggUI({getState:()=>state,commit,render,sheet,btn,esc,fmt,today,notify,effect:k=>atmosphere.effect(k),syncSteps:()=>healthUI.sync(false)});
 const actions = {
+  ...eggUI.actions,
   ...nutritionBalance.actions,
   ...trendsUI.actions,
   ...atmosphere.actions,
@@ -1091,7 +1098,7 @@ const actions = {
   about: () =>
     sheet(
       "Über FitDex",
-      `<h3>Dein Alltag, ohne Abo.</h3><p>Version 0.8.2 · Offline-Tagebuch für Erwachsene. Keine Werbung, Telemetrie, Konten oder kostenpflichtigen KI-Dienste.</p><h3>Datenschutz</h3><p>Deine Daten liegen im privaten App-Speicher. Android-Cloud-Backup ist deaktiviert. Die App setzt die Gerätesperre voraus; sie bietet keine eigene Verschlüsselung oder PIN. Exportdateien sind unverschlüsselt. Deinstallation entfernt lokale Daten. Sichere regelmäßig.</p><h3>Health Connect</h3><p>Optional Schritte, Schlafdauer und Gewicht lesen. Eigene Gewichte nur nach Vorschau ausdrücklich teilen. Freigaben lassen sich in Android widerrufen. Lokale Importkopien kannst du unter Schritte & Erholung entfernen; bereits geteilte Werte verwaltest du in Health Connect.</p><h3>Barcode & Kamera</h3><p>Nur nach deiner Aktion wird ein Barcode an world.openfoodfacts.org gesendet (einschließlich technisch notwendiger IP-Adresse). Kamerabilder verlassen das Gerät nicht. Nährwerttabellen werden mit Tesseract lokal erkannt; übernommene Werte müssen geprüft werden. Kein automatisches Schätzen von Mahlzeitenfotos.</p><h3>Quellen & Lizenzen</h3><p>Produktdaten: Open Food Facts (opendatacommons.org/licenses/odbl/1-0/). Datenbank ODbL, einzelne Inhalte Database Contents License. Eigene Lebensmittel sind getrennt gekennzeichnet. Prüfe die Verpackung, insbesondere Portionsgrößen und Allergene. Die App beurteilt keine Allergensicherheit.</p><p>Offline-Lebensmittel: ${usdaFoods.length} ausgewählte Datensätze aus USDA FoodData Central, SR Legacy April 2018 (CC0). Deutsche Bezeichnungen, FDC-IDs und Herkunft sind hinterlegt. US-Durchschnittswerte; keine vollständige Datenbank und kein Ersatz für aktuelle Packungsangaben. Kohlenhydrate näherungsweise ohne Ballaststoffe, Vitamin E als Alpha-Tocopherol, Folat als DFE. Fehlende Werte bleiben unbekannt.</p><p>Barcode-Erkennung: ZXing / JourneyApps (Apache 2.0). AndroidX (Apache 2.0). Foto-OCR: Tesseract4Android / Tesseract und deutsches tessdata_fast-Modell (Apache 2.0), Leptonica, libjpeg und libpng. Keine OCR-Telemetrie oder Bild-Uploads. Vollständige Hinweise im Repository.</p>${btn("Lizenztexte offline lesen", "licenses", "secondary")}<p>Zusätzliche Originalgrafiken aus Pokémon Platin: Kampfkulissen (Sunday_Domeko), Box-Hintergründe (Dragoon), The Spriters Resource. Vier kurze Originaleffekte aus Diamant/Perl (BellBlitzKing, The Sounds Resource). Hintergrundmusik: drei eigene prozedurale Kompositionen, keine Original-Soundtrackaufnahmen. Originalgrafiken aus Pokémon HeartGold/SoulSilver: PokeAPI-Sprite-Spiegel und The Spriters Resource (Menü: redblueyellow; Orte: Latias Tamer). Pokémon © Nintendo / Creatures / GAME FREAK. Inoffizielles Fanprojekt; keine freie Lizenz für die Originalgrafiken.</p><h3>Gesundheit</h3><p>Kalorienformel: Mifflin–St. Jeor (1990), Schätzung mit individuell gewähltem Aktivitätsfaktor. Bewegungsvorlagen orientieren sich an allgemeinen NHS-Empfehlungen. Keine Diagnose, Überwachung, Notfallerkennung oder garantierte Gewichtsabnahme. Gesundheitseinträge werden nicht medizinisch bewertet.</p><h3>Bedienung</h3><p>Essen: Lebensmittel wählen, Gramm eingeben, speichern. Einträge antippen zum Bearbeiten. Verlauf: pro Datum ein Gewicht. Training: Sätze bearbeiten, abhaken, abschließen. Mehr: Gesundheitsjournal, Ziele und Sicherungen. Barcode braucht Internet; alles andere funktioniert offline.</p>`,
+      `<h3>Dein Alltag, ohne Abo.</h3><p>Version 0.9.0 · Offline-Tagebuch für Erwachsene. Keine Werbung, Telemetrie, Konten oder kostenpflichtigen KI-Dienste.</p><h3>Datenschutz</h3><p>Deine Daten liegen im privaten App-Speicher. Android-Cloud-Backup ist deaktiviert. Die App setzt die Gerätesperre voraus; sie bietet keine eigene Verschlüsselung oder PIN. Exportdateien sind unverschlüsselt. Deinstallation entfernt lokale Daten. Sichere regelmäßig.</p><h3>Health Connect</h3><p>Optional Schritte, Schlafdauer und Gewicht lesen. Eigene Gewichte nur nach Vorschau ausdrücklich teilen. Freigaben lassen sich in Android widerrufen. Lokale Importkopien kannst du unter Schritte & Erholung entfernen; bereits geteilte Werte verwaltest du in Health Connect.</p><h3>Barcode & Kamera</h3><p>Nur nach deiner Aktion wird ein Barcode an world.openfoodfacts.org gesendet (einschließlich technisch notwendiger IP-Adresse). Kamerabilder verlassen das Gerät nicht. Nährwerttabellen werden mit Tesseract lokal erkannt; übernommene Werte müssen geprüft werden. Kein automatisches Schätzen von Mahlzeitenfotos.</p><h3>Quellen & Lizenzen</h3><p>Produktdaten: Open Food Facts (opendatacommons.org/licenses/odbl/1-0/). Datenbank ODbL, einzelne Inhalte Database Contents License. Eigene Lebensmittel sind getrennt gekennzeichnet. Prüfe die Verpackung, insbesondere Portionsgrößen und Allergene. Die App beurteilt keine Allergensicherheit.</p><p>Offline-Lebensmittel: ${usdaFoods.length} ausgewählte Datensätze aus USDA FoodData Central, SR Legacy April 2018 (CC0). Deutsche Bezeichnungen, FDC-IDs und Herkunft sind hinterlegt. US-Durchschnittswerte; keine vollständige Datenbank und kein Ersatz für aktuelle Packungsangaben. Kohlenhydrate näherungsweise ohne Ballaststoffe, Vitamin E als Alpha-Tocopherol, Folat als DFE. Fehlende Werte bleiben unbekannt.</p><p>Barcode-Erkennung: ZXing / JourneyApps (Apache 2.0). AndroidX (Apache 2.0). Foto-OCR: Tesseract4Android / Tesseract und deutsches tessdata_fast-Modell (Apache 2.0), Leptonica, libjpeg und libpng. Keine OCR-Telemetrie oder Bild-Uploads. Vollständige Hinweise im Repository.</p>${btn("Lizenztexte offline lesen", "licenses", "secondary")}<p>Zusätzliche Originalgrafiken aus Pokémon Platin: Kampfkulissen (Sunday_Domeko), Box-Hintergründe (Dragoon), The Spriters Resource. Vier kurze Originaleffekte aus Diamant/Perl (BellBlitzKing, The Sounds Resource). Hintergrundmusik: drei eigene prozedurale Kompositionen, keine Original-Soundtrackaufnahmen. Originalgrafiken aus Pokémon HeartGold/SoulSilver: PokeAPI-Sprite-Spiegel und The Spriters Resource (Menü: redblueyellow; Orte: Latias Tamer). Pokémon © Nintendo / Creatures / GAME FREAK. Inoffizielles Fanprojekt; keine freie Lizenz für die Originalgrafiken.</p><h3>Gesundheit</h3><p>Kalorienformel: Mifflin–St. Jeor (1990), Schätzung mit individuell gewähltem Aktivitätsfaktor. Bewegungsvorlagen orientieren sich an allgemeinen NHS-Empfehlungen. Keine Diagnose, Überwachung, Notfallerkennung oder garantierte Gewichtsabnahme. Gesundheitseinträge werden nicht medizinisch bewertet.</p><h3>Bedienung</h3><p>Essen: Lebensmittel wählen, Gramm eingeben, speichern. Einträge antippen zum Bearbeiten. Verlauf: pro Datum ein Gewicht. Training: Sätze bearbeiten, abhaken, abschließen. Mehr: Gesundheitsjournal, Ziele und Sicherungen. Barcode braucht Internet; alles andere funktioniert offline.</p>`,
     ),
 };
 document.addEventListener("click", (e) => {

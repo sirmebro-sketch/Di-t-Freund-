@@ -1,3 +1,4 @@
+import {validateHatchery} from './egg-game.js';
 import {
   activeRegion,
   ensureRegions,
@@ -75,6 +76,7 @@ export function monster(m) {
     level: Math.min(100, 5 + Math.floor(m.xp / 20)),
     xp: m.xp,
     base: m.base,
+    shiny: m.shiny === true && m.useShiny !== false,
   };
 }
 export function migrateGame(g) {
@@ -111,6 +113,7 @@ export function nextChallenge(g) {
   return elite ? { ...elite, city: "Indigo-Plateau", kind: "league" } : null;
 }
 export function canEncounter(g, id) {
+  if(id>251)return false;
   const region = id > 151 ? "johto" : "kanto",
     world = regionWorld(g, region),
     progress = regionProgress(g, region),
@@ -124,7 +127,7 @@ export function canEncounter(g, id) {
       (!gate.champion ||
         progress.leagueWins.includes(region === "kanto" ? "blue" : "lance")) &&
       (!gate.discovered ||
-        g.discovered.filter((n) => (region === "kanto" ? n <= 151 : n > 151))
+        g.discovered.filter((n) => (region === "kanto" ? n <= 151 : n > 151 && n <= 251))
           .length >= gate.discovered)
     );
   const homes = world.places.filter((p) => p.pool.includes(id));
@@ -133,6 +136,7 @@ export function canEncounter(g, id) {
   );
 }
 export function encounterLocation(id) {
+  if(id>251)return "Über Pokémon-Eier in der Brutstation erreichbar.";
   const region = id > 151 ? "johto" : "kanto",
     world = regionWorld(null, region);
   return (
@@ -186,7 +190,8 @@ function advantage(a, b) {
     Geist: ["Geist"],
     Drache: ["Drache"],
     Unlicht: ["Psycho", "Geist"],
-    Stahl: ["Eis", "Gestein"],
+    Stahl: ["Eis", "Gestein", "Fee"],
+    Fee: ["Kampf", "Drache", "Unlicht"],
   };
   return strengths[a]?.includes(b) ? 1.25 : 1;
 }
@@ -290,7 +295,7 @@ export function syncGame(s, date) {
   for (let i = Math.floor(before / 3) + 1; i <= Math.floor(after / 3); i++) {
     const available = wild.filter(
       (id) =>
-        (region === "kanto" ? id <= 151 : id > 151) &&
+        (region === "kanto" ? id <= 151 : id > 151 && id <= 251) &&
         !g.discovered.includes(id) &&
         !g.collection.some((m) => m.base === id) &&
         canEncounter(g, id),
@@ -309,7 +314,7 @@ export function syncGame(s, date) {
     } else
       event(
         "explore",
-        g.discovered.filter((id) => (region === "kanto" ? id <= 151 : id > 151))
+        g.discovered.filter((id) => (region === "kanto" ? id <= 151 : id > 151 && id <= 251))
           .length === (region === "kanto" ? 151 : 100)
           ? `Alle Pokémon dieser Region entdeckt! Deine Forschungsreise geht weiter.`
           : "Dieses Gebiet ist gut erforscht. Auf deiner Reise warten neue Pokémon.",
@@ -352,6 +357,7 @@ export function syncGame(s, date) {
 }
 export function validateGame(g) {
   if (g === null || g === undefined) return true;
+  validateHatchery(g.hatchery);
   validateCareer(g.career);
   validateRegions(g);
   const obj = (x) => x && typeof x === "object" && !Array.isArray(x),
@@ -383,6 +389,9 @@ export function validateGame(g) {
         obj(m) &&
         ids.includes(m.base) &&
         integer(m.xp, 20000) &&
+        (m.shiny === undefined || typeof m.shiny === "boolean") &&
+        (m.useShiny === undefined || (typeof m.useShiny === "boolean" && m.shiny === true)) &&
+        (m.hatches === undefined || integer(m.hatches, 100000)) &&
         date(m.caught) &&
         (m.choice === undefined ||
           pokemon[m.base].evolutions.some((e) => e.to === m.choice)),
@@ -434,6 +443,8 @@ export function validateGame(g) {
         "place",
         "league",
         "research",
+        "egg",
+        "hatch",
       ].includes(e.kind) ||
       typeof e.text !== "string" ||
       e.text.length > 500 ||

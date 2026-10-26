@@ -1,5 +1,7 @@
 # Pokémon-Abenteuer · Kanto & Johto (0.5.0)
 
+Seit 0.9.0 ergänzt die [Brutstation](EGGS.md) alle 1.025 Nationaldex-Grundarten und Shinys. Die folgenden Regeln beschreiben weiterhin die bestehenden Kanto-/Johto-Reisen.
+
 Ein lokaler, inoffizieller Fan-Spielteil auf ausdrücklichen Nutzerwunsch. Kein Konto, Server, Kauf, Zufallskauf oder laufender Dienst. Nicht mit Nintendo, Creatures oder GAME FREAK verbunden. Pokémon-Inhalte werden nicht als frei lizenzierte eigene Inhalte ausgegeben.
 
 ## Umfang

@@ -65,6 +65,7 @@ jobs:
           node tests/audio-navigation-ui.mjs
           node tests/trends-feedback-ui.mjs
           node tests/nutrition-balance-ui.mjs
+          node tests/eggs-ui.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

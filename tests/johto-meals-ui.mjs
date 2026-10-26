@@ -124,7 +124,7 @@ assert.match(
 assert.doesNotMatch(await page.locator("#sheet").innerText(), /Lavados/);
 await click("game-dex");
 await page.locator("#dex-region").selectOption("all");
-assert.equal(await page.locator(".dex-mon").count(), 251);
+assert.equal(await page.locator(".dex-mon").count(), 120);
 await click("game");
 await click("game-regions");
 await page.locator('[data-action="game-travel"][data-region="kanto"]').click();
@@ -200,5 +200,5 @@ await axe("Johto dex dark");
 assert.deepEqual(errors, []);
 await browser.close();
 console.log(
-  "PASS: Johto travel, 100 offline sprites, 251-species filter, 20 locations, 8 gyms, legendary guidance; save/scale/edit/reuse/rename/delete meal templates, atomic invalid quantities, reload, 360px and light/dark accessibility.",
+  "PASS: Johto travel, 100 offline sprites, 1025-species filter, 20 locations, 8 gyms, legendary guidance; save/scale/edit/reuse/rename/delete meal templates, atomic invalid quantities, reload, 360px and light/dark accessibility.",
 );

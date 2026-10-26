@@ -35,3 +35,7 @@ Musik wird offline erzeugt; Bilder und kurze Effekte sind lokal gebündelt. Audi
 ## Ergänzung 0.8.0
 
 Importierte Menümusik wird nach eigener Dateiauswahl in der privaten WebView-Datenbank gespeichert. Kein Upload; die Originaldatei wird nicht verändert. Musikdateien sind nicht in JSON-Exporten enthalten und müssen bei einem Gerätewechsel erneut ausgewählt werden. „Datei entfernen“ und das vollständige Zurücksetzen löschen die lokale Musikkopie. Android-Dateiauswahl gewährt nur Zugriff auf die ausgewählte Audiodatei; keine allgemeine Speicherfreigabe. Vibration beachtet die Android-Einstellung für Berührungsfeedback. Trends entstehen ausschließlich aus den schon gespeicherten Daten.
+
+## Brutstation ab 0.9.0
+
+Erfolgskennungen, Ei-Inhalte, Shiny-Freischaltungen, Brutstrecke, maximal beobachtete Schritt-Tageswerte und der Zeitstempel des letzten erfolgreichen Schritte-Abgleichs bleiben lokal und sind Teil der JSON-Sicherung. Die Schritt-Maxima verhindern doppelte Belohnungen bei erneuten Importen. Es erfolgt kein neuer Netzwerkaufruf für Pokémon-Bilder, Zufall oder Fortschritt.

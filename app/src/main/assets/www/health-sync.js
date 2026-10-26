@@ -1,4 +1,4 @@
-// Health Connect copies are separate from manual journal entries. No step-based rewards.
+// Health Connect copies are separate from manual entries. Egg incubation uses successful step reads only.
 export const emptyConnection = () => ({
   autoRead: false,
   readSteps: false,
@@ -14,6 +14,7 @@ const validDate = (d) =>
   new Date(d + "T12:00:00Z").toISOString().slice(0, 10) === d;
 export function validateConnection(c) {
   if (c === undefined) return true;
+  if(c.stepsSyncAt!==undefined && (typeof c.stepsSyncAt!=="string" || !Number.isFinite(Date.parse(c.stepsSyncAt)))) throw Error("Ungültiger Schritte-Abgleich.");
   const obj = (x) => x && typeof x === "object" && !Array.isArray(x);
   if (
     !obj(c) ||
@@ -125,6 +126,7 @@ export function applyHealthSnapshot(state, payload) {
     .sort((a, b) => a.time.localeCompare(b.time))
     .slice(-5000);
   next.lastSync = payload.at;
+  if(payload.read.includes("steps")) next.stepsSyncAt = payload.at;
   validateConnection(next);
   state.healthConnect = next;
 }

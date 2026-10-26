@@ -59,4 +59,4 @@ await page.locator('.bottom-nav [data-tab="more"]').click();await click('reset')
 assert.equal((await read()).healthConnect,undefined);assert.equal((await read()).weights.length,0);
 await page.evaluate(p=>window.onHealthConnect(JSON.stringify(p)),{...snapshot,requestId:preReset});assert.equal((await read()).healthConnect,undefined);
 assert.deepEqual(errors,[]);await browser.close();
-console.log('PASS: opt-in native bridge, partial permission, explicit export preview, denied write, stale callback after deletion, no health-based rewards, research start, locked themes, planned regions, 360px and light/dark accessibility. Native calls mocked; device verification remains required.');
+console.log('PASS: opt-in native bridge, partial permission, explicit export preview, denied write, stale callback after deletion, no health-based XP or combat bonus, research start, locked themes, planned regions, 360px and light/dark accessibility. Native calls mocked; device verification remains required.');

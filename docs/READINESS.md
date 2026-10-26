@@ -1,4 +1,4 @@
-# Stand für die persönliche Nutzung · 0.8.2
+# Stand für die persönliche Nutzung · 0.9.0
 
 Die App ist eine funktionsfähige persönliche Android-Testversion. Der Kern ist für tägliche manuelle Erfassung ausgelegt, nicht als klinisch validierter oder vollständig automatischer Gesundheitscoach.
 
@@ -10,7 +10,7 @@ Die App ist eine funktionsfähige persönliche Android-Testversion. Der Kern ist
 | Nährstoffe | 12 Vitamine/Mineralstoffe mit Abdeckung und passenden Referenzen | Viele Lebensmittel haben keine Werte; keine vollständige Bedarfs- oder Mangelanalyse |
 | Training | Freie Einheiten, 42 Übungen/Gerätefilter, eigene Pläne, Satz-/Zeitprotokoll, Gym-/Zuhause-Vorlagen und Erholungshinweise | Keine individuelle ärztliche Belastungsfreigabe; kein vollständiger automatisch periodisierter Trainingsplan |
 | Gesundheit | Manuelle Schritte, Schlaf, Blutdruck, Puls, Umfang und Notizen | Optional Health Connect für Schritte/Schlaf/Gewicht, eigene Gewichte teilen; keine eigene Sensorzählung oder medizinische Alarmierung |
-| Motivation | 251 Pokémon aus Kanto und Johto, Entwicklungen, zwei Reisen, 16 Arenaorden, zwei Ligen, Sammelfortschritt, Forschung, Freundschaft, Trainerpass und Kulissen | Vereinfachtes Fan-Spiel, kein Originalspiel-Remake |
+| Motivation | 1.025 Grundarten mit Normal-/Shiny-Optik, drei Schritt-Brutplätze, Eier aus Erfolgen, Entwicklungen, zwei Reisen, 16 Arenaorden, zwei Ligen, Sammelfortschritt, Forschung, Freundschaft, Trainerpass und Kulissen | Reisen weiterhin nur Kanto/Johto; spätere Arten aus Eiern, keine Alternativformen. Vereinfachtes Fan-Spiel |
 | Daten | Privater lokaler Speicher, geprüfter Import, JSON-/CSV-Export | Sicherungen unverschlüsselt, keine Cloud-Synchronisierung, keine automatische Sicherungsplanung |
 
 ## Vor verlässlichem täglichem Einsatz auf dem eigenen Gerät prüfen
