@@ -9,6 +9,8 @@
     <queries><package android:name="com.google.android.apps.healthdata" /></queries>
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <application android:label="DiätFreund" android:icon="@drawable/ic_launcher" android:theme="@style/AppTheme" android:allowBackup="false" android:fullBackupContent="false" android:dataExtractionRules="@xml/data_extraction_rules" android:usesCleartextTraffic="false" android:supportsRtl="true" android:hardwareAccelerated="true">
+        <provider android:name="androidx.core.content.FileProvider" android:authorities="${applicationId}.photos" android:exported="false" android:grantUriPermissions="true"><meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/photo_paths" /></provider>
+        <activity android:name=".NutritionScanActivity" android:exported="false" android:theme="@style/AppTheme" />
         <activity android:name=".MainActivity" android:exported="true" android:configChanges="orientation|screenSize|keyboardHidden" android:windowSoftInputMode="adjustResize">
             <intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.LAUNCHER" /></intent-filter>
         </activity>

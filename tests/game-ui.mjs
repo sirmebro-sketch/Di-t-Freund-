@@ -160,6 +160,7 @@ assert.equal(
 await click("close");
 await page.locator('.bottom-nav [data-tab="more"]').click();
 await click("theme");
+await page.locator('.bottom-nav [data-tab="journey"]').click();
 await click("game");
 await axe("game dark");
 assert.deepEqual(errors, []);

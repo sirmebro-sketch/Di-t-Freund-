@@ -39,6 +39,14 @@ public final class MainActivity extends ComponentActivity {
     private HealthConnectBridge healthBridge;
     private AtomicFile stateFile;
     private File pendingExport;
+    private String nutritionRequest;
+    private final ActivityResultLauncher<Intent> nutritionScanner = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+        try { JSONObject p = new JSONObject().put("requestId",nutritionRequest).put("cancelled",result.getResultCode()!=RESULT_OK);
+            if(result.getResultCode()==RESULT_OK && result.getData()!=null) p.put("text",result.getData().getStringExtra("text"));
+            callback("onNutritionScan",p.toString());
+        } catch(Exception ignored) { callback("onNativeError","Foto konnte nicht gelesen werden."); }
+        nutritionRequest=null;
+    });
     private final ActivityResultLauncher<ScanOptions> scanner = registerForActivityResult(new ScanContract(), result -> {
         if (result.getContents() != null) callback("onBarcode", result.getContents());
     });
@@ -122,6 +130,10 @@ public final class MainActivity extends ComponentActivity {
                 out = stateFile.startWrite(); out.write(json.getBytes(StandardCharsets.UTF_8)); stateFile.finishWrite(out); return true;
             } catch (Exception e) { if (out != null) stateFile.failWrite(out); return false; }
         }
+        @JavascriptInterface public void scanNutrition(String requestId) {
+            if(requestId==null||!requestId.matches("[a-zA-Z0-9-]{1,100}"))return;
+            runOnUiThread(() -> {if(nutritionRequest!=null)return;nutritionRequest=requestId;nutritionScanner.launch(new Intent(MainActivity.this,NutritionScanActivity.class));});
+        }
         @JavascriptInterface public void scanBarcode() {
             runOnUiThread(() -> {
                 try { scanner.launch(new ScanOptions().setDesiredBarcodeFormats(ScanOptions.PRODUCT_CODE_TYPES).setPrompt("Barcode in den Rahmen halten").setBeepEnabled(false).setOrientationLocked(false)); }
@@ -145,5 +157,6 @@ public final class MainActivity extends ComponentActivity {
         }
         @JavascriptInterface public void exitApp() { runOnUiThread(() -> finish()); }
     }
+    @Override protected void onResume() { super.onResume(); if(web != null) web.post(() -> web.evaluateJavascript("window.onAppResume && window.onAppResume()", null)); }
     @Override protected void onDestroy() { if(healthBridge != null) healthBridge.close(); if(web != null) { web.removeJavascriptInterface("Android"); web.destroy(); web = null; } super.onDestroy(); }
 }

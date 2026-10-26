@@ -60,6 +60,7 @@ const a11y = async (label) => {
   );
 };
 await a11y("dashboard light");
+await page.locator('.bottom-nav [data-tab="more"]').click();
 await click("coach-settings");
 await fill("birthDate", "1990-06-01");
 await select("sex", "male");
@@ -68,11 +69,13 @@ await page.locator('[name="betaBlocker"]').check();
 await a11y("coach settings");
 await submit();
 assert.equal((await read()).coach.betaBlocker, true);
+if (!await page.locator('[data-action="coach"]:visible').count()) await page.locator('.bottom-nav [data-tab="more"]').click();
 await click("coach");
 assert.match(await page.locator("#sheet").innerText(), /keine Messung/);
 await click("initial-target");
 await click("close");
 assert.equal((await read()).profile.kcal, 2200);
+await page.locator('.bottom-nav [data-tab="home"]').click();
 await click("checkin");
 await select("fatigue", "5");
 await submit();
@@ -102,6 +105,7 @@ assert.match(
 await click("quick-food");
 assert.equal((await read()).entries.at(-1).amount, 65);
 assert.equal((await read()).completeDays[today()], false);
+await page.locator(".food-tools summary").click();
 await click("micros");
 assert.match(await page.locator("#sheet").innerText(), /Unbekannt/);
 await a11y("nutrient sheet");
@@ -122,6 +126,7 @@ await fill("micro_vitaminC", 25);
 await submit();
 await fill("amount", 200);
 await submit();
+await page.locator(".food-tools summary").click();
 await click("micros");
 assert.match(await page.locator("#sheet").innerText(), /50,0 mg/);
 assert.match(
@@ -153,6 +158,7 @@ await page.evaluate(
   s,
 );
 await page.reload();
+if (!await page.locator('[data-action="coach"]:visible').count()) await page.locator('.bottom-nav [data-tab="more"]').click();
 await click("coach");
 await click("review-target");
 assert.equal((await read()).profile.kcal, 2200);
@@ -165,6 +171,7 @@ await a11y("settings dark");
 await page.locator('.bottom-nav [data-tab="home"]').click();
 await a11y("dashboard dark");
 await page.setViewportSize({ width: 360, height: 800 });
+if (!await page.locator('[data-action="coach"]:visible').count()) await page.locator('.bottom-nav [data-tab="more"]').click();
 await click("coach");
 assert.equal(
   await page

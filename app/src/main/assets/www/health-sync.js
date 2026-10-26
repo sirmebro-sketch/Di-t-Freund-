@@ -31,6 +31,7 @@ export function validateConnection(c) {
     c.weights.length > 5000
   )
     throw Error("Ungültige Health-Connect-Daten.");
+  if(c.statusText!==undefined&&(typeof c.statusText!=="string"||c.statusText.length>2000))throw Error("Ungültiger Verbindungsstatus.");
   for (const [d, v] of Object.entries(c.days)) {
     if (
       !validDate(d) ||

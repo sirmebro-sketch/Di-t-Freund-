@@ -20,7 +20,7 @@ await click('hc-open');await axe('connection options');
 await page.locator('#hc-readSteps').check();await page.locator('#hc-readWeight').check();await click('hc-connect');
 assert.deepEqual((await requests()).at(-1).read,{steps:true,sleep:false,weight:true});
 await reply({kind:'permissions',mode:'read',granted:['read_steps']});
-assert.equal((await requests()).length,1,'permission callback does not write or auto read');
+assert.equal((await requests()).length,2,'permission callback immediately reads; it never writes');
 await click('hc-sync');const snapshot={kind:'sync',from:shiftDate(today(),-29),to:today(),at:new Date().toISOString(),read:['steps','weight'],days:[{date:today(),steps:4321,sleep:null}],weights:[{id:'external',origin:'test.provider',date:today(),time:new Date().toISOString(),value:98}],warnings:[]};
 await reply(snapshot);await click('close');assert.match(await page.locator('.steps-card').innerText(),/4.321/);
 assert.equal((await read()).healthConnect.weights[0].value,98);assert.equal((await read()).weights[0].value,99);

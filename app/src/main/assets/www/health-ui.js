@@ -43,10 +43,10 @@ export function setupHealthUI({
     }, 61000);
   }
   function settings() {
-    const c = getState().healthConnect || emptyConnection();
+    const c = getState().healthConnect || {...emptyConnection(),readSteps:true,autoRead:true};
     sheet(
       "Samsung Health & Health Connect",
-      `<p>Deine Schritte werden von Samsung Health oder einer anderen verbundenen App erfasst. DiätFreund übernimmt freigegebene Daten beim Öffnen oder auf Knopfdruck.</p><p class="hint">${esc(message || "Lesen und Schreiben sind getrennt. Standardmäßig ist nichts freigegeben.")}</p>${native() ? "" : '<p class="hint">Im Browser nicht verfügbar. Bitte die Android-App verwenden.</p>'}<div id="health-options">${[
+      `<p>Deine Schritte werden von Samsung Health oder einer anderen verbundenen App erfasst. DiätFreund übernimmt freigegebene Daten beim Öffnen oder auf Knopfdruck.</p><p class="hint">${esc(message || c.statusText || "Lesen und Schreiben sind getrennt. Standardmäßig ist nichts freigegeben.")}</p>${native() ? "" : '<p class="hint">Im Browser nicht verfügbar. Bitte die Android-App verwenden.</p>'}<div id="health-options">${[
         ["readSteps", "Schritte lesen"],
         ["readSleep", "Schlafdauer lesen"],
         ["readWeight", "Gewicht lesen"],
@@ -64,7 +64,7 @@ export function setupHealthUI({
   function card(date = today()) {
     const c = getState().healthConnect,
       d = c?.days[date];
-    return `<section class="card steps-card"><div class="section-head"><h2>Schritte & Erholung</h2>${btn("Verbinden", "hc-open", "text-button")}</div><div class="two-grid"><div><small>Schritte · Health Connect</small><strong class="big-number">${d?.steps == null ? "–" : fmt(d.steps)}</strong></div><div><small>Schlafdauer · Health Connect</small><strong class="big-number">${d?.sleep == null ? "–" : fmt(d.sleep, 1) + " h"}</strong></div></div><p>${c?.lastSync ? "Stand: " + esc(new Date(c.lastSync).toLocaleString("de-DE")) : "Samsung Health verbinden, um vorhandene Daten zu übernehmen."}</p>${btn("Aktualisieren", "hc-sync", "secondary")}</section>`;
+    return `<section class="card steps-card"><div class="section-head"><h2>Schritte & Erholung</h2>${btn(c?.lastSync?"Verbindung prüfen":"Verbinden", "hc-open", "text-button")}</div><div class="two-grid"><div><small>Schritte · Health Connect</small><strong class="big-number">${d?.steps == null ? "–" : fmt(d.steps)}</strong></div><div><small>Schlafdauer · Health Connect</small><strong class="big-number">${d?.sleep == null ? "–" : fmt(d.sleep, 1) + " h"}</strong></div></div><p>${c?.lastSync ? "Stand: " + esc(new Date(c.lastSync).toLocaleString("de-DE")) : "Samsung Health verbinden, um vorhandene Daten zu übernehmen."}</p>${d?.steps==null?`<p class="hint">${esc(message||c?.statusText||"Noch keine Schritte geliefert. Verbindung prüfen oder jetzt aktualisieren.")}</p>`:""}${btn("Aktualisieren", "hc-sync", "secondary")}</section>`;
   }
   function options() {
     const c = getState().healthConnect || emptyConnection();
@@ -73,7 +73,7 @@ export function setupHealthUI({
   function sync(auto = false) {
     const o = options();
     if (!Object.values(o).some(Boolean)) {
-      if (!auto) settings();
+      if (!auto) call("sync", {read:o,discover:true});
       return;
     }
     if (
@@ -93,18 +93,17 @@ export function setupHealthUI({
       busy = false;
       requestId = null;
       if (p.kind === "sync") {
-        if (commit((s) => applyHealthSnapshot(s, p), true)) {
-          render();
-          notify("Health-Connect-Daten aktualisiert.");
+        message = p.warnings?.length ? p.warnings.join(" ") : "Abgleich abgeschlossen.";
+        if(p.stepSources?.length)message += " Schrittquelle: " + p.stepSources.map(x=>x==='com.sec.android.app.shealth'?'Samsung Health':x).join(', ') + '.';
+        if (commit((s) => { applyHealthSnapshot(s, p); s.healthConnect.statusText=message.slice(0,2000);if(p.discoveredPermissions){for(const [k,v] of [['readSteps','steps'],['readSleep','sleep'],['readWeight','weight']])s.healthConnect[k]=p.read.includes(v);s.healthConnect.autoRead=true;} }, true)) {
+          render(); notify(p.warnings?.length ? "Abgleich mit Hinweisen – siehe Schrittverbindung." : "Health-Connect-Daten aktualisiert.");
         }
-        message = p.warnings?.length
-          ? p.warnings.join(" ")
-          : "Daten aktualisiert. Keine Daten bedeutet nicht null Schritte.";
+        if(document.querySelector('#health-options'))settings();
       } else if (p.kind === "permissions") {
         message =
           "Freigaben aktualisiert. Abgelehnte Datentypen bleiben unzugänglich.";
         if (p.mode === "write" && sharePreview) actions["hc-preview"]();
-        else settings();
+        else { settings(); sync(false); }
       } else if (p.kind === "written") {
         sharePreview = null;
         message = `${p.count} eigene Gewichtseinträge an Health Connect gesendet.`;
@@ -122,6 +121,7 @@ export function setupHealthUI({
       );
     }
   };
+  window.onAppResume = () => sync(true);
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") sync(true);
   });

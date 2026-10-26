@@ -74,6 +74,7 @@ await fill("amount", 200);
 await submit();
 assert.equal((await read()).foods.length, 1);
 assert.equal((await read()).entries.length, 2);
+await page.locator(".food-tools summary").click();
 await click("recipe");
 await fill("name", "Testrezept");
 await page.locator('[name="ingredient"]').selectOption("base-0");
@@ -107,7 +108,8 @@ await page.locator('[data-form="custom-food"]').waitFor();
 await submit();
 await submit();
 assert.equal((await read()).foods.at(-1).barcode, "12345678");
-await page.locator('.bottom-nav [data-tab="chart"]').click();
+await page.locator('.bottom-nav [data-tab="more"]').click();
+await click("go-chart");
 await click("weight");
 await fill("value", 99.5);
 await submit();
@@ -165,7 +167,7 @@ await page.screenshot({
   fullPage: true,
 });
 await page.setViewportSize({ width: 360, height: 800 });
-for (const tab of ["food", "chart", "train", "more"]) {
+for (const tab of ["food", "journey", "train", "more"]) {
   await page.locator(`.bottom-nav [data-tab="${tab}"]`).click();
   await assertNoOverflow();
   await page.screenshot({

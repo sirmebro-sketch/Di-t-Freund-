@@ -181,6 +181,7 @@ assert.equal((await read()).entries.length, before + 2);
 await click("close");
 await page.locator('.bottom-nav [data-tab="more"]').click();
 await click("theme");
+await page.locator('.bottom-nav [data-tab="journey"]').click();
 await click("game");
 await click("game-regions");
 await axe("regions dark");

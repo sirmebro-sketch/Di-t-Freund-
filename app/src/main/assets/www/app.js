@@ -1,3 +1,5 @@
+import {setupTrainerUI,dsIcon} from "./trainer-ui.js";
+import {setupNutritionOCR} from "./nutrition-ocr-ui.js";
 import { setupMealUI } from "./meal-templates-ui.js";
 import { combinedWeights } from "./health-sync.js";
 import { setupHealthUI } from "./health-ui.js";
@@ -125,7 +127,7 @@ function commit(mutator, preserveCompletion = false) {
     } else localStorage.setItem("diaetfreund-v1", raw);
     const previous = state;
     state = next;
-    if (!preserveCompletion) gameUI.celebrate(previous, next);
+    if (!preserveCompletion) {gameUI.celebrate(previous, next);trainerUI.celebrate(previous,next);}
     return true;
   } catch (e) {
     notify("Nicht gespeichert: " + e.message);
@@ -161,7 +163,7 @@ function render() {
   const p = state.profile;
   if (!p) {
     $("#app").innerHTML =
-      `<main class="welcome"><div class="brand">${icon("leaf")} DiätFreund</div><span class="eyebrow">DEIN ALLTAG. DEIN TEMPO.</span><h1>Kleine Schritte.<br><em>Großes Gefühl.</em></h1><p>Essen verstehen. Stärker werden.<br>Deinen Fortschritt sichtbar machen.</p><div class="welcome-art"><span>${icon("leaf")}</span><div>Mehr für dich.<small>Ohne Abo. Ohne Konto.</small></div></div><div class="card"><h3>Ein guter Anfang zählt.</h3><p>Dein persönliches Tagebuch für Ernährung, Bewegung und Wohlbefinden. Alles bleibt auf deinem Gerät.</p>${btn("Meinen Weg starten →", "onboard", "primary wide")}${btn("Sicherung wiederherstellen", "import", "text-button wide")}</div><p class="muted">Für Erwachsene · Kein Ersatz für medizinische Beratung</p></main>`;
+      `<main class="welcome"><div class="brand">${dsIcon("home")} DiätFreund</div><span class="eyebrow">DEIN ALLTAG. DEIN TEMPO.</span><h1>Kleine Schritte.<br><em>Großes Gefühl.</em></h1><p>Essen verstehen. Stärker werden.<br>Deinen Fortschritt sichtbar machen.</p><div class="welcome-art"><span>${icon("leaf")}</span><div>Mehr für dich.<small>Ohne Abo. Ohne Konto.</small></div></div><div class="card"><h3>Ein guter Anfang zählt.</h3><p>Dein persönliches Tagebuch für Ernährung, Bewegung und Wohlbefinden. Alles bleibt auf deinem Gerät.</p>${btn("Meinen Weg starten →", "onboard", "primary wide")}${btn("Sicherung wiederherstellen", "import", "text-button wide")}</div><p class="muted">Für Erwachsene · Kein Ersatz für medizinische Beratung</p></main>`;
     if (loadError) {
       sheet(
         "Daten konnten nicht geladen werden",
@@ -172,19 +174,20 @@ function render() {
     return;
   }
   $("#app").innerHTML =
-    `<div class="shell"><aside><div class="brand">${icon("leaf")} DiätFreund</div><p>Mehr für dich. Jeden Tag.</p><div class="desktop-nav">${nav()}</div><div class="aside-note">${icon("leaf")} Fortschritt braucht<br>keine Perfektion.</div></aside><div class="content"><header><a class="wordmark" href="#" aria-label="DiätFreund Start">${icon("leaf")} DiätFreund</a><span class="local-badge"><i></i> Nur auf deinem Gerät</span>${btn(esc(p.name.slice(0, 1).toUpperCase() || "D"), "settings", "avatar", 'aria-label="Profil und Ziele"')}</header><main><div class="page-title"><div><span class="eyebrow">${{ home: "DEIN TÄGLICHER BEGLEITER", food: "BEWUSST GENIESSEN", chart: "JEDER SCHRITT ZÄHLT", train: "STÄRKER IM ALLTAG", more: "DEIN WOHLBEFINDEN" }[tab]}</span><h1>${{ home: `Schön, dass du da bist${p.name ? ", " + esc(p.name) : ""}.`, food: "Dein Ernährungstagebuch", chart: "Dein Fortschritt", train: "Zeit für dich.", more: "Gesundheit & mehr" }[tab]}</h1></div>${["home", "food"].includes(tab) ? `<div class="date-picker">${btn("‹", "prev", "icon-button", 'aria-label="Vorheriger Tag"')}<input type="date" id="day" aria-label="Tag auswählen" value="${date}" max="${today()}">${btn("›", "next", "icon-button", date >= today() ? 'disabled aria-label="Nächster Tag"' : 'aria-label="Nächster Tag"')}</div>` : ""}</div>${{ home: homeView, food: foodView, chart: chartView, train: trainView, more: moreView }[tab]()}</main></div><nav class="bottom-nav" aria-label="Hauptnavigation">${nav()}</nav></div>`;
+    `<div class="shell"><aside><div class="brand">${dsIcon("home")} DiätFreund</div><p>Mehr für dich. Jeden Tag.</p><div class="desktop-nav">${nav()}</div><div class="aside-note">${icon("leaf")} Fortschritt braucht<br>keine Perfektion.</div></aside><div class="content"><header><a class="wordmark" href="#" aria-label="DiätFreund Start">${dsIcon("home")} DiätFreund</a><span class="local-badge"><i></i> Nur auf deinem Gerät</span></header>${trainerUI.status()}<main><div class="page-title"><div><span class="eyebrow">${{ home: "DEIN TÄGLICHER BEGLEITER", food: "BEWUSST GENIESSEN", chart: "JEDER SCHRITT ZÄHLT", train: "STÄRKER IM ALLTAG", more: "DEINE TRAINERKARTE", journey: "DEINE REISE" }[tab]}</span><h1>${{ home: `Hallo${p.name ? ", " + esc(p.name) : " Trainer"}!`, food: "Dein Proviant", chart: "Dein Fortschritt", train: "Training & Erholung", more: "Profil & Einstellungen", journey: "Dein Abenteuer" }[tab]}</h1></div>${tab==="food" ? `<div class="date-picker">${btn("‹", "prev", "icon-button", 'aria-label="Vorheriger Tag"')}<input type="date" id="day" aria-label="Tag auswählen" value="${date}" max="${today()}">${btn("›", "next", "icon-button", date >= today() ? 'disabled aria-label="Nächster Tag"' : 'aria-label="Nächster Tag"')}</div>` : ""}</div>${{ home: homeView, food: foodView, chart: chartView, train: trainView, more: moreView, journey: ()=>trainerUI.journey() }[tab]()}</main></div><nav class="bottom-nav" aria-label="Hauptnavigation">${nav()}</nav></div>`;
 }
 function nav() {
   return [
     ["home", "Heute"],
     ["food", "Essen"],
-    ["chart", "Verlauf"],
+    
     ["train", "Training"],
-    ["more", "Mehr"],
+    ["journey", "Reise"],
+    ["more", "Profil"],
   ]
     .map(([k, t]) =>
       btn(
-        `${icon(k)}<span>${t}</span>`,
+        `${dsIcon(k==='more'?'profile':k)}<span>${t}</span>`,
         "tab",
         tab === k ? "active" : "",
         `data-tab="${k}" ${tab === k ? 'aria-current="page"' : ""}`,
@@ -192,31 +195,16 @@ function nav() {
     )
     .join("");
 }
-function homeView() {
-  const p = state.profile,
-    t = totals(dayEntries()),
-    left = p.kcal - t.kcal,
-    water = state.water[date] || 0,
-    progress = Math.min(100, (t.kcal / p.kcal) * 100),
-    w = combinedWeights(state).sort((a, b) => b.date.localeCompare(a.date))[0];
-  return `<div class="dashboard-grid"><section class="card energy"><div class="section-head"><h2>Dein Tag im Gleichgewicht</h2><span class="pill">${date === today() ? "Heute" : dateLabel(date)}</span></div><div class="energy-body"><div class="ring" style="--progress:${progress}%"><div><span class="ring-number">${fmt(Math.abs(left))}</span><span>kcal ${left >= 0 ? "übrig" : "über Ziel"}</span></div></div><div class="energy-copy"><span class="eyebrow">GUT VERSORGT DURCH DEN TAG</span><h3>${t.kcal === 0 ? "Was steht heute auf deinem Teller?" : left >= 0 ? "Du behältst den Überblick." : "Ein Tag ist nur ein Tag."}</h3><p>${t.kcal === 0 ? "Mit deiner ersten Mahlzeit beginnt dein Überblick." : "Es zählt, was du langfristig machst. Bleib freundlich zu dir."}</p><div class="energy-numbers"><div><strong>${fmt(t.kcal)}</strong><small>gegessen</small></div><div><strong>${fmt(p.kcal)}</strong><small>Tagesziel · kcal</small></div></div></div></div><div class="macros">${macro("Protein", t.protein, p.protein, "green")}${macro("Kohlenhydrate", t.carbs, null, "orange")}${macro("Fett", t.fat, null, "purple")}</div>${btn(icon("plus") + " Mahlzeit hinzufügen", "add-food", "primary wide")}</section><section class="card water-card"><div class="section-head"><div class="tile-icon blue">${icon("water")}</div><span class="pill">Trinken</span></div><h2>Ein Schluck für dich.</h2><div class="big-number">${fmt(water / 1000, 2)} <small>/ ${fmt(p.water / 1000, 1)} l</small></div><div class="water-drops" role="img" aria-label="Trinkfortschritt">${Array.from({ length: 8 }, (_, i) => `<span class="${i < (water / p.water) * 8 ? "filled" : ""}">${icon("water")}</span>`).join("")}</div><p>Dein selbst gesetztes Trinkziel.</p><div class="row">${btn("− 250", "water", "secondary", 'data-amount="-250" aria-label="250 Milliliter entfernen"')}${btn("+ 250 ml", "water", "primary", 'data-amount="250"')}</div></section><section class="card weight-card"><div class="section-head"><h2>Dein Weg</h2>${icon("chart")}</div><div class="big-number">${w ? fmt(w.value, 1) : "–"} <small>kg</small></div><p>${w ? "Letzter Eintrag · " + dateLabel(w.date) : "Dein erster Eintrag wartet auf dich."}</p>${miniChart(
-    combinedWeights(state)
-      .slice()
-      .sort((a, b) => a.date.localeCompare(b.date))
-      .slice(-30),
-  )}${btn("Gewicht eintragen", "weight", "text-button")}</section><section class="card momentum"><span class="eyebrow">DEIN NÄCHSTER KLEINER SCHRITT</span><h2>Stärker werden.<br>In deinem Tempo.</h2><p>Eine kurze Einheit ist ein guter Anfang. Auch Erholung gehört dazu.</p>${btn("Zum Training " + icon("arrow"), "go-train", "secondary")}</section></div>${healthUI.card(date)}${gameUI.card()}${coachUI.card()}<section class="section-head below"><h2>Deine Mahlzeiten</h2>${btn("Tagebuch öffnen →", "go-food", "text-button")}</section><div class="meal-grid">${meals
-    .map((m, i) => {
-      const e = dayEntries().filter((e) => e.meal === m);
-      return `<button class="card meal-preview" data-action="add-food" data-meal="${m}"><span class="meal-symbol">${["☀", "◒", "☾", "✦"][i]}</span><div><h3>${m}</h3><p>${e.length ? fmt(totals(e).kcal) + " kcal · " + e.length + " Einträge" : "Etwas Gutes hinzufügen"}</p></div><span class="plus">+</span></button>`;
-    })
-    .join("")}</div>`;
+function homeView(){
+ const p=state.profile,t=totals(dayEntries()),water=state.water[date]||0,w=combinedWeights(state).sort((a,b)=>b.date.localeCompare(a.date))[0];
+ return `${trainerUI.home()}<section class="card energy compact-energy"><div class="section-head"><h2>${date===today()?'Heute':dateLabel(date)} · Ernährung</h2>${btn('Tagebuch','go-food','text-button')}</div><div class="energy-numbers"><div><strong>${fmt(t.kcal)}</strong><small>von ${fmt(p.kcal)} kcal · Orientierung</small></div><div><strong>${fmt(t.protein)} g</strong><small>von ${p.protein} g Protein</small></div></div><div class="toolbar">${btn(dsIcon('food')+' Barcode scannen','barcode','primary')}${btn('Nährwertfoto','ocr-open','secondary')}${btn('Essen suchen','add-food','secondary')}</div></section><div class="home-vitals below">${healthUI.card(date)}<section class="card water-card"><h2>Trinken</h2><div class="big-number">${fmt(water/1000,2)} <small>/ ${fmt(p.water/1000,1)} l</small></div><p>Dein selbst gesetztes Ziel.</p><div class="row">${btn('− 250','water','secondary','data-amount="-250" aria-label="250 Milliliter entfernen"')}${btn('+ 250 ml','water','primary','data-amount="250"')}</div></section></div><section class="card below weight-card"><div class="section-head"><div><h2>Dein Gewichtsverlauf</h2><p>${w?fmt(w.value,1)+' kg · '+dateLabel(w.date):'Noch kein Gewicht erfasst.'}</p></div>${btn('Gewicht eintragen','weight','secondary')}</div>${btn('Verlauf ansehen','go-chart','text-button')}</section>`;
 }
 function macro(name, value, target, color) {
   return `<div><span><i class="dot ${color}"></i>${name}</span><strong>${fmt(value)} <small>${target ? "/ " + target + " " : ""}g</small></strong>${target ? `<div class="track"><i style="width:${Math.min(100, (value / target) * 100)}%"></i></div>` : ""}</div>`;
 }
 function foodView() {
   const t = totals(dayEntries());
-  return `<div class="summary-strip"><div><small>Energie</small><strong>${fmt(t.kcal)} <span>/ ${state.profile.kcal} kcal</span></strong></div><div><small>Protein</small><strong>${fmt(t.protein)} <span>g</span></strong></div><div><small>Ballaststoffe</small><strong>${fmt(t.fiber)} <span>g*</span></strong></div></div><div class="toolbar">${btn(icon("plus") + " Essen eintragen", "add-food", "primary")}${btn(icon("scan") + " Barcode", "barcode", "secondary")}${btn("Gespeicherte Mahlzeiten", "templates", "secondary")}${btn("Vortag kopieren", "copy-day", "secondary")}${btn("Eigenes Rezept", "recipe", "secondary")}${btn("Vitamine & Mineralstoffe", "micros", "secondary")}</div><section class="day-complete"><div><strong>${state.completeDays[date] ? "✓ Tag als vollständig markiert" : "Alles für diesen Tag erfasst?"}</strong><small>Nur vollständige Tage fließen in die Verbrauchsschätzung ein.</small></div>${btn(state.completeDays[date] ? "Wieder öffnen" : "Tag abschließen", "complete-day", "secondary", `aria-pressed="${!!state.completeDays[date]}"`)}</section><div class="diary">${meals
+  return `<div class="summary-strip"><div><small>Energie</small><strong>${fmt(t.kcal)} <span>/ ${state.profile.kcal} kcal</span></strong></div><div><small>Protein</small><strong>${fmt(t.protein)} <span>g</span></strong></div><div><small>Ballaststoffe</small><strong>${fmt(t.fiber)} <span>g*</span></strong></div></div><div class="toolbar">${btn(icon("plus") + " Essen eintragen", "add-food", "primary")}${btn(icon("scan") + " Barcode", "barcode", "secondary")}${btn("Nährwerttabelle fotografieren", "ocr-open", "secondary")}${btn("Gespeicherte Mahlzeiten", "templates", "secondary")}<details class="food-tools"><summary>Weitere Möglichkeiten</summary><div class="toolbar">${btn("Vortag kopieren", "copy-day", "secondary")}${btn("Eigenes Rezept", "recipe", "secondary")}${btn("Vitamine & Mineralstoffe", "micros", "secondary")}</div></details></div><section class="day-complete"><div><strong>${state.completeDays[date] ? "✓ Tag als vollständig markiert" : "Alles für diesen Tag erfasst?"}</strong><small>Nur vollständige Tage fließen in die Verbrauchsschätzung ein.</small></div>${btn(state.completeDays[date] ? "Wieder öffnen" : "Tag abschließen", "complete-day", "secondary", `aria-pressed="${!!state.completeDays[date]}"`)}</section><div class="diary">${meals
     .map((m, i) => {
       const e = dayEntries().filter((e) => e.meal === m);
       return `<section class="card"><div class="section-head"><h2><span class="meal-symbol small">${["☀", "◒", "☾", "✦"][i]}</span>${m}</h2><span>${fmt(totals(e).kcal)} kcal</span></div>${e.length ? e.map((e) => `<button class="food-row" data-action="edit-entry" data-id="${esc(e.id)}"><div><strong>${esc(e.name)}</strong><small>${fmt(e.amount)} ${e.name.includes("100 ml") ? "ml" : "g"} · ${fmt((e.protein * e.amount) / 100, 1)} g Protein</small></div><strong>${fmt((e.kcal * e.amount) / 100)}<small>kcal</small></strong></button>`).join("") : `<p class="empty-line">Noch nichts eingetragen. Was schmeckt dir heute?</p>`}${btn("+ Hinzufügen", "add-food", "text-button", `data-meal="${m}"`)}${e.length ? btn("Als Mahlzeit speichern", "template-save", "text-button", `data-meal="${m}"`) : ""}</section>`;
@@ -293,8 +281,10 @@ function trainView() {
       : "<p>Dein nächstes Training ist ein guter Anfang. Hier findest du danach deine Sätze und Wiederholungen.</p>"
   }</section>`;
 }
-function moreView() {
-  return `${healthUI.card()}${gameUI.card()}${coachUI.card()}<div class="two-grid"><section class="card"><div class="tile-icon purple">${icon("chart")}</div><h2>Wie geht es dir?</h2><p>Schlaf, Schritte, Bauchumfang, Blutdruck und Puls – als persönliches Tagebuch, ohne automatische Diagnose.</p>${btn("+ Gesundheitswerte", "health", "primary")}</section><section class="card"><div class="tile-icon">${icon("leaf")}</div><h2>Deine App. Deine Ziele.</h2><p>Passe Ziele und Darstellung an. Sichere deine Daten, bevor du das Gerät wechselst.</p><div class="toolbar">${btn("Profil & Ziele", "settings", "secondary")}${btn(state.theme === "light" ? "Dunkles Design" : "Helles Design", "theme", "secondary")}</div></section><section class="card"><h2>Deine Daten gehören dir.</h2><p>Kein Konto, keine Werbung, keine Analyse-Tracker. Die Sicherung enthält persönliche Gesundheitsdaten; bewahre sie geschützt auf.</p><div class="toolbar">${btn("Sicherung exportieren", "export", "primary")}${btn("Sicherung importieren", "import", "secondary")}${btn("CSV exportieren", "csv", "secondary")}</div></section><section class="card"><h2>Gut zu wissen</h2><p>Fortschritt braucht kein perfektes Tagebuch. Mahlzeiten sind keine Belohnung und Bewegung keine Strafe.</p>${btn("Datenschutz, Quellen & Hilfe", "about", "text-button")}${btn("Alle Daten löschen", "reset", "text-button danger")}</section></div><section class="card below"><h2>Dein Gesundheitsjournal</h2>${
+function moreView(){
+ return `<div class="profile-menu"><section class="card"><h2>${dsIcon('profile')} Dein Profil & Plan</h2><p>Ziele, persönliche Voraussetzungen und Vorschläge haben hier ihren gemeinsamen Platz.</p><div class="toolbar">${btn('Profil & Ziele','settings','primary')}${btn('Persönliche Voraussetzungen','coach-settings','secondary')}${btn('Ziele & Empfehlungen','coach','secondary')}${btn('Gewichtsverlauf','go-chart','secondary')}</div></section><section class="card"><h2>Messwerte & Verbindungen</h2><p>Der Tages-Check-in für Hunger und Befinden liegt unter Heute. Hier findest du gemessene Werte und verbundene Apps.</p><div class="toolbar">${btn('Samsung Health / Schritte','hc-open','primary')}${btn('Messwert eintragen','health','secondary')}${btn('Messwerte ansehen','health-history','secondary')}</div></section><section class="card"><h2>Darstellung & Sicherung</h2><div class="toolbar">${btn(state.theme==='light'?'Dunkles Design':'Helles Design','theme','secondary')}${btn('Sicherung exportieren','export','primary')}${btn('Sicherung importieren','import','secondary')}${btn('CSV exportieren','csv','secondary')}</div><p class="footnote">Sicherungen enthalten deine persönlichen Daten. Bewahre sie geschützt auf.</p></section><section class="card"><h2>Hilfe</h2>${btn('Datenschutz, Quellen & Hilfe','about','text-button')}${btn('Alle Daten löschen','reset','text-button danger')}</section></div>`;
+}
+function healthHistory(){sheet('Deine Messwerte',`<section>${
     state.health.length
       ? state.health
           .slice()
@@ -315,8 +305,7 @@ function moreView() {
           )
           .join("")
       : "<p>Noch keine Werte. Trage nur ein, was für dich hilfreich ist.</p>"
-  }</section>`;
-}
+  }</section>`);}
 function profileForm(initial = false) {
   const p = state.profile || {};
   form(
@@ -350,7 +339,7 @@ function foodPicker() {
   editing = null;
   sheet(
     "Essen hinzufügen",
-    `${select("Mahlzeit", "meal", meals, meal)}<label class="search">Lebensmittel finden<input id="food-search" type="search" placeholder="z. B. Quark, Kartoffeln, Haferflocken" autocomplete="off"></label><div class="toolbar">${btn(icon("scan") + " Barcode", "barcode", "secondary")}${btn("Gespeicherte Mahlzeiten", "templates", "secondary")}${btn("+ Eigenes Lebensmittel", "custom-food", "secondary")}</div><div id="food-results"></div><p class="footnote">Suche in deinen gespeicherten Lebensmitteln und einer kleinen Offline-Grundauswahl. Weitere Produkte über Barcode.</p>`,
+    `${select("Mahlzeit", "meal", meals, meal)}<label class="search">Lebensmittel finden<input id="food-search" type="search" placeholder="z. B. Quark, Kartoffeln, Haferflocken" autocomplete="off"></label><div class="toolbar">${btn(icon("scan") + " Barcode", "barcode", "secondary")}${btn("Nährwerttabelle fotografieren", "ocr-open", "secondary")}${btn("Gespeicherte Mahlzeiten", "templates", "secondary")}${btn("+ Eigenes Lebensmittel", "custom-food", "secondary")}</div><div id="food-results"></div><p class="footnote">Suche in deinen gespeicherten Lebensmitteln und einer kleinen Offline-Grundauswahl. Weitere Produkte über Barcode.</p>`,
   );
   foodResults("");
 }
@@ -446,7 +435,7 @@ function healthForm(h = null) {
       .map(([k, t, min, max]) => num(t, k, h?.[k], min, max, "any", false))
       .join(
         "",
-      )}</div><label>Notiz<textarea name="note" maxlength="1000" placeholder="Wie fühlst du dich?">${esc(h?.note || "")}</textarea></label><p>Freiwillige Dokumentation, keine medizinische Auswertung. Einträge lösen keine Warnmeldungen aus.</p>${h ? btn("Eintrag löschen", "delete-health", "text-button danger") : ""}`,
+      )}</div><label>Notiz<textarea name="note" maxlength="1000" placeholder="Notiz zur Messung (optional)">${esc(h?.note || "")}</textarea></label><p>Freiwillige Dokumentation, keine medizinische Auswertung. Einträge lösen keine Warnmeldungen aus.</p>${h ? btn("Eintrag löschen", "delete-health", "text-button danger") : ""}`,
   );
 }
 function recipeForm() {
@@ -669,7 +658,15 @@ const mealUI = setupMealUI({
   render,
   close,
 });
+const ocrUI=setupNutritionOCR({sheet,btn,esc,notify,customFood});
+const trainerUI=setupTrainerUI({getState:()=>state,btn,esc,sheet});
 const actions = {
+  ...trainerUI.actions,
+  "health-history":healthHistory,
+  "go-chart":()=>{close();tab="chart";render();window.scrollTo(0,0);},
+  "go-home":()=>{close();tab="home";render();window.scrollTo(0,0);},
+  "care-choice":()=>sheet("Bewegen oder erholen",`<p>Beides zählt gleich viel. Wähle, was heute zu dir passt.</p><div class="toolbar">${btn("Zum Training","go-train","primary")}${btn("Bewusste Erholung festhalten","game-rest","secondary")}</div>`),
+  ...ocrUI.actions,
   ...mealUI.actions,
   ...coachUI.actions,
   ...gameUI.actions,
@@ -714,6 +711,7 @@ const actions = {
   settings: () => profileForm(),
   tab: (b) => {
     tab = b.dataset.tab;
+    if(tab==="home")date=today();
     render();
     window.scrollTo(0, 0);
   },
@@ -722,6 +720,7 @@ const actions = {
     render();
   },
   "go-train": () => {
+    close();
     tab = "train";
     render();
   },
@@ -995,6 +994,7 @@ const actions = {
       }, true)
     ) {
       healthUI.invalidatePending();
+      ocrUI.invalidate();
       delete window.pendingImport;
       timerEnd = 0;
       date = today();
@@ -1026,7 +1026,7 @@ const actions = {
   about: () =>
     sheet(
       "Über DiätFreund",
-      `<h3>Dein Alltag, ohne Abo.</h3><p>Version 0.5.0 · Offline-Tagebuch für Erwachsene. Keine Werbung, Telemetrie, Konten oder kostenpflichtigen KI-Dienste.</p><h3>Datenschutz</h3><p>Deine Daten liegen im privaten App-Speicher. Android-Cloud-Backup ist deaktiviert. Die App setzt die Gerätesperre voraus; sie bietet keine eigene Verschlüsselung oder PIN. Exportdateien sind unverschlüsselt. Deinstallation entfernt lokale Daten. Sichere regelmäßig.</p><h3>Health Connect</h3><p>Optional Schritte, Schlafdauer und Gewicht lesen. Eigene Gewichte nur nach Vorschau ausdrücklich teilen. Freigaben lassen sich in Android widerrufen. Lokale Importkopien kannst du unter Schritte & Erholung entfernen; bereits geteilte Werte verwaltest du in Health Connect.</p><h3>Barcode & Kamera</h3><p>Nur nach deiner Aktion wird ein Barcode an world.openfoodfacts.org gesendet (einschließlich technisch notwendiger IP-Adresse). Kamerabilder verlassen das Gerät nicht. Kein automatisches Foto-Kalorienschätzen.</p><h3>Quellen & Lizenzen</h3><p>Produktdaten: Open Food Facts (opendatacommons.org/licenses/odbl/1-0/). Datenbank ODbL, einzelne Inhalte Database Contents License. Eigene Lebensmittel sind getrennt gekennzeichnet. Prüfe die Verpackung, insbesondere Portionsgrößen und Allergene. Die App beurteilt keine Allergensicherheit.</p><p>Barcode-Erkennung: ZXing / JourneyApps (Apache 2.0). AndroidX (Apache 2.0). Vollständige Hinweise im Repository.</p>${btn("Lizenztexte offline lesen", "licenses", "secondary")}<h3>Gesundheit</h3><p>Kalorienformel: Mifflin–St. Jeor (1990), Schätzung mit individuell gewähltem Aktivitätsfaktor. Bewegungsvorlagen orientieren sich an allgemeinen NHS-Empfehlungen. Keine Diagnose, Überwachung, Notfallerkennung oder garantierte Gewichtsabnahme. Gesundheitseinträge werden nicht medizinisch bewertet.</p><h3>Bedienung</h3><p>Essen: Lebensmittel wählen, Gramm eingeben, speichern. Einträge antippen zum Bearbeiten. Verlauf: pro Datum ein Gewicht. Training: Sätze bearbeiten, abhaken, abschließen. Mehr: Gesundheitsjournal, Ziele und Sicherungen. Barcode braucht Internet; alles andere funktioniert offline.</p>`,
+      `<h3>Dein Alltag, ohne Abo.</h3><p>Version 0.6.0 · Offline-Tagebuch für Erwachsene. Keine Werbung, Telemetrie, Konten oder kostenpflichtigen KI-Dienste.</p><h3>Datenschutz</h3><p>Deine Daten liegen im privaten App-Speicher. Android-Cloud-Backup ist deaktiviert. Die App setzt die Gerätesperre voraus; sie bietet keine eigene Verschlüsselung oder PIN. Exportdateien sind unverschlüsselt. Deinstallation entfernt lokale Daten. Sichere regelmäßig.</p><h3>Health Connect</h3><p>Optional Schritte, Schlafdauer und Gewicht lesen. Eigene Gewichte nur nach Vorschau ausdrücklich teilen. Freigaben lassen sich in Android widerrufen. Lokale Importkopien kannst du unter Schritte & Erholung entfernen; bereits geteilte Werte verwaltest du in Health Connect.</p><h3>Barcode & Kamera</h3><p>Nur nach deiner Aktion wird ein Barcode an world.openfoodfacts.org gesendet (einschließlich technisch notwendiger IP-Adresse). Kamerabilder verlassen das Gerät nicht. Nährwerttabellen werden mit Tesseract lokal erkannt; übernommene Werte müssen geprüft werden. Kein automatisches Schätzen von Mahlzeitenfotos.</p><h3>Quellen & Lizenzen</h3><p>Produktdaten: Open Food Facts (opendatacommons.org/licenses/odbl/1-0/). Datenbank ODbL, einzelne Inhalte Database Contents License. Eigene Lebensmittel sind getrennt gekennzeichnet. Prüfe die Verpackung, insbesondere Portionsgrößen und Allergene. Die App beurteilt keine Allergensicherheit.</p><p>Barcode-Erkennung: ZXing / JourneyApps (Apache 2.0). AndroidX (Apache 2.0). Vollständige Hinweise im Repository.</p>${btn("Lizenztexte offline lesen", "licenses", "secondary")}<h3>Gesundheit</h3><p>Kalorienformel: Mifflin–St. Jeor (1990), Schätzung mit individuell gewähltem Aktivitätsfaktor. Bewegungsvorlagen orientieren sich an allgemeinen NHS-Empfehlungen. Keine Diagnose, Überwachung, Notfallerkennung oder garantierte Gewichtsabnahme. Gesundheitseinträge werden nicht medizinisch bewertet.</p><h3>Bedienung</h3><p>Essen: Lebensmittel wählen, Gramm eingeben, speichern. Einträge antippen zum Bearbeiten. Verlauf: pro Datum ein Gewicht. Training: Sätze bearbeiten, abhaken, abschließen. Mehr: Gesundheitsjournal, Ziele und Sicherungen. Barcode braucht Internet; alles andere funktioniert offline.</p>`,
     ),
 };
 document.addEventListener("click", (e) => {
@@ -1089,7 +1089,7 @@ document.addEventListener("submit", (e) => {
       if (coachResult) {
         close();
         render();
-        notify("Gespeichert. Dein Kompass ist aktualisiert.");
+        notify(f.dataset.form==="checkin"?"Dein Tages-Check-in ist gespeichert.":"Deine persönlichen Angaben sind gespeichert.");
       }
       return;
     }
@@ -1266,6 +1266,7 @@ document.addEventListener("submit", (e) => {
           Object.assign(s, emptyState());
         }, true);
         if (ok) healthUI.invalidatePending();
+      ocrUI.invalidate();
         break;
     }
     if (ok) {
