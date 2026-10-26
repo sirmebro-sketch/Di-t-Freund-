@@ -67,7 +67,7 @@ export function validateCareer(c) {
   if (
     !obj(c) ||
     c.version !== 1 ||
-    c.activeRegion !== "kanto" ||
+    !["kanto", "johto"].includes(c.activeRegion) ||
     !obj(c.archives) ||
     Object.keys(c.archives).length !== 0 ||
     !obj(c.bond) ||

@@ -1,3 +1,11 @@
+import {
+  activeRegion,
+  ensureRegions,
+  regionPoints,
+  regionProgress,
+  regionWorld,
+  validateRegions,
+} from "./region-progress.js";
 // A local, simplified fan game. Health values never determine combat strength.
 import { nationalDex as pokemon, catalogSize } from "./game-registry.js";
 import {
@@ -25,6 +33,7 @@ export const dex = Object.fromEntries(
 export const wild = Object.keys(pokemon).map(Number);
 export const newGame = (starter, date) => ({
   version: 2,
+  regions: { kanto: { points: 0 }, johto: null },
   career: emptyCareer(),
   discovered: [starter],
   badges: [],
@@ -72,6 +81,7 @@ export function migrateGame(g) {
   if (!g) return g;
   if (g.version === 2) {
     ensureCareer(g);
+    ensureRegions(g);
     return g;
   }
   if (g.version !== undefined) throw Error("Unbekannte Abenteuer-Version.");
@@ -84,6 +94,7 @@ export function migrateGame(g) {
   g.leagueWins = [];
   g.legacyRibbons = Math.floor(g.wins / 3);
   ensureCareer(g);
+  ensureRegions(g);
   return g;
 }
 export function recordDiscovery(g) {
@@ -92,31 +103,42 @@ export function recordDiscovery(g) {
   ].sort((a, b) => a - b);
 }
 export function nextChallenge(g) {
-  const gym = gyms.find((x) => !g.badges.includes(x.id));
+  const { gyms, league } = regionWorld(g),
+    progress = regionProgress(g);
+  const gym = gyms.find((x) => !progress.badges.includes(x.id));
   if (gym) return { ...gym, kind: "gym" };
-  const elite = league.find((x) => !g.leagueWins.includes(x.id));
+  const elite = league.find((x) => !progress.leagueWins.includes(x.id));
   return elite ? { ...elite, city: "Indigo-Plateau", kind: "league" } : null;
 }
 export function canEncounter(g, id) {
-  const points = gamePoints(g),
-    gate = specialGates[id];
+  const region = id > 151 ? "johto" : "kanto",
+    world = regionWorld(g, region),
+    progress = regionProgress(g, region),
+    points = progress.points;
+  if (region === "johto" && !g.regions?.johto) return false;
+  const gate = world.specialGates[id];
   if (gate)
     return (
       points >= gate.points &&
-      (!gate.badges || g.badges.length >= gate.badges) &&
-      (!gate.champion || g.leagueWins.includes("blue")) &&
-      (!gate.discovered || g.discovered.length >= gate.discovered)
+      (!gate.badges || progress.badges.length >= gate.badges) &&
+      (!gate.champion ||
+        progress.leagueWins.includes(region === "kanto" ? "blue" : "lance")) &&
+      (!gate.discovered ||
+        g.discovered.filter((n) => (region === "kanto" ? n <= 151 : n > 151))
+          .length >= gate.discovered)
     );
-  const homes = places.filter((p) => p.pool.includes(id));
+  const homes = world.places.filter((p) => p.pool.includes(id));
   return (
     points >= (homes.length ? Math.min(...homes.map((p) => p.points)) : 96)
   );
 }
 export function encounterLocation(id) {
+  const region = id > 151 ? "johto" : "kanto",
+    world = regionWorld(null, region);
   return (
-    specialGates[id]?.place ||
-    places.find((p) => p.pool.includes(id))?.name ||
-    "Kanto-Routen · ab 96 Punkten"
+    world.specialGates[id]?.place ||
+    world.places.find((p) => p.pool.includes(id))?.name ||
+    `${region === "kanto" ? "Kanto" : "Johto"}-Routen · ab 96 Punkten`
   );
 }
 export function gamePoints(g) {
@@ -163,6 +185,8 @@ function advantage(a, b) {
     Gestein: ["Feuer", "Eis", "Flug", "Käfer"],
     Geist: ["Geist"],
     Drache: ["Drache"],
+    Unlicht: ["Psycho", "Geist"],
+    Stahl: ["Eis", "Gestein"],
   };
   return strengths[a]?.includes(b) ? 1.25 : 1;
 }
@@ -170,6 +194,7 @@ export function battle(g, index, challenge = null) {
   const ally = monster(
     g.collection.find((m) => m.base === g.buddy) || g.collection[0],
   );
+  const encounters = regionWorld(g).encounters;
   const trainer = encounters[index % encounters.length];
   const enemyId = challenge?.pokemon || trainer[1],
     enemy = {
@@ -218,8 +243,12 @@ export function syncGame(s, date) {
     fresh = quests(s, date).filter((q) => q.done && !earned.includes(q.key));
   if (!fresh.length) return;
   migrateGame(g);
-  const before = gamePoints(g);
+  const region = activeRegion(g),
+    world = regionWorld(g),
+    progress = regionProgress(g);
+  const before = regionPoints(g);
   g.earned[date] = [...earned, ...fresh.map((q) => q.key)];
+  g.regions[region].points += fresh.length;
   const old = new Map(g.collection.map((m) => [m.base, monster(m)]));
   g.collection.forEach(
     (m) => (m.xp = Math.min(20000, m.xp + fresh.length * 10)),
@@ -243,15 +272,15 @@ export function syncGame(s, date) {
       });
   });
   recordDiscovery(g);
-  const after = gamePoints(g);
-  const expedition = progressCareer(g, fresh.length, after, date);
+  const after = regionPoints(g);
+  const expedition = progressCareer(g, fresh.length, gamePoints(g), date);
   if (expedition)
     event(
       "research",
       `${expeditionTypes.find((t) => t[0] === expedition)[1]} abgeschlossen! Dein Forschungsalbum wächst.`,
     );
-  const oldPlace = placeAt(before),
-    newPlace = placeAt(after);
+  const oldPlace = world.placeAt(before),
+    newPlace = world.placeAt(after);
   if (oldPlace.id !== newPlace.id)
     event(
       "place",
@@ -261,6 +290,7 @@ export function syncGame(s, date) {
   for (let i = Math.floor(before / 3) + 1; i <= Math.floor(after / 3); i++) {
     const available = wild.filter(
       (id) =>
+        (region === "kanto" ? id <= 151 : id > 151) &&
         !g.discovered.includes(id) &&
         !g.collection.some((m) => m.base === id) &&
         canEncounter(g, id),
@@ -279,8 +309,9 @@ export function syncGame(s, date) {
     } else
       event(
         "explore",
-        g.discovered.length === catalogSize()
-          ? "Alle 151 Pokémon entdeckt! Kanto bleibt dein Zuhause."
+        g.discovered.filter((id) => (region === "kanto" ? id <= 151 : id > 151))
+          .length === (region === "kanto" ? 151 : 100)
+          ? `Alle Pokémon dieser Region entdeckt! Deine Forschungsreise geht weiter.`
           : "Dieses Gebiet ist gut erforscht. Auf deiner Reise warten neue Pokémon.",
       );
   }
@@ -301,16 +332,16 @@ export function syncGame(s, date) {
     );
     if (result.won && challenge) {
       if (challenge.kind === "gym") {
-        g.badges.push(challenge.id);
+        progress.badges.push(challenge.id);
         event("badge", `${challenge.name} von ${challenge.trainer} erhalten!`, {
           badgeId: challenge.id,
         });
       } else {
-        g.leagueWins.push(challenge.id);
+        progress.leagueWins.push(challenge.id);
         event(
           "league",
-          challenge.id === "blue"
-            ? "Du bist Kanto-Champ! Willkommen in der Ruhmeshalle."
+          ["blue", "lance"].includes(challenge.id)
+            ? `Du bist ${region === "kanto" ? "Kanto" : "Johto"}-Champ! Willkommen in der Ruhmeshalle.`
             : `${challenge.trainer} besiegt. Der nächste Abschnitt der Liga wartet.`,
           { leagueId: challenge.id },
         );
@@ -322,6 +353,7 @@ export function syncGame(s, date) {
 export function validateGame(g) {
   if (g === null || g === undefined) return true;
   validateCareer(g.career);
+  validateRegions(g);
   const obj = (x) => x && typeof x === "object" && !Array.isArray(x),
     integer = (x, max) => Number.isInteger(x) && x >= 0 && x <= max,
     date = (x) => typeof x === "string" && /^\d{4}-\d{2}-\d{2}$/.test(x),

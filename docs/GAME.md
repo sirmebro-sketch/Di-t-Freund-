@@ -1,4 +1,4 @@
-# Pokémon-Abenteuer · Kanto (0.3.0)
+# Pokémon-Abenteuer · Kanto & Johto (0.5.0)
 
 Ein lokaler, inoffizieller Fan-Spielteil auf ausdrücklichen Nutzerwunsch. Kein Konto, Server, Kauf, Zufallskauf oder laufender Dienst. Nicht mit Nintendo, Creatures oder GAME FREAK verbunden. Pokémon-Inhalte werden nicht als frei lizenzierte eigene Inhalte ausgegeben.
 
@@ -48,6 +48,10 @@ Beschriftete Auswahlbuttons, aria-pressed für aktive Auswahl, Text-Kampfbericht
 
 Forschung und Freundschaft werden aus denselben drei täglichen Routinen gespeist. Alle 60 neuen Routinepunkte steigt der Forschungsrang, auch nach Kanto-Abschluss. Ein ausgewählter Begleiter erhält Freundschaft: 12/30/60 Punkte bedeuten gute Freunde/vertraut/unzertrennlich. Andere behalten ihre Werte. Vier wiederholbare Forschungsreisen dauern jeweils 18 neue Routinepunkte, ohne Ablaufdatum, Strafpunkte oder Pflicht zur täglichen Nutzung. Das Album behält die letzten 100 abgeschlossenen Reisen. Fünf Kulissen werden nach 0/30/90/180/300 gesamten Routinepunkten freigeschaltet.
 
-Bestehende Spielstände bekommen eine leere Karriere; keine rückwirkend erfundene gemeinsame Zeit. Nationaldex-IDs, Regionsregister und eigene Karrieredaten bereiten spätere Inhaltspakete vor. Aktuell ist ausschließlich Kanto implementiert. Johto/Hoenn/Sinnoh sind Erweiterungsziele ohne Terminzusage. Eine spätere Region benötigt neue Inhalte, eigene Reise-/Ordensstände und getestete Migration; allein ein Datensatz macht noch keine fertige Region. Bestehende Sammlung, Orden und Freundschaft sollen erhalten bleiben. Kein Zurücksetzen auf null und keine zeitlich verpassbaren Saisonbelohnungen.
+Bestehende Spielstände bekommen eine leere Karriere; keine rückwirkend erfundene gemeinsame Zeit. Nationaldex-IDs, Regionsregister und eigene Karrieredaten bereiten spätere Inhaltspakete vor. Seit 0.5 ist neben Kanto auch Johto spielbar: [Umfang und Migration](JOHTO.md). Hoenn/Sinnoh sind Erweiterungsziele ohne Terminzusage. Eine spätere Region benötigt neue Inhalte, eigene Reise-/Ordensstände und getestete Migration; allein ein Datensatz macht noch keine fertige Region. Bestehende Sammlung, Orden und Freundschaft bleiben beim Regionswechsel erhalten. Kein Zurücksetzen auf null und keine zeitlich verpassbaren Saisonbelohnungen.
 
 Motivation ist ein Gestaltungsziel, keine Wirksamkeitsgarantie. Wiederholbare Forschung erweitert den kleinen Begleiter; sie ersetzt kein großes Rollenspiel mit endlos neuen Geschichten.
+
+## Zusätzliche Inhalte in 0.5
+
+Die nationalen IDs 152–251 und 100 weitere Originalsprites sind offline gebündelt. Herkunft und SHA-256-Prüfsummen: `JOHTO-DATA-SOURCES.json` und `JOHTO-ASSETS.json`. Erzeugung: `scripts/build-johto-data.py`. Bestehende Kanto-Sprites und kurze Originaleffekte bleiben unverändert. Gen-II-Typen ohne spätere Fee-Typen; Kanto behält seine Gen-I-Typen und bisherigen Entwicklungspfade. Das gemischte, vereinfachte Kampfsystem bildet nicht die Originalspiele vollständig nach.

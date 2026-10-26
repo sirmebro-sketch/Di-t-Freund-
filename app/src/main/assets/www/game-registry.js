@@ -1,7 +1,16 @@
 import { pokemon as kantoPokemon } from "./kanto-data.js";
+import { pokemon as johtoPokemon } from "./johto-data.js";
+import * as johtoWorld from "./johto-world.js";
 import * as kantoWorld from "./kanto-world.js";
 // National Pokédex IDs are global. Region IDs and archive keys never change across releases.
 export const regionPacks = {
+  johto: {
+    id: "johto",
+    generation: 2,
+    name: "Johto",
+    pokemon: johtoPokemon,
+    world: johtoWorld,
+  },
   kanto: {
     id: "kanto",
     generation: 1,
@@ -15,7 +24,6 @@ export const nationalDex = Object.assign(
   ...Object.values(regionPacks).map((r) => r.pokemon),
 );
 export const plannedRegions = [
-  { id: "johto", name: "Johto", generation: 2 },
   { id: "hoenn", name: "Hoenn", generation: 3 },
   { id: "sinnoh", name: "Sinnoh", generation: 4 },
 ];

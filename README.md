@@ -6,19 +6,30 @@ Ein ruhiger, deutschsprachiger Android-Begleiter für Ernährung, Gewicht, Kraft
 
 1. Unter [Actions → Android APK & Checks](https://github.com/sirmebro-sketch/Di-t-Freund-/actions/workflows/android.yml) den neuesten **grünen** Lauf öffnen.
 2. Bei **Artifacts** `DiaetFreund-Android-APK` herunterladen (GitHub-Anmeldung erforderlich).
-3. ZIP entpacken, `app-debug.apk` auf dem Smartphone öffnen und die Installation für die verwendete Dateien-App erlauben.
+3. ZIP entpacken, `DiaetFreund.apk` auf dem Smartphone öffnen und die Installation für die verwendete Dateien-App erlauben.
 4. Profil und Ziele auf dem Gerät einrichten. Persönliche Angaben sind nicht im Repository hinterlegt.
 
-Android 8.0 oder neuer, aktuelles Android System WebView. Das ist ein persönlicher Testbuild, keine Play-Store-Veröffentlichung. Der erste Build muss erfolgreich abgeschlossen sein, bevor ein APK verfügbar ist. Ab 0.4.1 ist eine feste Release-Signatur vorbereitet. Der private Schlüssel wird über GitHub-Actions-Secrets eingebunden; ohne eingerichtete Secrets gibt es kein installierbares Release-Artifact. Einmalige Einrichtung und Umstieg von bisherigen Debug-APKs: [Signierung](docs/SIGNING.md). Vor diesem einmaligen Wechsel JSON sichern. Künftige gleich signierte Updates über die bestehende App installieren.
+Android 8.0 oder neuer, aktuelles Android System WebView. Das ist ein persönlicher Testbuild, keine Play-Store-Veröffentlichung. Seit 0.4.1 ist die feste Release-Signatur eingerichtet und erfolgreich geprüft. Der private Schlüssel wird über GitHub-Actions-Secrets eingebunden; ohne eingerichtete Secrets gibt es kein installierbares Release-Artifact. Einmalige Einrichtung und Umstieg von bisherigen Debug-APKs: [Signierung](docs/SIGNING.md). Vor diesem einmaligen Wechsel JSON sichern. Künftige gleich signierte Updates über die bestehende App installieren.
 
-## Neu in 0.4.1 · Dauerhafte Signatur
+## Neu in 0.5.0 · Johto & gespeicherte Mahlzeiten
+
+- **Johto ist spielbar:** 100 zusätzliche Pokémon mit deutschen Namen und offline gebündelten Originalsprites. Zusammen 251 im nationalen Pokédex, mit Regionsfilter.
+- **Eine eigene Reise:** 20 Stationen, Professor Lind, Rivale Silber, acht Johto-Arenen und fünf Liga-Begegnungen; besondere Bedingungen für Raikou, Entei, Suicune, Lugia, Ho-Oh und Celebi.
+- **Reisen ohne Neustart:** Johto öffnet sich nach dem ersten Kanto-Orden. Ein neuer Starter kommt dazu; Team, Kanto-Orden, Forschung und Freundschaft bleiben erhalten. Neue Punkte zählen nur für die aktive Region, insgesamt weiter höchstens drei Aufgaben täglich.
+- **Mahlzeiten wiederverwenden:** komplette Mahlzeit aus dem Tagebuch benennen und speichern; später Datum, Frühstück/Mittag/Abend/Snack, Portionsfaktor und einzelne Mengen vor dem Eintragen prüfen. Vorschau zeigt Energie und Makros. Umbenennen und Entfernen ändern keine alten Einträge.
+- **Verlässliche Daten:** Nährwerte und Quellen werden mitgespeichert; unbekannte Mikronährstoffe bleiben unbekannt. Vorlagen sind in JSON-Sicherungen enthalten. Alte Sicherungen bleiben lesbar.
+- **Update:** gleiche feste Release-Signatur und Paketkennung, versionCode 6. Über die signierte 0.4.1 installieren, vorher nicht deinstallieren; eine aktuelle JSON-Sicherung bleibt empfehlenswert.
+
+Details: [Johto und Regionsfortschritt](docs/JOHTO.md), [Mahlzeiten](docs/MEAL-TEMPLATES.md).
+
+## Seit 0.4.1 · Dauerhafte Signatur
 
 Fester Zertifikatsfingerabdruck, separater Signierjob nach allen Prüfungen, private Secrets statt Schlüssel im Quellcode und getrenntes Entwicklungspaket. [Einrichtung und Sicherung](docs/SIGNING.md).
 
 ## Seit 0.4.0 · Forschung & Health Connect
 
 - **Langfristiger Fortschritt:** wiederholbare Forschungsreisen ohne Zeitlimit, Forschungsrang, Freundschaft je Begleiter und fünf freischaltbare Kulissen. Alles aus denselben höchstens drei täglichen Routinen; keine Zusatzpflichten, keine Strafe bei Pausen.
-- **Weitere Generationen vorbereitet:** eigenes Regionsregister und getrennte Karrieredaten. Kanto bleibt erhalten. Johto, Hoenn und Sinnoh werden als geplant angezeigt, sind aber noch nicht spielbar; keine angekündigten Veröffentlichungstermine.
+- **Weitere Generationen vorbereitet:** eigenes Regionsregister und getrennte Karrieredaten. Kanto bleibt erhalten. Johto ist seit 0.5 spielbar. Hoenn und Sinnoh bleiben Erweiterungsziele ohne angekündigten Termin.
 - **Samsung Health über Health Connect:** optional Schritte, Schlafdauer und Gewicht der letzten 30 Tage lesen. Einmalig oder beim Öffnen, ausschließlich nach Freigabe. Keine Hintergrundabfrage, keine neue Sensorzählung und kein automatisches Kalorienguthaben für Schritte.
 - **Gewichte teilen:** bis zu 30 eigene Einträge nach Vorschau und ausdrücklichem Senden an Health Connect. Lesefreigabe für die empfangende App separat erteilen. Importierte Gewichte werden nicht zurückgeschrieben, manuelle Gewichte bleiben vorrangig.
 - **Einrichtung und Grenzen:** [Health Connect](docs/HEALTH-CONNECT.md). Android 9+ für die Anbindung, Android 14+ mit integrierter Plattform; ältere unterstützte Geräte benötigen die Health-Connect-App. Reale Geräteabnahme steht aus.

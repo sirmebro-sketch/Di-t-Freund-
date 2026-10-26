@@ -1,3 +1,4 @@
+import { setupMealUI } from "./meal-templates-ui.js";
 import { combinedWeights } from "./health-sync.js";
 import { setupHealthUI } from "./health-ui.js";
 import { syncGame } from "./game.js";
@@ -215,10 +216,10 @@ function macro(name, value, target, color) {
 }
 function foodView() {
   const t = totals(dayEntries());
-  return `<div class="summary-strip"><div><small>Energie</small><strong>${fmt(t.kcal)} <span>/ ${state.profile.kcal} kcal</span></strong></div><div><small>Protein</small><strong>${fmt(t.protein)} <span>g</span></strong></div><div><small>Ballaststoffe</small><strong>${fmt(t.fiber)} <span>g*</span></strong></div></div><div class="toolbar">${btn(icon("plus") + " Essen eintragen", "add-food", "primary")}${btn(icon("scan") + " Barcode", "barcode", "secondary")}${btn("Vortag kopieren", "copy-day", "secondary")}${btn("Eigenes Rezept", "recipe", "secondary")}${btn("Vitamine & Mineralstoffe", "micros", "secondary")}</div><section class="day-complete"><div><strong>${state.completeDays[date] ? "✓ Tag als vollständig markiert" : "Alles für diesen Tag erfasst?"}</strong><small>Nur vollständige Tage fließen in die Verbrauchsschätzung ein.</small></div>${btn(state.completeDays[date] ? "Wieder öffnen" : "Tag abschließen", "complete-day", "secondary", `aria-pressed="${!!state.completeDays[date]}"`)}</section><div class="diary">${meals
+  return `<div class="summary-strip"><div><small>Energie</small><strong>${fmt(t.kcal)} <span>/ ${state.profile.kcal} kcal</span></strong></div><div><small>Protein</small><strong>${fmt(t.protein)} <span>g</span></strong></div><div><small>Ballaststoffe</small><strong>${fmt(t.fiber)} <span>g*</span></strong></div></div><div class="toolbar">${btn(icon("plus") + " Essen eintragen", "add-food", "primary")}${btn(icon("scan") + " Barcode", "barcode", "secondary")}${btn("Gespeicherte Mahlzeiten", "templates", "secondary")}${btn("Vortag kopieren", "copy-day", "secondary")}${btn("Eigenes Rezept", "recipe", "secondary")}${btn("Vitamine & Mineralstoffe", "micros", "secondary")}</div><section class="day-complete"><div><strong>${state.completeDays[date] ? "✓ Tag als vollständig markiert" : "Alles für diesen Tag erfasst?"}</strong><small>Nur vollständige Tage fließen in die Verbrauchsschätzung ein.</small></div>${btn(state.completeDays[date] ? "Wieder öffnen" : "Tag abschließen", "complete-day", "secondary", `aria-pressed="${!!state.completeDays[date]}"`)}</section><div class="diary">${meals
     .map((m, i) => {
       const e = dayEntries().filter((e) => e.meal === m);
-      return `<section class="card"><div class="section-head"><h2><span class="meal-symbol small">${["☀", "◒", "☾", "✦"][i]}</span>${m}</h2><span>${fmt(totals(e).kcal)} kcal</span></div>${e.length ? e.map((e) => `<button class="food-row" data-action="edit-entry" data-id="${esc(e.id)}"><div><strong>${esc(e.name)}</strong><small>${fmt(e.amount)} ${e.name.includes("100 ml") ? "ml" : "g"} · ${fmt((e.protein * e.amount) / 100, 1)} g Protein</small></div><strong>${fmt((e.kcal * e.amount) / 100)}<small>kcal</small></strong></button>`).join("") : `<p class="empty-line">Noch nichts eingetragen. Was schmeckt dir heute?</p>`}${btn("+ Hinzufügen", "add-food", "text-button", `data-meal="${m}"`)}</section>`;
+      return `<section class="card"><div class="section-head"><h2><span class="meal-symbol small">${["☀", "◒", "☾", "✦"][i]}</span>${m}</h2><span>${fmt(totals(e).kcal)} kcal</span></div>${e.length ? e.map((e) => `<button class="food-row" data-action="edit-entry" data-id="${esc(e.id)}"><div><strong>${esc(e.name)}</strong><small>${fmt(e.amount)} ${e.name.includes("100 ml") ? "ml" : "g"} · ${fmt((e.protein * e.amount) / 100, 1)} g Protein</small></div><strong>${fmt((e.kcal * e.amount) / 100)}<small>kcal</small></strong></button>`).join("") : `<p class="empty-line">Noch nichts eingetragen. Was schmeckt dir heute?</p>`}${btn("+ Hinzufügen", "add-food", "text-button", `data-meal="${m}"`)}${e.length ? btn("Als Mahlzeit speichern", "template-save", "text-button", `data-meal="${m}"`) : ""}</section>`;
     })
     .join(
       "",
@@ -349,7 +350,7 @@ function foodPicker() {
   editing = null;
   sheet(
     "Essen hinzufügen",
-    `${select("Mahlzeit", "meal", meals, meal)}<label class="search">Lebensmittel finden<input id="food-search" type="search" placeholder="z. B. Quark, Kartoffeln, Haferflocken" autocomplete="off"></label><div class="toolbar">${btn(icon("scan") + " Barcode", "barcode", "secondary")}${btn("+ Eigenes Lebensmittel", "custom-food", "secondary")}</div><div id="food-results"></div><p class="footnote">Suche in deinen gespeicherten Lebensmitteln und einer kleinen Offline-Grundauswahl. Weitere Produkte über Barcode.</p>`,
+    `${select("Mahlzeit", "meal", meals, meal)}<label class="search">Lebensmittel finden<input id="food-search" type="search" placeholder="z. B. Quark, Kartoffeln, Haferflocken" autocomplete="off"></label><div class="toolbar">${btn(icon("scan") + " Barcode", "barcode", "secondary")}${btn("Gespeicherte Mahlzeiten", "templates", "secondary")}${btn("+ Eigenes Lebensmittel", "custom-food", "secondary")}</div><div id="food-results"></div><p class="footnote">Suche in deinen gespeicherten Lebensmitteln und einer kleinen Offline-Grundauswahl. Weitere Produkte über Barcode.</p>`,
   );
   foodResults("");
 }
@@ -656,7 +657,20 @@ const healthUI = setupHealthUI({
   fmt,
   notify,
 });
+const mealUI = setupMealUI({
+  getState: () => state,
+  getDate: () => date,
+  commit,
+  sheet,
+  btn,
+  esc,
+  fmt,
+  notify,
+  render,
+  close,
+});
 const actions = {
+  ...mealUI.actions,
   ...coachUI.actions,
   ...gameUI.actions,
   ...healthUI.actions,
@@ -975,7 +989,10 @@ const actions = {
   "confirm-import": () => {
     if (
       window.pendingImport &&
-      commit((s) => { for (const key of Object.keys(s)) delete s[key]; Object.assign(s, window.pendingImport); }, true)
+      commit((s) => {
+        for (const key of Object.keys(s)) delete s[key];
+        Object.assign(s, window.pendingImport);
+      }, true)
     ) {
       healthUI.invalidatePending();
       delete window.pendingImport;
@@ -1009,7 +1026,7 @@ const actions = {
   about: () =>
     sheet(
       "Über DiätFreund",
-      `<h3>Dein Alltag, ohne Abo.</h3><p>Version 0.4.1 · Offline-Tagebuch für Erwachsene. Keine Werbung, Telemetrie, Konten oder kostenpflichtigen KI-Dienste.</p><h3>Datenschutz</h3><p>Deine Daten liegen im privaten App-Speicher. Android-Cloud-Backup ist deaktiviert. Die App setzt die Gerätesperre voraus; sie bietet keine eigene Verschlüsselung oder PIN. Exportdateien sind unverschlüsselt. Deinstallation entfernt lokale Daten. Sichere regelmäßig.</p><h3>Health Connect</h3><p>Optional Schritte, Schlafdauer und Gewicht lesen. Eigene Gewichte nur nach Vorschau ausdrücklich teilen. Freigaben lassen sich in Android widerrufen. Lokale Importkopien kannst du unter Schritte & Erholung entfernen; bereits geteilte Werte verwaltest du in Health Connect.</p><h3>Barcode & Kamera</h3><p>Nur nach deiner Aktion wird ein Barcode an world.openfoodfacts.org gesendet (einschließlich technisch notwendiger IP-Adresse). Kamerabilder verlassen das Gerät nicht. Kein automatisches Foto-Kalorienschätzen.</p><h3>Quellen & Lizenzen</h3><p>Produktdaten: Open Food Facts (opendatacommons.org/licenses/odbl/1-0/). Datenbank ODbL, einzelne Inhalte Database Contents License. Eigene Lebensmittel sind getrennt gekennzeichnet. Prüfe die Verpackung, insbesondere Portionsgrößen und Allergene. Die App beurteilt keine Allergensicherheit.</p><p>Barcode-Erkennung: ZXing / JourneyApps (Apache 2.0). AndroidX (Apache 2.0). Vollständige Hinweise im Repository.</p>${btn("Lizenztexte offline lesen", "licenses", "secondary")}<h3>Gesundheit</h3><p>Kalorienformel: Mifflin–St. Jeor (1990), Schätzung mit individuell gewähltem Aktivitätsfaktor. Bewegungsvorlagen orientieren sich an allgemeinen NHS-Empfehlungen. Keine Diagnose, Überwachung, Notfallerkennung oder garantierte Gewichtsabnahme. Gesundheitseinträge werden nicht medizinisch bewertet.</p><h3>Bedienung</h3><p>Essen: Lebensmittel wählen, Gramm eingeben, speichern. Einträge antippen zum Bearbeiten. Verlauf: pro Datum ein Gewicht. Training: Sätze bearbeiten, abhaken, abschließen. Mehr: Gesundheitsjournal, Ziele und Sicherungen. Barcode braucht Internet; alles andere funktioniert offline.</p>`,
+      `<h3>Dein Alltag, ohne Abo.</h3><p>Version 0.5.0 · Offline-Tagebuch für Erwachsene. Keine Werbung, Telemetrie, Konten oder kostenpflichtigen KI-Dienste.</p><h3>Datenschutz</h3><p>Deine Daten liegen im privaten App-Speicher. Android-Cloud-Backup ist deaktiviert. Die App setzt die Gerätesperre voraus; sie bietet keine eigene Verschlüsselung oder PIN. Exportdateien sind unverschlüsselt. Deinstallation entfernt lokale Daten. Sichere regelmäßig.</p><h3>Health Connect</h3><p>Optional Schritte, Schlafdauer und Gewicht lesen. Eigene Gewichte nur nach Vorschau ausdrücklich teilen. Freigaben lassen sich in Android widerrufen. Lokale Importkopien kannst du unter Schritte & Erholung entfernen; bereits geteilte Werte verwaltest du in Health Connect.</p><h3>Barcode & Kamera</h3><p>Nur nach deiner Aktion wird ein Barcode an world.openfoodfacts.org gesendet (einschließlich technisch notwendiger IP-Adresse). Kamerabilder verlassen das Gerät nicht. Kein automatisches Foto-Kalorienschätzen.</p><h3>Quellen & Lizenzen</h3><p>Produktdaten: Open Food Facts (opendatacommons.org/licenses/odbl/1-0/). Datenbank ODbL, einzelne Inhalte Database Contents License. Eigene Lebensmittel sind getrennt gekennzeichnet. Prüfe die Verpackung, insbesondere Portionsgrößen und Allergene. Die App beurteilt keine Allergensicherheit.</p><p>Barcode-Erkennung: ZXing / JourneyApps (Apache 2.0). AndroidX (Apache 2.0). Vollständige Hinweise im Repository.</p>${btn("Lizenztexte offline lesen", "licenses", "secondary")}<h3>Gesundheit</h3><p>Kalorienformel: Mifflin–St. Jeor (1990), Schätzung mit individuell gewähltem Aktivitätsfaktor. Bewegungsvorlagen orientieren sich an allgemeinen NHS-Empfehlungen. Keine Diagnose, Überwachung, Notfallerkennung oder garantierte Gewichtsabnahme. Gesundheitseinträge werden nicht medizinisch bewertet.</p><h3>Bedienung</h3><p>Essen: Lebensmittel wählen, Gramm eingeben, speichern. Einträge antippen zum Bearbeiten. Verlauf: pro Datum ein Gewicht. Training: Sätze bearbeiten, abhaken, abschließen. Mehr: Gesundheitsjournal, Ziele und Sicherungen. Barcode braucht Internet; alles andere funktioniert offline.</p>`,
     ),
 };
 document.addEventListener("click", (e) => {
@@ -1244,7 +1261,10 @@ document.addEventListener("submit", (e) => {
         break;
       case "reset":
         if (d.confirm !== "LÖSCHEN") throw Error("Bitte LÖSCHEN eingeben.");
-        ok = commit((s) => { for (const key of Object.keys(s)) delete s[key]; Object.assign(s, emptyState()); }, true);
+        ok = commit((s) => {
+          for (const key of Object.keys(s)) delete s[key];
+          Object.assign(s, emptyState());
+        }, true);
         if (ok) healthUI.invalidatePending();
         break;
     }

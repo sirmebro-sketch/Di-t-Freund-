@@ -47,6 +47,6 @@ test('research lasts through breaks, completes exactly once, and repeats without
 test('old game migration adds an empty career without retroactive rewards; unavailable regions stay unavailable',()=>{
  const s={...emptyState(),game:newGame(4,'2026-01-01')};routine(s,'2026-01-01');const xp=s.game.collection[0].xp;delete s.game.career;
  const migrated=parseBackup(JSON.stringify(s));assert.equal(migrated.game.collection[0].xp,xp);assert.equal(migrated.game.career.research,0);
- assert.equal(catalogSize(),151);assert.equal(pack('kanto').generation,1);assert.throws(()=>pack('johto'));
- assert.equal(careerRank({research:600}).level,11);assert.throws(()=>validateCareer({...migrated.game.career,activeRegion:'johto'}));
+ assert.equal(catalogSize(),251);assert.equal(pack('kanto').generation,1);assert.equal(pack('johto').generation,2);assert.throws(()=>pack('hoenn'));
+ assert.equal(careerRank({research:600}).level,11);assert.throws(()=>validateCareer({...migrated.game.career,activeRegion:'hoenn'}));
 });

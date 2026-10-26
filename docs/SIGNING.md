@@ -1,6 +1,6 @@
 # Dauerhafte Android-Signatur
 
-Ab 0.4.1 ist ein fester RSA-4096-Signaturschlüssel vorgesehen. Der private Schlüssel liegt ausdrücklich NICHT im Repository, auch nicht in versteckten Dateien. `signing/certificate-sha256.txt` enthält nur den öffentlichen SHA-256-Fingerabdruck des Zertifikats. Alias: `diaetfreund-release`, Storetyp PKCS12, Laufzeit etwa 50 Jahre.
+Seit 0.4.1 ist ein fester RSA-4096-Signaturschlüssel eingerichtet. Der Signierjob hat erfolgreich eine verifizierte APK mit dem festgelegten Zertifikat erstellt. Der private Schlüssel liegt ausdrücklich NICHT im Repository, auch nicht in versteckten Dateien. `signing/certificate-sha256.txt` enthält nur den öffentlichen SHA-256-Fingerabdruck des Zertifikats. Alias: `diaetfreund-release`, Storetyp PKCS12, Laufzeit etwa 50 Jahre.
 
 ## Einmalige Einrichtung durch den Eigentümer
 

@@ -44,3 +44,12 @@ Browser-/Unit-Tests ersetzen weder reale Android-Kamera-/SAF-Tests noch medizini
 - `tests/kanto-ui.mjs`: Migration eines 0.2-Spielstands, 151 geladene Bilder, Nummer-/Namens-/Typ-/Statusfilter, Evoli-Auswahl, 23 Reiseziele, acht Orden, fünf Liga-Gegner, vollständiger Pokédex, 360-Pixel-Dialoge, ausgewählte helle/dunkle Ansichten ohne axe WCAG2 A/AA-Verstöße.
 - Alle bestehenden Browserabläufe weiter erfolgreich. Pokédex und Ordenseite visuell kontrolliert. Gerätetests weiterhin offen (READINESS.md).
 - CI 0.2: Android erfolgreich, alle drei Browser-Skripte meldeten PASS; der Interface-Job wurde nach langsamer Systempaketinstallation am Zeitlimit abgebrochen. 0.3 lädt Chromium ohne unnötige apt-Aktualisierung auf dem vorbereiteten Runner und beendet den Testserver explizit.
+
+## Version 0.5 · Johto und Mahlzeitenvorlagen
+
+- Lokal 45 Unit-Tests bestanden. Für jeden Johto-Starter jeweils 250 synthetische Tage in Kanto und 250 in Johto: 251 Entdeckungen, beide vollständigen Ordenreihen und Ligen, Kanto-Fortschritt unverändert, gültiger Sicherungs-Roundtrip.
+- Regionswechsel bringt weder doppelte Tagespunkte noch doppelte Starter; alte 0.4-Spielstände übernehmen ihre Punkte vollständig nach Kanto. Legendäre Johto-Begegnungen bleiben vor ihren Bedingungen gesperrt.
+- Vorlagen speichern Quellen und Mikronährstoff-Unbekanntwerte; Portionsberechnung, alte Sicherungen und fehlerhafte Importdaten geprüft. Ungültige Mengen, Datumswerte oder IDs dürfen keine Teilbuchung erzeugen.
+- Alle sechs Browser-Skripte lokal bestanden. Neu `tests/johto-meals-ui.mjs`: Reisen, 100 Johto-Sprites, 251er-Filter, 20 Reiseziele, acht Orden, legendäre Hinweise; Mahlzeit speichern, skalieren, mit Dezimalkomma ändern, wiederverwenden, umbenennen und entfernen, Zustand nach Neuladen. 360-Pixel-Ansichten und ausgewählte helle/dunkle Dialoge ohne automatisch erkannte axe WCAG2 A/AA-Verstöße. Regionsauswahl und Mahlzeitenvorschau visuell geprüft.
+- CI führt dieselben Unit-/Browser-Tests aus, baut Debug und Release, prüft beide mit Android Lint und signiert erst danach mit dem festen Zertifikat.
+- Offen: tatsächliches Update über die signierte 0.4.1 auf dem Smartphone, Android-TalkBack/Systemschrift, Kamera/Dateidialoge und echte Samsung-Health-/Health-Connect-Daten. Browser-Nativaufrufe sind simuliert.

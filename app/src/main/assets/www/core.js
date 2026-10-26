@@ -1,3 +1,4 @@
+import { validateTemplates } from "./meal-templates.js";
 import { validateConnection } from "./health-sync.js";
 import { validateGame, migrateGame } from "./game.js";
 import { micros, parseMicros, recipeMicros } from "./micros.js";
@@ -24,6 +25,7 @@ export const emptyState = () => ({
   version: VERSION,
   profile: null,
   foods: [],
+  mealTemplates: [],
   entries: [],
   weights: [],
   health: [],
@@ -219,6 +221,7 @@ export function validateState(s) {
     if (f.foodId !== undefined) assert(text(f.foodId, 100));
     if (f.barcode !== undefined) assert(/^\d{8,14}$/.test(f.barcode));
   }
+  validateTemplates(s.mealTemplates, food);
   s.foods.forEach(food);
   s.entries.forEach((e) => {
     food(e);

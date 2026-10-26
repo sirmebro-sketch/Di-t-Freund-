@@ -42,7 +42,7 @@ await page.locator('[data-action="game-expedition"][data-kind="forest"]').click(
 assert.equal((await read()).game.career.expedition.kind,'forest');
 assert.match(await page.locator('#sheet').innerText(),/0\/18/);
 assert.equal(await page.locator('[data-action="game-theme"][data-theme="night"]').isDisabled(),true);
-assert.match(await page.locator('#sheet').innerText(),/Johto.*Generation 2/);
+assert.match(await page.locator('#sheet').innerText(),/Kanto und Johto sind installiert/);
 await page.setViewportSize({width:360,height:800});assert.equal(await page.locator('#sheet').evaluate(e=>e.scrollWidth<=e.clientWidth+1),true);
 await page.screenshot({path:'test-results/career.png'});await click('close');
 await page.locator('.bottom-nav [data-tab="more"]').click();await click('theme');await click('hc-open');await axe('connection dark');
