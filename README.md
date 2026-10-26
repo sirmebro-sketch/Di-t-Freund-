@@ -11,7 +11,18 @@ Ein ruhiger, deutschsprachiger Android-Begleiter für Ernährung, Gewicht, Kraft
 
 Android 8.0 oder neuer, aktuelles Android System WebView. Das ist ein persönlicher Testbuild, keine Play-Store-Veröffentlichung. Seit 0.4.1 ist die feste Release-Signatur eingerichtet und erfolgreich geprüft. Der private Schlüssel wird über GitHub-Actions-Secrets eingebunden; ohne eingerichtete Secrets gibt es kein installierbares Release-Artifact. Einmalige Einrichtung und Umstieg von bisherigen Debug-APKs: [Signierung](docs/SIGNING.md). Vor diesem einmaligen Wechsel JSON sichern. Künftige gleich signierte Updates über die bestehende App installieren.
 
-## Neu in 0.5.0 · Johto & gespeicherte Mahlzeiten
+## Neu in 0.6.0 · Dein Trainer-Tagebuch
+
+- **Gesamte App im Gen-IV-Stil:** Originalsprites, Menüicons und Umgebung aus HeartGold/SoulSilver, passende Touchflächen, Dialoge und Hell-/Dunkelmodus. Die Inhalte bleiben Kanto + Johto, insgesamt 251 Pokémon.
+- **Klarere Wege:** Heute · Essen · Training · Reise · Profil. Tages-Check-in an einem Ort; Ziele und Voraussetzungen im Profil, Messwerte separat. Seltenere Essen-Werkzeuge sind zusammengefasst.
+- **Sichtbarer Fortschritt:** Begleiter/Level/EP auf den Hauptseiten, bleibender Trainerpass und eigene Rückmeldungen für neue EP, Fänge, Entwicklungen und Orden. Weiterhin drei Routinen insgesamt, Erholung gleichwertig, keine Verluste bei Pausen.
+- **Nährwerttabelle fotografieren:** lokale Offline-OCR mit Kamera-/Fotoauswahl und Ausschnitt. Erkannte Energie- und Makrowerte prüfen, Bezugsmenge/Spalte bestätigen, Portion eintragen. Kein Foto-Upload oder KI-Abo. Unsichere Angaben werden nicht still erfunden.
+- **Barcode mit einem Tippen:** Kamera direkt öffnen, bekannte Produkte offline wiederverwenden; bei fehlenden Daten Foto oder manuelle Eingabe.
+- **Schrittimport überarbeitet:** Tagesaggregation statt vieler Einzelabfragen, getrennte Fehlerbehandlung für Schritte/Schlaf/Gewicht, sofortiger Abgleich nach Freigabe und beim Zurückkehren. Verständliche Verbindungsdiagnose. Der tatsächliche Samsung-Import muss auf dem Gerät geprüft werden.
+
+Details und Grenzen: [Update 0.6](docs/UPDATE-0.6.md). Identische Release-Signatur; versionCode 7. Über die signierte vorherige Version installieren, nicht deinstallieren.
+
+## Seit 0.5.0 · Johto & gespeicherte Mahlzeiten
 
 - **Johto ist spielbar:** 100 zusätzliche Pokémon mit deutschen Namen und offline gebündelten Originalsprites. Zusammen 251 im nationalen Pokédex, mit Regionsfilter.
 - **Eine eigene Reise:** 20 Stationen, Professor Lind, Rivale Silber, acht Johto-Arenen und fünf Liga-Begegnungen; besondere Bedingungen für Raikou, Entei, Suicune, Lugia, Ho-Oh und Celebi.
@@ -69,7 +80,7 @@ Inoffizieller Pokémon-Fan-Spielteil mit vereinfachten Regeln, kein vollständig
 
 ## Bewusste Grenzen
 
-Kein eigener Sensor-Schrittzähler, kein direkter Wearable-Zugriff, keine Hintergrundbenachrichtigungen, kein Cloud-Sync, keine Foto-Kalorienerkennung, keine medizinische Auswertung. Barcode-Daten brauchen Internet; Kernfunktionen nicht. Kein eigener PIN-/Biometrieschutz, keine zusätzliche Datenbankverschlüsselung: Gerätesperre verwenden. Sicherungen enthalten Gesundheitsdaten **unverschlüsselt**. App-Deinstallation löscht lokale Daten.
+Kein eigener Sensor-Schrittzähler, kein direkter Wearable-Zugriff, keine Hintergrundbenachrichtigungen, kein Cloud-Sync, keine Kalorienschätzung von Tellerfotos, keine medizinische Auswertung. Barcode-Daten brauchen Internet; Kernfunktionen nicht. Kein eigener PIN-/Biometrieschutz, keine zusätzliche Datenbankverschlüsselung: Gerätesperre verwenden. Sicherungen enthalten Gesundheitsdaten **unverschlüsselt**. App-Deinstallation löscht lokale Daten.
 
 Das ist eine erste Implementierung und kein behauptet perfektes oder medizinisch validiertes Produkt. Android-Gerätetests für Kamera, Dateidialoge, Prozesswiederherstellung und Bedienhilfen sind vor einer öffentlichen Veröffentlichung erforderlich. Details: [Testplan](docs/TESTING.md), [Entscheidungen](docs/PRODUCT.md), [Datenschutz](docs/PRIVACY.md), [Quellen und Lizenzen](docs/SOURCES.md).
 

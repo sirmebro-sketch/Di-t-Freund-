@@ -31,7 +31,11 @@ export function validateConnection(c) {
     c.weights.length > 5000
   )
     throw Error("Ungültige Health-Connect-Daten.");
-  if(c.statusText!==undefined&&(typeof c.statusText!=="string"||c.statusText.length>2000))throw Error("Ungültiger Verbindungsstatus.");
+  if (
+    c.statusText !== undefined &&
+    (typeof c.statusText !== "string" || c.statusText.length > 2000)
+  )
+    throw Error("Ungültiger Verbindungsstatus.");
   for (const [d, v] of Object.entries(c.days)) {
     if (
       !validDate(d) ||
@@ -70,7 +74,7 @@ export function applyHealthSnapshot(state, payload) {
     !Array.isArray(payload.weights) ||
     !Array.isArray(payload.read) ||
     !payload.read.length ||
-    !payload.read.every(t => ["steps", "sleep", "weight"].includes(t)) ||
+    !payload.read.every((t) => ["steps", "sleep", "weight"].includes(t)) ||
     !validDate(payload.from) ||
     !validDate(payload.to) ||
     payload.from > payload.to ||
@@ -112,8 +116,14 @@ export function applyHealthSnapshot(state, payload) {
       ...payload.weights,
     ];
   // Keep a bounded local cache without making long-term use fail after one year.
-  next.days = Object.fromEntries(Object.entries(next.days).sort(([a], [b]) => a.localeCompare(b)).slice(-366));
-  next.weights = next.weights.sort((a,b) => a.time.localeCompare(b.time)).slice(-5000);
+  next.days = Object.fromEntries(
+    Object.entries(next.days)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .slice(-366),
+  );
+  next.weights = next.weights
+    .sort((a, b) => a.time.localeCompare(b.time))
+    .slice(-5000);
   next.lastSync = payload.at;
   validateConnection(next);
   state.healthConnect = next;

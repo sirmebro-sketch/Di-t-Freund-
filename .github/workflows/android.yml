@@ -59,6 +59,7 @@ jobs:
           node tests/kanto-ui.mjs
           node tests/health-ui.mjs
           node tests/johto-meals-ui.mjs
+          node tests/update06-ui.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

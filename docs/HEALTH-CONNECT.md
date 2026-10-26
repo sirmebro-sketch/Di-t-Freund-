@@ -29,3 +29,12 @@ Offizielle Grundlagen (abgerufen 26.10.2026):
 - https://developer.android.com/health-and-fitness/health-connect/get-started
 - https://developer.android.com/health-and-fitness/health-connect/aggregate-data
 - https://developer.android.com/health-and-fitness/health-connect/write-data
+
+
+## Fehlerdiagnose ab 0.6
+
+Nach einer Freigabe wird sofort gelesen. Bei „Jetzt aktualisieren“ werden bereits extern erteilte Freigaben erkannt, auch wenn die alte App-Auswahl leer war. Beim Zurückkehren aus Samsung Health/Android-Einstellungen gibt es einen nativen Vordergrund-Hook; automatische Abfragen bleiben auf mindestens fünf Minuten Abstand begrenzt.
+
+Schritte und Schlaf werden je Datentyp als lokale Kalendertage aggregiert. Dadurch entfallen bis zu 60 Einzelabfragen; ein Schlaffehler verwirft keine erfolgreichen Schritte. Die Aggregation verwendet die Quellenpriorität von Health Connect, keine rohe Addition möglicherweise überlappender Telefon-/Uhrdaten. Die Verbindungsansicht nennt gelieferte Schrittquellen, fehlende Freigaben oder leere Ergebnisse.
+
+Wenn weiterhin keine Schritte erscheinen: Samsung Health öffnen, dort Schreiben von Schritten erlauben; in Health Connect unter Daten → Aktivität → Schritte prüfen, ob für heute tatsächlich Einträge vorhanden sind. DiätFreund muss Schritte lesen dürfen. Danach in DiätFreund aktualisieren. Die App kann den Export von Samsung Health nicht erzwingen. Alte importierte Werte bleiben bei einem Lesefehler erhalten und tragen weiterhin ihren alten Abgleichzeitpunkt.

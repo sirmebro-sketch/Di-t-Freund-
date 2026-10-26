@@ -53,3 +53,10 @@ Browser-/Unit-Tests ersetzen weder reale Android-Kamera-/SAF-Tests noch medizini
 - Alle sechs Browser-Skripte lokal bestanden. Neu `tests/johto-meals-ui.mjs`: Reisen, 100 Johto-Sprites, 251er-Filter, 20 Reiseziele, acht Orden, legendäre Hinweise; Mahlzeit speichern, skalieren, mit Dezimalkomma ändern, wiederverwenden, umbenennen und entfernen, Zustand nach Neuladen. 360-Pixel-Ansichten und ausgewählte helle/dunkle Dialoge ohne automatisch erkannte axe WCAG2 A/AA-Verstöße. Regionsauswahl und Mahlzeitenvorschau visuell geprüft.
 - CI führt dieselben Unit-/Browser-Tests aus, baut Debug und Release, prüft beide mit Android Lint und signiert erst danach mit dem festen Zertifikat.
 - Offen: tatsächliches Update über die signierte 0.4.1 auf dem Smartphone, Android-TalkBack/Systemschrift, Kamera/Dateidialoge und echte Samsung-Health-/Health-Connect-Daten. Browser-Nativaufrufe sind simuliert.
+
+
+## Version 0.6
+
+50 Unit-Tests einschließlich Nährwert-OCR-Parser (kJ/kcal, zwei Spalten, Portionsumrechnung, fehlende Einheiten, Konflikte, unbekannte Werte). Bestehende sechs Browser-Skripte sowie `update06-ui.mjs` prüfen Gen-IV-Navigation, Foto-Bridge mit simuliertem Text, Bestätigung vor Übernahme, Barcode-Direktstart, Belohnung ohne Doppelvergabe, externe Health-Connect-Freigaben, Vordergrund-Rückkehr, Fehlererhalt und 360-Pixel-/Hell-/Dunkelansichten mit axe.
+
+Erster Android-Prüflauf für die neue native OCR und aggregierten Health-Abfragen: Build Debug/Release und beide Lint-Varianten erfolgreich (Actions 40304417355). Desktop-Tesseract mit demselben deutschen Modell an einer synthetischen Tabelle erprobt; ein falsch gelesenes Grammzeichen hat eine zusätzliche Parserprüfung ausgelöst. Native Android-Kamera, Touch-Ausschnitt und echter Samsung-Schrittimport sind weiterhin nicht am physischen Gerät abgenommen.
