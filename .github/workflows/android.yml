@@ -62,6 +62,7 @@ jobs:
           node tests/update06-ui.mjs
           node tests/catalogue-personal-ui.mjs
           node tests/training-atmosphere-ui.mjs
+          node tests/audio-navigation-ui.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

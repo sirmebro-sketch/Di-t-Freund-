@@ -11,7 +11,11 @@ Ein ruhiger, deutschsprachiger Android-Begleiter für Ernährung, Gewicht, Kraft
 
 Android 8.0 oder neuer, aktuelles Android System WebView. Das ist ein persönlicher Testbuild, keine Play-Store-Veröffentlichung. Seit 0.4.1 ist die feste Release-Signatur eingerichtet und erfolgreich geprüft. Der private Schlüssel wird über GitHub-Actions-Secrets eingebunden; ohne eingerichtete Secrets gibt es kein installierbares Release-Artifact. Einmalige Einrichtung und Umstieg von bisherigen Debug-APKs: [Signierung](docs/SIGNING.md). Vor diesem einmaligen Wechsel JSON sichern. Künftige gleich signierte Updates über die bestehende App installieren.
 
-## Neu in 0.7.1 · FitDex
+## Neu in 0.7.2 · Musik ohne Menü-Unterbrechung
+
+Musik und kurze Effekte verwenden jetzt dieselbe Audioausgabe. Die Musikschleife läuft unabhängig vom Seitenaufbau weiter; Reiterwechsel, Menüs und Lautstärkeänderungen starten sie nicht neu. Bei App-Pause wird die Position gespeichert und beim nächsten bewussten Tippen fortgesetzt. versionCode 11, bisherige Signatur.
+
+## Seit 0.7.1 · FitDex
 
 Neuer Name, vom Eigentümer bereitgestelltes App-Icon und überarbeiteter Kopfbereich mit **FitDex · Ernährung · Training · Abenteuer**. Das Icon erscheint im Android-Launcher, beim Einstieg und in der App. Die Tonsteuerung bleibt direkt erreichbar. Datenschutzinformationen sind in den Einstellungen zu finden.
 

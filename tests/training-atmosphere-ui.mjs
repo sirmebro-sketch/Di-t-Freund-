@@ -8,7 +8,7 @@ const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(
 await page.addInitScript(()=>{
  window.failWrite=false;window.focusRequests=0;window.audioContexts=[];window.audioEvents=[];
  const RealContext=window.AudioContext;window.AudioContext=class extends RealContext{constructor(){super();window.audioContexts.push(this);}};
- const play=HTMLMediaElement.prototype.play;HTMLMediaElement.prototype.play=function(){window.audioEvents.push(this.src.slice(0,30));return play.call(this);};
+ const play=AudioBufferSourceNode.prototype.start;AudioBufferSourceNode.prototype.start=function(...args){if(!this.loop)window.audioEvents.push('effect');return play.apply(this,args);};
  window.Android={readState:()=>localStorage.getItem('diaetfreund-v1'),writeState:raw=>{if(window.failWrite)return false;localStorage.setItem('diaetfreund-v1',raw);return true;},requestAppAudioFocus:()=>{window.focusRequests++;return true;},abandonAppAudioFocus:()=>{}};
 });
 await page.goto(process.env.APP_URL||'http://127.0.0.1:4173');

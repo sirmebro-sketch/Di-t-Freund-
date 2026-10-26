@@ -28,28 +28,127 @@ export function scheduleNote(context,destination,note,at,beat) {
  osc.onended=()=>{osc.disconnect();gain.disconnect();};
  return osc;
 }
+// Render once: the audio device loops the score independently of DOM rendering.
+export async function renderMusic(track) {
+ const t=tracks[track],beat=60/t.bpm/2,rate=44100;
+ const offline=new OfflineAudioContext(1,Math.ceil(128*beat*rate),rate);
+ for(let step=0;step<128;step++)for(const note of scoreNotes(track,step))
+  scheduleNote(offline,offline.destination,note,step*beat,beat);
+ const buffer=await offline.startRendering(),samples=buffer.getChannelData(0);
+ // Smooth the boundary of the full musical loop, not navigation events.
+ const fade=Math.round(rate*.02);
+ for(let i=0;i<fade;i++){samples[i]*=i/fade;samples[samples.length-1-i]*=i/fade;}
+ return buffer;
+}
 export function setupAtmosphere({getState,commit,render,sheet,btn,select,num,notify}) {
- let context=null,master=null,loop=null,nextTime=0,step=0,unlocked=false,foreground=true,focus=true,playing=null,lastEffect=0,activeTrack=null,generation=0;
- const activeNotes=new Set();
+ let context=null,musicGain=null,effectsGain=null,resuming=null;
+ let unlocked=false,foreground=true,focus=false,lastEffect=0;
+ let music=null,musicTrack=null,musicOffset=0,musicStartedAt=0,musicEpoch=0,musicTask=null;
+ let effectSource=null,effectEpoch=0;
+ const scores=new Map(),effects=new Map();
+ const sources={...classicSounds,...platinum.sfx};
  const settings=()=>getState().audioSettings||{...defaultAudio(),effects:getState().game?.sound||false};
- function stop(){generation++;for(const note of activeNotes){try{note.stop();}catch{}}activeNotes.clear();clearInterval(loop);loop=null;playing?.pause();playing=null;if(context&&context.state==='running')context.suspend().catch(()=>{});}
- function hasFocus(){if(!window.Android?.requestAppAudioFocus)return true;try{return !!window.Android.requestAppAudioFocus();}catch{return false;}}
- function start(){const a=settings();if(!unlocked||!foreground||document.hidden||!focus||!a.music)return;
-  if(!context){const C=window.AudioContext||window.webkitAudioContext;if(!C)return;context=new C();master=context.createGain();master.connect(context.destination);}
-  master.gain.value=a.musicVolume/100;
-  if(activeTrack!==a.track){step=0;activeTrack=a.track;}
-  if(loop)return;
-  const ticket=generation;context.resume().then(()=>{if(ticket!==generation||loop||!settings().music||!foreground||!focus)return;nextTime=context.currentTime+.06;const tick=()=>{const a=settings();if(!a.music||!foreground||document.hidden||!focus){stop();return;}master.gain.value=a.musicVolume/100;const beat=60/tracks[a.track].bpm/2;if(nextTime<context.currentTime-.2)nextTime=context.currentTime+.03;while(nextTime<context.currentTime+.25){scoreNotes(a.track,step).forEach(n=>{const note=scheduleNote(context,master,n,nextTime,beat);activeNotes.add(note);note.addEventListener("ended",()=>activeNotes.delete(note),{once:true});});nextTime+=beat;step=(step+1)%128;}};tick();loop=setInterval(tick,100);}).catch(()=>{});
+ const canPlay=()=>unlocked&&foreground&&!document.hidden&&focus;
+ function ensureContext(){
+  if(context)return context;
+  const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;
+  context=new C();musicGain=context.createGain();effectsGain=context.createGain();
+  musicGain.connect(context.destination);effectsGain.connect(context.destination);
+  updateGains();return context;
  }
- function unlock(){if(document.hidden||!foreground)return;const a=settings();if(!a.music&&!a.effects)return;focus=hasFocus();if(!focus)return;unlocked=true;start();}
- function effect(key){const a=settings();if(!a.effects||!unlocked||!focus||!foreground||document.hidden||Date.now()-lastEffect<90)return;const map={...classicSounds,hit:platinum.sfx.hit,heal:platinum.sfx.heal,recall:platinum.sfx.recall,bubble:platinum.sfx.bubble};const url=map[key]||classicSounds.menu;if(!url)return;lastEffect=Date.now();playing?.pause();playing=new Audio(url);playing.volume=a.effectsVolume/100;playing.play().catch(()=>{});}
+ function updateGains(){if(!context)return;const a=settings();musicGain.gain.value=a.musicVolume/100;effectsGain.gain.value=a.effectsVolume/100;}
+ function resumeContext(){
+  if(!canPlay()||!ensureContext())return Promise.resolve(false);
+  if(context.state==='running')return Promise.resolve(true);
+  if(!resuming){
+   const pending=context.resume().then(()=>canPlay()&&context.state==='running',()=>false);
+   resuming=pending;pending.finally(()=>{if(resuming===pending)resuming=null;});
+  }
+  return resuming;
+ }
+ function stopMusic(reset=false){
+  musicEpoch++;musicTask=null;
+  if(music){
+   if(!reset)musicOffset=(musicOffset+Math.max(0,context.currentTime-musicStartedAt))%music.buffer.duration;
+   try{music.stop();}catch{}music.disconnect();music=null;
+  }
+  if(reset)musicOffset=0;
+ }
+ function stopEffects(){
+  effectEpoch++;
+  if(effectSource){try{effectSource.stop();}catch{}effectSource.disconnect();effectSource=null;}
+ }
+ function stop(){
+  unlocked=false;focus=false;stopMusic();stopEffects();
+  // Also queue a suspension if a gesture-triggered resume is still pending.
+  if(context&&context.state!=='closed')context.suspend().catch(()=>{});
+ }
+ function requestFocus(){
+  if(focus)return true;
+  try{focus=window.Android?.requestAppAudioFocus?!!window.Android.requestAppAudioFocus():true;}
+  catch{focus=false;}
+  return focus;
+ }
+ function releaseFocus(){focus=false;try{window.Android?.abandonAppAudioFocus?.();}catch{}}
+ function startMusic(){
+  const a=settings();if(!canPlay()||!a.music||context?.state!=='running')return;
+  updateGains();
+  if(musicTrack!==a.track){stopMusic(true);musicTrack=a.track;}
+  if(music||musicTask)return;
+  const ticket=musicEpoch,track=a.track;
+  if(!scores.has(track))scores.set(track,renderMusic(track).catch(e=>{scores.delete(track);throw e;}));
+  const task=scores.get(track).then(buffer=>{
+   if(ticket!==musicEpoch||!canPlay()||!settings().music||settings().track!==track||context.state!=='running')return;
+   const source=context.createBufferSource();source.buffer=buffer;source.loop=true;
+   source.connect(musicGain);musicOffset%=buffer.duration;musicStartedAt=context.currentTime;
+   source.start(0,musicOffset);music=source;
+  }).catch(()=>{notify('Musik konnte nicht gestartet werden. Bitte erneut über ♪ Ton versuchen.');});
+  musicTask=task;task.finally(()=>{if(musicTask===task)musicTask=null;});
+ }
+ function unlock(){
+  if(document.hidden||!foreground)return;
+  const a=settings();if((!a.music&&!a.effects)||!requestFocus())return;
+  unlocked=true;updateGains();
+  resumeContext().then(ready=>{if(ready)startMusic();});
+ }
+ function effect(key){
+  const a=settings();if(!a.effects||!canPlay()||Date.now()-lastEffect<90)return;
+  const url=sources[key]||sources.menu;if(!url||!ensureContext())return;
+  lastEffect=Date.now();const ticket=++effectEpoch;
+  if(!effects.has(url)){
+   const bytes=Uint8Array.from(atob(url.split(',')[1]),c=>c.charCodeAt(0));
+   effects.set(url,context.decodeAudioData(bytes.buffer).catch(e=>{effects.delete(url);throw e;}));
+  }
+  Promise.all([resumeContext(),effects.get(url)]).then(([ready,buffer])=>{
+   if(!ready||ticket!==effectEpoch||!canPlay()||!settings().effects||context.state!=='running')return;
+   if(effectSource){try{effectSource.stop();}catch{}effectSource.disconnect();}
+   const source=context.createBufferSource();source.buffer=buffer;source.connect(effectsGain);
+   source.onended=()=>{source.disconnect();if(effectSource===source)effectSource=null;};
+   updateGains();source.start();effectSource=source;
+  }).catch(()=>{});
+ }
  function view(){const a=settings();sheet('Musik & Klänge',`<p>Drei eigene Retro-Begleitstücke und kurze Originaleffekte aus Pokémon. Alles offline. Musik startet erst nach deinem Tippen und pausiert beim Verlassen der App.</p><form data-form="audio-settings"><label class="checkbox"><input name="music" type="checkbox" ${a.music?'checked':''}> Hintergrundmusik</label><label class="checkbox"><input name="effects" type="checkbox" ${a.effects?'checked':''}> Menü-, Kampf- und Fortschrittsklänge</label>${select('Musikstück','track',Object.entries(tracks).map(([id,t])=>[id,t.name]),a.track)}${num('Musiklautstärke · %','musicVolume',a.musicVolume,0,100,1)}${num('Effektlautstärke · %','effectsVolume',a.effectsVolume,0,100,1)}<p class="error" role="alert"></p><button type="submit" class="primary wide">Übernehmen & anhören</button></form><div class="toolbar">${btn('Alles stumm','audio-mute','secondary')}${btn('Effekt testen','audio-test','secondary')}</div><p class="footnote">Musik: eigene Kompositionen, keine Original-Soundtrackaufnahmen. Grafiken/SFX: Pokémon © Nintendo / Creatures / GAME FREAK; Quellen in der Hilfe.</p>`);}
- function apply(d){const a={music:d.music==='on',effects:d.effects==='on',track:d.track,musicVolume:Number(d.musicVolume),effectsVolume:Number(d.effectsVolume)};validateAudio(a);if(commit(s=>{s.audioSettings=a;if(s.game)s.game.sound=a.effects;})){stop();unlocked=true;focus=(a.music||a.effects)?hasFocus():false;start();effect('menu');if(!a.music&&!a.effects)window.Android?.abandonAppAudioFocus?.();render();return true;}return false;}
+ function apply(d){
+  const a={music:d.music==='on',effects:d.effects==='on',track:d.track,musicVolume:Number(d.musicVolume),effectsVolume:Number(d.effectsVolume)};
+  validateAudio(a);const before=settings();
+  if(!commit(s=>{s.audioSettings=a;if(s.game)s.game.sound=a.effects;}))return false;
+  if(a.track!==before.track)stopMusic(true);
+  else if(!a.music)stopMusic();
+  if(!a.effects)stopEffects();
+  updateGains();
+  if(!a.music&&!a.effects){stop();releaseFocus();}
+  else{unlock();effect('menu');}
+  render();return true;
+ }
  document.addEventListener('pointerdown',unlock,{passive:true});document.addEventListener('keydown',unlock);
- document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});
+ document.addEventListener('visibilitychange',()=>{if(document.hidden){stop();releaseFocus();}});
  window.onAppPause=()=>{foreground=false;stop();};
  window.onAudioFocusChanged=granted=>{focus=!!granted;if(!focus)stop();};
  const previousResume=window.onAppResume;window.onAppResume=()=>{foreground=true;previousResume?.();};
- const actions={'audio-open':view,'audio-mute':()=>{if(commit(s=>{s.audioSettings={...settings(),music:false,effects:false};if(s.game)s.game.sound=false;})){stop();window.Android?.abandonAppAudioFocus?.();view();render();}},'audio-test':()=>{unlock();if(!settings().effects)notify('Aktiviere Effekte und übernimm die Einstellung.');else effect('heal');}};
- return {actions,apply,effect,stop,unlock,settings,refresh:()=>{if(!settings().music)stop();else start();}};
+ const actions={
+  'audio-open':view,
+  'audio-mute':()=>{if(commit(s=>{s.audioSettings={...settings(),music:false,effects:false};if(s.game)s.game.sound=false;})){stop();releaseFocus();view();render();}},
+  'audio-test':()=>{unlock();if(!settings().effects)notify('Aktiviere Effekte und übernimm die Einstellung.');else effect('heal');},
+ };
+ return {actions,apply,effect,stop,unlock,settings,refresh:()=>{updateGains();if(!settings().music)stopMusic();else startMusic();}};
 }

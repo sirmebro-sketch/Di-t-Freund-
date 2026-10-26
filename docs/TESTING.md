@@ -68,3 +68,7 @@ Erster Android-Prüflauf für die neue native OCR und aggregierten Health-Abfrag
 ## Ergänzung 0.7.0
 
 `node tests/training-atmosphere-ui.mjs` bei laufendem lokalen Server ergänzt flexible Einheiten, Gerätefilter, Satzgruppen, Zeitübungen, eigene Pläne, Reload, fehlgeschlagene Writes, Journalabschluss, Audiopause/Fokusverlust, tatsächliches Rendern aller drei Musikstücke und geladene Hintergrundgrafiken. `npm test` enthält vier weitere Domänentests (insgesamt 61). Signierte Android-Installation und Audiofokus auf echtem Gerät separat prüfen.
+
+## Ergänzung 0.7.2
+
+`node tests/audio-navigation-ui.mjs` ergänzt einen Regressionstest mit echtem Web Audio und simuliertem Android-Audiofokus. Die alte HTML-Media-Effektwiedergabe löst im Test Fokusverlust aus und lässt die Prüfung fehlschlagen. Geprüft werden durchgehende Musikquelle bei Navigation und Lautstärkeänderung, gemeinsame Musik-/Effektausgabe, gespeicherter Offset nach Pause, Fokusverweigerung, bewusster Titelwechsel, Stummschaltung und keine verspäteten Effekte nach Pause. Damit laufen zehn Browser-Testprogramme. Die Fokus-Simulation ersetzt keinen Samsung-Gerätetest.
