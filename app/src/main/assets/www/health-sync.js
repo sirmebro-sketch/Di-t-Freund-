@@ -26,7 +26,7 @@ export function validateConnection(c) {
         Number.isFinite(Date.parse(c.lastSync)))
     ) ||
     !obj(c.days) ||
-    Object.keys(c.days).length > 366 ||
+    Object.keys(c.days).length > 3660 ||
     !Array.isArray(c.weights) ||
     c.weights.length > 5000
   )
@@ -119,7 +119,7 @@ export function applyHealthSnapshot(state, payload) {
   next.days = Object.fromEntries(
     Object.entries(next.days)
       .sort(([a], [b]) => a.localeCompare(b))
-      .slice(-366),
+      .slice(-3660),
   );
   next.weights = next.weights
     .sort((a, b) => a.time.localeCompare(b.time))

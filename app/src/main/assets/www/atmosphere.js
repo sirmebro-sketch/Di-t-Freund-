@@ -1,3 +1,4 @@
+import {readCustomMusic,removeCustomMusic,decodeMusicFile,saveCustomMusic} from './custom-music.js';
 import {defaultAudio, validateAudio} from './atmosphere-settings.js';
 export {defaultAudio, validateAudio} from './atmosphere-settings.js';
 import { sounds as classicSounds } from './game-assets.js';
@@ -40,14 +41,16 @@ export async function renderMusic(track) {
  for(let i=0;i<fade;i++){samples[i]*=i/fade;samples[samples.length-1-i]*=i/fade;}
  return buffer;
 }
-export function setupAtmosphere({getState,commit,render,sheet,btn,select,num,notify}) {
+export function setupAtmosphere({getState,commit,render,sheet,btn,select,num,notify,esc}) {
  let context=null,musicGain=null,effectsGain=null,resuming=null;
- let unlocked=false,foreground=true,focus=false,lastEffect=0;
+ let unlocked=false,foreground=true,focus=false;
  let music=null,musicTrack=null,musicOffset=0,musicStartedAt=0,musicEpoch=0,musicTask=null;
  let effectSource=null,effectEpoch=0;
  const scores=new Map(),effects=new Map();
+ let customInfo=null,importEpoch=0;
+ readCustomMusic().then(info=>{customInfo=info||null;}).catch(()=>{});
  const sources={...classicSounds,...platinum.sfx};
- const settings=()=>getState().audioSettings||{...defaultAudio(),effects:getState().game?.sound||false};
+ const settings=()=>({...defaultAudio(),...getState().audioSettings,effects:getState().audioSettings?.effects??defaultAudio().effects});
  const canPlay=()=>unlocked&&foreground&&!document.hidden&&focus;
  function ensureContext(){
   if(context)return context;
@@ -96,40 +99,65 @@ export function setupAtmosphere({getState,commit,render,sheet,btn,select,num,not
   if(musicTrack!==a.track){stopMusic(true);musicTrack=a.track;}
   if(music||musicTask)return;
   const ticket=musicEpoch,track=a.track;
-  if(!scores.has(track))scores.set(track,renderMusic(track).catch(e=>{scores.delete(track);throw e;}));
+  if(!scores.has(track)){const load=track==='custom'?readCustomMusic().then(info=>{if(!info)throw Error('Bitte deine Musikdatei erneut auswählen.');customInfo=info;return decodeMusicFile(info.blob,context);}):renderMusic(track);scores.set(track,load.catch(e=>{scores.delete(track);throw e;}));}
   const task=scores.get(track).then(buffer=>{
    if(ticket!==musicEpoch||!canPlay()||!settings().music||settings().track!==track||context.state!=='running')return;
    const source=context.createBufferSource();source.buffer=buffer;source.loop=true;
    source.connect(musicGain);musicOffset%=buffer.duration;musicStartedAt=context.currentTime;
    source.start(0,musicOffset);music=source;
-  }).catch(()=>{notify('Musik konnte nicht gestartet werden. Bitte erneut über ♪ Ton versuchen.');});
+  }).catch(error=>{if(ticket===musicEpoch&&canPlay())notify(error.message||'Musik konnte nicht gestartet werden. Bitte erneut über ♪ Ton versuchen.');});
   musicTask=task;task.finally(()=>{if(musicTask===task)musicTask=null;});
  }
- function unlock(){
+ function unlock(preview=false){
   if(document.hidden||!foreground)return;
-  const a=settings();if((!a.music&&!a.effects)||!requestFocus())return;
+  const a=settings();if((!preview&&!a.music&&!a.effects)||!requestFocus())return;
   unlocked=true;updateGains();
   resumeContext().then(ready=>{if(ready)startMusic();});
  }
- function effect(key){
-  const a=settings();if(!a.effects||!canPlay()||Date.now()-lastEffect<90)return;
+ function effect(key,preview=false){
+  const a=settings();if((!preview&&!a.effects)||!canPlay())return;
   const url=sources[key]||sources.menu;if(!url||!ensureContext())return;
-  lastEffect=Date.now();const ticket=++effectEpoch;
+  const ticket=++effectEpoch;
   if(!effects.has(url)){
    const bytes=Uint8Array.from(atob(url.split(',')[1]),c=>c.charCodeAt(0));
    effects.set(url,context.decodeAudioData(bytes.buffer).catch(e=>{effects.delete(url);throw e;}));
   }
   Promise.all([resumeContext(),effects.get(url)]).then(([ready,buffer])=>{
-   if(!ready||ticket!==effectEpoch||!canPlay()||!settings().effects||context.state!=='running')return;
+   if(!ready||ticket!==effectEpoch||!canPlay()||(!preview&&!settings().effects)||context.state!=='running')return;
    if(effectSource){try{effectSource.stop();}catch{}effectSource.disconnect();}
    const source=context.createBufferSource();source.buffer=buffer;source.connect(effectsGain);
-   source.onended=()=>{source.disconnect();if(effectSource===source)effectSource=null;};
-   updateGains();source.start();effectSource=source;
+   source.onended=()=>{source.disconnect();if(effectSource===source)effectSource=null;if(preview&&!settings().music&&!settings().effects){stop();releaseFocus();}};
+   updateGains();if(preview)effectsGain.gain.value=Math.max(.35,a.effectsVolume/100);source.start();effectSource=source;
   }).catch(()=>{});
  }
- function view(){const a=settings();sheet('Musik & Klänge',`<p>Drei eigene Retro-Begleitstücke und kurze Originaleffekte aus Pokémon. Alles offline. Musik startet erst nach deinem Tippen und pausiert beim Verlassen der App.</p><form data-form="audio-settings"><label class="checkbox"><input name="music" type="checkbox" ${a.music?'checked':''}> Hintergrundmusik</label><label class="checkbox"><input name="effects" type="checkbox" ${a.effects?'checked':''}> Menü-, Kampf- und Fortschrittsklänge</label>${select('Musikstück','track',Object.entries(tracks).map(([id,t])=>[id,t.name]),a.track)}${num('Musiklautstärke · %','musicVolume',a.musicVolume,0,100,1)}${num('Effektlautstärke · %','effectsVolume',a.effectsVolume,0,100,1)}<p class="error" role="alert"></p><button type="submit" class="primary wide">Übernehmen & anhören</button></form><div class="toolbar">${btn('Alles stumm','audio-mute','secondary')}${btn('Effekt testen','audio-test','secondary')}</div><p class="footnote">Musik: eigene Kompositionen, keine Original-Soundtrackaufnahmen. Grafiken/SFX: Pokémon © Nintendo / Creatures / GAME FREAK; Quellen in der Hilfe.</p>`);}
+ function haptic(preview=false){
+  if(!foreground||document.hidden||(!preview&&!settings().haptics))return;
+  try{if(window.Android?.hapticFeedback)window.Android.hapticFeedback();else navigator.vibrate?.(12);}catch{}
+ }
+ function feedback(target){
+  if(target.disabled||target.getAttribute('aria-disabled')==='true'||['audio-test','audio-feedback-on'].includes(target.dataset.action))return;
+  unlock();haptic();
+  const a=target.dataset.action||'';
+  effect(target.matches('button[type="submit"],button:not([type])')&&!a?'open':'menu');
+ }
+ document.addEventListener('click',event=>{const target=event.target.closest('button,a.wordmark,summary,input[type="checkbox"],input[type="radio"]');if(target)feedback(target);},true);
+ document.addEventListener('change',event=>{if(event.target.matches('select'))feedback(event.target);},true);
+ function view(){const a=settings();sheet('Musik, Töne & Vibration',`<p>Originale kurze Pokémon-Klänge für Schaltflächen, Menüs und Bestätigungen. Musik, Bedienungstöne und Vibration sind getrennt einstellbar.</p>${!a.effects?`<p class="hint">Bedienungstöne sind ausgeschaltet.</p>${btn('Töne & Vibration einschalten','audio-feedback-on','primary wide')}`:''}<form data-form="audio-settings"><label class="checkbox"><input name="music" type="checkbox" ${a.music?'checked':''}> Hintergrundmusik</label><label class="checkbox"><input name="effects" type="checkbox" ${a.effects?'checked':''}> Pokémon-Bedienungstöne & Spieleffekte</label><label class="checkbox"><input name="haptics" type="checkbox" ${a.haptics?'checked':''}> Kurzes Vibrationsfeedback</label>${select('Musikstück','track',[...Object.entries(tracks).map(([id,t])=>[id,t.name]),['custom',customInfo?'Eigene Datei: '+customInfo.name:'Eigene Musikdatei (zuerst laden)']],a.track)}${num('Musiklautstärke · %','musicVolume',a.musicVolume,0,100,1)}${num('Effektlautstärke · %','effectsVolume',a.effectsVolume,0,100,1)}<p class="error" role="alert"></p><button type="submit" class="primary wide">Übernehmen & anhören</button></form><div class="toolbar">${btn('Ton stumm','audio-mute','secondary')}${btn('Ton & Vibration testen','audio-test','secondary')}</div><p class="footnote">Der Test spielt einen kurzen Pokémon-Menüton auch bei ausgeschalteten Effekten ab. Android-Medienlautstärke und Systemeinstellung für Berührungsvibration beachten.</p><section class="card below"><h3>Deine eigene Menümusik</h3><p>${customInfo?esc(customInfo.name)+' · '+Math.round(customInfo.duration)+' Sekunden':'Noch keine Datei geladen.'}</p><p>Wähle eine von dir bereitgestellte Audiodatei, z. B. deine passende HG/SS- oder Platin-Menümusik. Bis 10 MB und 5 Minuten; MP3, OGG, WAV oder M4A je nach Gerät.</p><input id="custom-music-file" type="file" accept="audio/*" hidden><div class="toolbar">${btn('Musikdatei laden','audio-import','primary')}${customInfo?btn('Datei entfernen','audio-remove','text-button'):''}</div><p class="footnote">Nur lokal gespeichert, kein Upload. Musikdateien sind nicht in der JSON-Tagebuchsicherung enthalten. Original-Soundtracks werden nicht mitgeliefert.</p></section><p class="footnote">Die drei mitgelieferten Retro-Stücke sind eigene Kompositionen. Grafiken/SFX: Pokémon © Nintendo / Creatures / GAME FREAK; Quellen in der Hilfe.</p>`);}
+ async function importMusic(file){
+  const ticket=++importEpoch;
+  try{
+   const ctx=ensureContext();if(!ctx)throw Error('Audiowiedergabe ist nicht verfügbar.');
+   const buffer=await decodeMusicFile(file,ctx);if(ticket!==importEpoch)return;
+   await saveCustomMusic(file,buffer.duration);if(ticket!==importEpoch)return;
+   if(musicTrack==='custom')stopMusic(true);
+   scores.set('custom',Promise.resolve(buffer));customInfo={name:String(file.name).slice(0,120),duration:buffer.duration};
+   view();notify('Musik lokal gespeichert. Wähle „Eigene Datei“ und übernimm die Einstellung.');
+  }catch(error){if(ticket===importEpoch)notify(error.message);}
+ }
+ async function clearMusic(){importEpoch++;await removeCustomMusic();if(musicTrack==='custom')stopMusic(true);scores.delete('custom');customInfo=null;}
+ document.addEventListener('change',e=>{if(e.target.id==='custom-music-file'&&e.target.files?.[0])importMusic(e.target.files[0]);});
  function apply(d){
-  const a={music:d.music==='on',effects:d.effects==='on',track:d.track,musicVolume:Number(d.musicVolume),effectsVolume:Number(d.effectsVolume)};
+  const a={music:d.music==='on',effects:d.effects==='on',haptics:d.haptics==='on',track:d.track,musicVolume:Number(d.musicVolume),effectsVolume:Number(d.effectsVolume)};
   validateAudio(a);const before=settings();
   if(!commit(s=>{s.audioSettings=a;if(s.game)s.game.sound=a.effects;}))return false;
   if(a.track!==before.track)stopMusic(true);
@@ -140,7 +168,7 @@ export function setupAtmosphere({getState,commit,render,sheet,btn,select,num,not
   else{unlock();effect('menu');}
   render();return true;
  }
- document.addEventListener('pointerdown',unlock,{passive:true});document.addEventListener('keydown',unlock);
+ document.addEventListener('pointerdown',()=>unlock(),{passive:true});document.addEventListener('keydown',()=>unlock());
  document.addEventListener('visibilitychange',()=>{if(document.hidden){stop();releaseFocus();}});
  window.onAppPause=()=>{foreground=false;stop();};
  window.onAudioFocusChanged=granted=>{focus=!!granted;if(!focus)stop();};
@@ -148,7 +176,11 @@ export function setupAtmosphere({getState,commit,render,sheet,btn,select,num,not
  const actions={
   'audio-open':view,
   'audio-mute':()=>{if(commit(s=>{s.audioSettings={...settings(),music:false,effects:false};if(s.game)s.game.sound=false;})){stop();releaseFocus();view();render();}},
-  'audio-test':()=>{unlock();if(!settings().effects)notify('Aktiviere Effekte und übernimm die Einstellung.');else effect('heal');},
+  'audio-test':()=>{unlock(true);haptic(true);effect('menu',true);},
+  'audio-feedback-on':()=>{if(commit(s=>{s.audioSettings={...settings(),effects:true,haptics:true,effectsVolume:Math.max(35,settings().effectsVolume)};if(s.game)s.game.sound=true;})){unlock();haptic();effect('menu');view();render();}},
+  'audio-import':()=>document.querySelector('#custom-music-file')?.click(),
+  'audio-remove':()=>sheet('Musikdatei entfernen?',`<p>Die importierte Datei wird aus FitDex gelöscht. Deine Originaldatei bleibt erhalten.</p>${btn('Abbrechen','audio-open','secondary')}${btn('Datei entfernen','audio-confirm-remove','primary')}`),
+  'audio-confirm-remove':async()=>{try{await clearMusic();if(settings().track==='custom')commit(s=>{s.audioSettings={...settings(),track:'meadow',music:false};});view();render();}catch(e){notify(e.message);}},
  };
- return {actions,apply,effect,stop,unlock,settings,refresh:()=>{updateGains();if(!settings().music)stopMusic();else startMusic();}};
+ return {actions,apply,effect,stop,unlock,settings,clearMusic,refresh:()=>{updateGains();if(!settings().music)stopMusic();else startMusic();}};
 }

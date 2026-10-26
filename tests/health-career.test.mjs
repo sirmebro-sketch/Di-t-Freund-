@@ -29,7 +29,7 @@ test('invalid Health Connect payloads are atomic and cache works beyond a year',
   assert.throws(()=>applyHealthSnapshot(s,p));assert.deepEqual(s,before);
  }
  for(let i=0;i<400;i++){const date=shiftDate('2025-01-01',i);applyHealthSnapshot(s,payload({from:date,to:date,read:['steps'],days:[{date,steps:i}],weights:[]}));}
- assert.equal(Object.keys(s.healthConnect.days).length,366);assert.equal(validateConnection(s.healthConnect),true);
+ assert.equal(Object.keys(s.healthConnect.days).length,401);assert.equal(validateConnection(s.healthConnect),true);
 });
 function routine(s,date){s.entries.push({...staples[0],id:date,date,amount:100,meal:'Frühstück'});s.checkins[date]={hunger:2,fatigue:2,pain:false};s.game.restDays.push(date);syncGame(s,date);}
 test('research lasts through breaks, completes exactly once, and repeats without new health duties',()=>{

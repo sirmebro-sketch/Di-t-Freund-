@@ -18,7 +18,7 @@ Die App liest optional Schritte, Schlafdauer und Gewicht. Health Connect ist ein
 - Importierte Gewichte ergänzen die Verlaufsauswertung. Eigene Tageswerte haben Vorrang. Herkunft ist sichtbar. Zurückziehen der Freigabe löscht bereits lokale Kopien nicht automatisch; dafür gibt es „Lokale Importkopien entfernen“.
 - Wiederholtes Senden aktualisiert denselben eigenen Tageswert über eine stabile Client-ID. Da die App keine Messuhrzeit erfasst, wird 12 Uhr lokal verwendet, heute höchstens die aktuelle Uhrzeit. Lokale Löschungen löschen bereits exportierte Datensätze nicht; Health Connect bietet deren Verwaltung.
 - Schritte erhöhen weder Kalorienziel noch Spielpunkte. Kein eigener Hardware-Schrittzähler, kein direkter Uhrenzugriff und kein vollständiger Export von Essen, Training oder allen Gesundheitsdaten.
-- Standardmäßig sind alle Freigaben aus. JSON-Sicherung enthält die lokalen Importkopien, CSV nur die eigenen Journalwerte. Cache begrenzt auf 366 Schritt-/Schlaftage und 5000 Gewichtsimporte.
+- Standardmäßig sind alle Freigaben aus. JSON-Sicherung enthält die lokalen Importkopien, CSV nur die eigenen Journalwerte. Cache begrenzt auf 3660 Schritt-/Schlaftage und 5000 Gewichtsimporte.
 
 ## Noch auf dem Gerät zu prüfen
 

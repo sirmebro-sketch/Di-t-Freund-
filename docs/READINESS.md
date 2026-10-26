@@ -1,4 +1,4 @@
-# Stand für die persönliche Nutzung · 0.7.2
+# Stand für die persönliche Nutzung · 0.8.0
 
 Die App ist eine funktionsfähige persönliche Android-Testversion. Der Kern ist für tägliche manuelle Erfassung ausgelegt, nicht als klinisch validierter oder vollständig automatischer Gesundheitscoach.
 
@@ -21,7 +21,7 @@ Die App ist eine funktionsfähige persönliche Android-Testversion. Der Kern ist
 - Health Connect mit Samsung Health: einzelne Freigaben erlauben/ablehnen, widerrufen, Daten einmal und wiederholt abgleichen, eigene Gewichte mit Vorschau teilen und auf Duplikate prüfen. Schrittzahlen gegen Samsung Health vergleichen; Verzögerungen sind möglich.
 - Große Systemschrift/TalkBack nach Bedarf; Ton an/aus und App-Wechsel prüfen.
 
-Noch keine reale Android-Geräteabnahme durch den Entwickler. Die feste Release-Signatur ist seit 0.4.1 eingerichtet und geprüft. 0.7.2 verwendet denselben Fingerabdruck und die gleiche Paketkennung; über die vorhandene signierte Version installieren, nicht vorher deinstallieren. Alte Debug-APKs erfordern gegebenenfalls den einmaligen Export-/Import-Umstieg: [Signierung](SIGNING.md).
+Noch keine reale Android-Geräteabnahme durch den Entwickler. Die feste Release-Signatur ist seit 0.4.1 eingerichtet und geprüft. 0.8.0 verwendet denselben Fingerabdruck und die gleiche Paketkennung; über die vorhandene signierte Version installieren, nicht vorher deinstallieren. Alte Debug-APKs erfordern gegebenenfalls den einmaligen Export-/Import-Umstieg: [Signierung](SIGNING.md).
 
 Keine persönlichen Daten aus dem Chat werden in das öffentliche Repository geschrieben. Profil und freiwillige Coach-Angaben werden auf dem Smartphone gesetzt. Die vom Nutzer gewünschte kostenlose lokale Architektur bleibt erhalten.
 
@@ -32,3 +32,5 @@ Version 0.7 ergänzt Platin-Kulissen, vier kurze Effekte und drei eigene Retro-M
 Version 0.7.1 heißt FitDex. Paketkennung, Speicherformat, Health-Connect-Datensatzkennungen und Signatur bleiben absichtlich unverändert. Das neue adaptive Launcher-Icon nutzt unveränderte, vom Eigentümer bereitgestellte Bilddaten. Darstellung mit dem konkreten Samsung-Launcher auf dem Gerät prüfen.
 
 Version 0.7.2 behebt konkurrierende Wiedergabewege für Musik und Menüeffekte. Ein Regressionstest prüft Reiter-/Menüwechsel, Lautstärkeänderung, Pausenposition, verweigerten Audiofokus, Stummschaltung und verspätete Effektdekodierung. Die tatsächliche Wiedergabe auf dem betroffenen Samsung-Gerät bleibt separat zu bestätigen.
+
+Version 0.8.0 ergänzt zentrale Bedienungstöne, native Berührungsvibration, Langzeitdiagramme und lokalen Musikimport. Auf dem realen Smartphone bleiben Medienlautstärke, Android-Haptikeinstellung, Audio-Dateiauswahl und die unterbrechungsfreie Wiedergabe zu prüfen. Kein automatisierter Browser-Test belegt das tatsächliche Verhalten der Samsung-Hardware. Details: [Update 0.8.0](UPDATE-0.8.md).

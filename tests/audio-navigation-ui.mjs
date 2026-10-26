@@ -56,7 +56,7 @@ await click('audio-open');await click('audio-mute');await page.waitForFunction((
 const muted=await read();await click('close');await tab('food');assert.equal((await read()).starts.length,muted.starts.length);
 // A late decoded effect must not start after the app has been paused.
 await click('audio-open');await page.locator('[name="effects"]').check();await page.locator('#sheet button[type="submit"]').click();
-await click('audio-open');await page.evaluate(()=>window.holdDecode=true);await page.waitForTimeout(120);await click('audio-test');
+await click('audio-open');await page.evaluate(()=>window.holdDecode=true);await page.waitForTimeout(120);await click('close');await tab('home');await page.evaluate(()=>window.holdDecode=true);await page.waitForTimeout(120);await page.locator('[data-action="water"][data-amount="250"]').click();
 await page.waitForFunction(()=>window.releaseDecodes.length>0);
 await page.evaluate(()=>window.onAppPause());await page.waitForFunction(()=>window.appAudio.state==='suspended');const delayed=await read();
 await page.evaluate(()=>{window.holdDecode=false;window.releaseDecodes.splice(0).forEach(release=>release());});await page.waitForTimeout(150);

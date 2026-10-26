@@ -72,3 +72,12 @@ Erster Android-Prüflauf für die neue native OCR und aggregierten Health-Abfrag
 ## Ergänzung 0.7.2
 
 `node tests/audio-navigation-ui.mjs` ergänzt einen Regressionstest mit echtem Web Audio und simuliertem Android-Audiofokus. Die alte HTML-Media-Effektwiedergabe löst im Test Fokusverlust aus und lässt die Prüfung fehlschlagen. Geprüft werden durchgehende Musikquelle bei Navigation und Lautstärkeänderung, gemeinsame Musik-/Effektausgabe, gespeicherter Offset nach Pause, Fokusverweigerung, bewusster Titelwechsel, Stummschaltung und keine verspäteten Effekte nach Pause. Damit laufen zehn Browser-Testprogramme. Die Fokus-Simulation ersetzt keinen Samsung-Gerätetest.
+
+## Version 0.8.0 · Feedback & Trends
+
+- Lokal: 36 App-Module syntaxgeprüft, 66 Unit-Tests und elf Browserprogramme erfolgreich.
+- `tests/trends.test.mjs`: echte Nullwerte vs. fehlende Daten, Schaltjahr/ungültige Tage, unvollständige Nahrung und Mikronährstoffe, manuelle Priorität vor Health Connect, gemittelte Messungen, Monats-/Jahresaggregation, Trainingssummen, Gewichtsmittel sowie ungültige/zu große/zu lange Musikdateien.
+- `tests/trends-feedback-ui.mjs`: Zeiträume und Filter, Tabellen/Details, Ton und je eine Haptik-Rückmeldung für Reiter/Buttons/Select/Summary/Formular, getrennte Stummschaltung, expliziter Test, gültiger lokaler Musikimport mit Wiederöffnung und Entfernung, Erhalt nach ungültiger Datei. Testaudio ist ein synthetischer kurzer Sinuston.
+- Trends in 320/393/1280 Pixel Breite ohne Seitenüberlauf; ausgewählte Ansichten hell/dunkel ohne automatisch erkannte axe-core WCAG2 A/AA-Verstöße. Screenshots visuell geprüft. Keine vollständige Barrierefreiheitszertifizierung.
+- Alle bisherigen Browserprogramme einschließlich Musik-Navigationsregression erfolgreich. Android-Kompilierung/Lint und signiertes Artifact sind separat im Workflow nachzusehen.
+- Offen am realen Android-Gerät: tatsächliche Medienlautstärke, Berührungsvibration/Systemeinstellung, SAF-Musikdateiauswahl, Audiofokus bei Unterbrechungen und Rückkehr zur App. Browser-Bridges sind simuliert.

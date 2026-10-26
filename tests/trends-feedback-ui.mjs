@@ -1,0 +1,31 @@
+import {chromium} from 'playwright';import AxeBuilder from '@axe-core/playwright';import assert from 'node:assert/strict';
+import {emptyState,shiftDate,today} from '../app/src/main/assets/www/core.js';
+const browser=await chromium.launch(),context=await browser.newContext({viewport:{width:393,height:852},locale:'de-DE'}),page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
+await page.addInitScript(()=>{window.buzzes=0;window.fx=0;window.Android={readState:()=>localStorage.getItem('diaetfreund-v1'),writeState:raw=>{localStorage.setItem('diaetfreund-v1',raw);return true;},hapticFeedback:()=>window.buzzes++,requestAppAudioFocus:()=>true,abandonAppAudioFocus:()=>{}};const start=AudioBufferSourceNode.prototype.start;AudioBufferSourceNode.prototype.start=function(...args){if(!this.loop)window.fx++;return start.apply(this,args);};});
+await page.goto(process.env.APP_URL||'http://127.0.0.1:4173');
+const s={...emptyState(),profile:{name:'Alex',height:180,start:100,goal:90,kcal:2200,protein:140,water:2000,sessions:2},audioSettings:{music:false,effects:true,haptics:true,musicVolume:18,effectsVolume:50,track:'meadow'}};
+for(let i=0;i<70;i++){const date=shiftDate(today(),-i);if(i%5!==0)s.weights.push({date,value:100+i*.02});s.water[date]=i%3===0?0:1500;s.entries.push({id:'e'+i,date,name:'Test',source:'Eigene Angabe',amount:1000,meal:'Frühstück',kcal:200+i/10,protein:14,carbs:20,fat:7,fiber:2.5});if(i%2===0)s.completeDays[date]=true;}
+s.weights.push({date:'2018-01-01',value:105});
+await page.evaluate(s=>localStorage.setItem('diaetfreund-v1',JSON.stringify(s)),s);await page.reload();
+const click=a=>page.locator(`[data-action="${a}"]:visible`).first().click(),tab=t=>page.locator(`.bottom-nav [data-tab="${t}"]`).click();
+async function feedback(action){const before=await page.evaluate(()=>({buzz:window.buzzes,fx:window.fx}));await action();await page.waitForFunction(n=>window.fx>n,before.fx);assert.equal(await page.evaluate(()=>window.buzzes),before.buzz+1);}
+await feedback(()=>tab('chart'));await feedback(()=>page.locator('#trend-metric').selectOption('water'));await feedback(()=>page.locator('.trend-table summary').click());
+await feedback(()=>click('trend-point'));await feedback(()=>click('close'));
+await page.locator('#trend-metric').selectOption('weight');await page.locator('[data-period="365"]').click();assert.match(await page.locator('main').innerText(),/Monatswerte/);
+await page.locator('[data-period="all"]').click();assert.match(await page.locator('main').innerText(),/Jahreswerte/);assert.match(await page.locator('main').innerText(),/2018-01-01/);
+await page.locator('[data-period="30"]').click();await page.locator('#trend-metric').selectOption('kcal');await page.locator('#trend-complete').check();assert.match(await page.locator('main').innerText(),/Erfasste Zufuhr/);
+for(const width of [320,393,1280]){await page.setViewportSize({width,height:852});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));assert.deepEqual((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa']).analyze()).violations,[]);}
+await page.setViewportSize({width:393,height:852});await page.locator('#trend-metric').selectOption('weight');await page.screenshot({path:'test-results/trends-light.png',fullPage:true});
+await page.evaluate(()=>document.documentElement.dataset.theme='dark');await page.waitForFunction(()=>[...document.querySelectorAll('button')].every(e=>e.getAnimations().every(a=>a.playState!=='running')));assert.deepEqual((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa']).analyze()).violations,[]);await page.screenshot({path:'test-results/trends-dark.png',fullPage:true});
+// Submit buttons without data-action receive exactly one click response as well.
+await click('weight');await page.locator('[name="value"]').fill('99');await feedback(()=>page.locator('#sheet button[type="submit"]').click());
+await click('audio-open');await page.locator('[name="effects"]').uncheck();await page.locator('[name="haptics"]').uncheck();await page.locator('#sheet button[type="submit"]').click();
+const quiet=await page.evaluate(()=>({buzz:window.buzzes,fx:window.fx}));await tab('home');await page.waitForTimeout(150);assert.deepEqual(await page.evaluate(()=>({buzz:window.buzzes,fx:window.fx})),quiet);
+await click('audio-open');await click('audio-test');await page.waitForFunction(n=>window.fx>n,quiet.fx);assert(await page.evaluate(()=>window.buzzes)>quiet.buzz);
+// A short generated test tone exercises local file import, persistence and safe rejection.
+const wav=Buffer.alloc(44+16000*2);wav.write('RIFF');wav.writeUInt32LE(wav.length-8,4);wav.write('WAVEfmt ',8);wav.writeUInt32LE(16,16);wav.writeUInt16LE(1,20);wav.writeUInt16LE(1,22);wav.writeUInt32LE(16000,24);wav.writeUInt32LE(32000,28);wav.writeUInt16LE(2,32);wav.writeUInt16LE(16,34);wav.write('data',36);wav.writeUInt32LE(32000,40);for(let i=0;i<16000;i++)wav.writeInt16LE(Math.round(Math.sin(i/16000*440*Math.PI*2)*3000),44+i*2);
+await page.locator('#custom-music-file').setInputFiles({name:'Eigene Testmusik.wav',mimeType:'audio/wav',buffer:wav});await page.waitForFunction(()=>document.querySelector('#sheet')?.textContent.includes('Eigene Testmusik.wav'));
+await page.locator('[name="track"]').selectOption('custom');await page.locator('[name="music"]').check();await page.locator('#sheet button[type="submit"]').click();await page.reload();await click('audio-open');assert.match(await page.locator('#sheet').innerText(),/Eigene Testmusik.wav/);
+await page.locator('#custom-music-file').setInputFiles({name:'Defekt.mp3',mimeType:'audio/mpeg',buffer:Buffer.from('not music')});await page.waitForFunction(()=>document.querySelector('#toast')?.textContent.includes('nicht lesbar'));await click('close');await click('audio-open');assert.match(await page.locator('#sheet').innerText(),/Eigene Testmusik.wav/);
+await click('audio-remove');await click('audio-confirm-remove');await page.waitForFunction(()=>document.querySelector('#sheet')?.textContent.includes('Noch keine Datei geladen'));
+assert.deepEqual(errors,[]);await browser.close();console.log('PASS: long-range charts, missing values, filters, light/dark accessibility, all control feedback, mute/test and persistent private music import.');

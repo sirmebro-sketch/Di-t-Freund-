@@ -12,7 +12,7 @@
 
 ## Health Connect (ab 0.4)
 
-Lesen von Schritten, Schlafdauer und Gewicht sowie Schreiben eigener Gewichte sind getrennte, widerrufbare Systemfreigaben. Standardmäßig wird nichts gelesen oder geschrieben. Automatisches Einlesen erfolgt nur nach Opt-in beim Öffnen/im Vordergrund. Kein Hintergrundzugriff. Datenkopien verbleiben im privaten App-Speicher und sind Bestandteil der JSON-Sicherung. Schritt-/Schlafkopien sind auf 366 Tage, Gewichtsimporte auf 5000 Datensätze begrenzt. CSV enthält eigene Journaleinträge; die vollständige Sicherung ist JSON.
+Lesen von Schritten, Schlafdauer und Gewicht sowie Schreiben eigener Gewichte sind getrennte, widerrufbare Systemfreigaben. Standardmäßig wird nichts gelesen oder geschrieben. Automatisches Einlesen erfolgt nur nach Opt-in beim Öffnen/im Vordergrund. Kein Hintergrundzugriff. Datenkopien verbleiben im privaten App-Speicher und sind Bestandteil der JSON-Sicherung. Schritt-/Schlafkopien sind auf 3660 erfasste Tage, Gewichtsimporte auf 5000 Datensätze begrenzt. CSV enthält eigene Journaleinträge; die vollständige Sicherung ist JSON.
 
 Gewichtsexport erfolgt erst nach Vorschau und ausdrücklichem Senden. Apps mit eigener Lesefreigabe können geteilte Werte übernehmen. Importierte Werte werden nicht zurückgeschrieben. Lokales Löschen entfernt keine bereits geteilten Daten; diese können in Health Connect verwaltet werden. Freigaben der Quell-/Ziel-App, etwa Samsung Health, sind unabhängig zu setzen.
 
@@ -31,3 +31,7 @@ Die optionale persönliche Profildatei ergänzt nach Vorschau ausschließlich di
 # Ergänzung 0.7.0
 
 Musik wird offline erzeugt; Bilder und kurze Effekte sind lokal gebündelt. Audiofokus verwendet Android-Systemfunktionen ohne neue Datenerhebung. Eigene Trainingspläne und Toneinstellungen liegen im bestehenden privaten Speicher und sind Bestandteil der Sicherung. Der optionale private Profilimport kann ein ausdrücklich angegebenes datiertes Gewicht und den Trainingsstand übernehmen; die Vorschau zeigt dies vor der Bestätigung.
+
+## Ergänzung 0.8.0
+
+Importierte Menümusik wird nach eigener Dateiauswahl in der privaten WebView-Datenbank gespeichert. Kein Upload; die Originaldatei wird nicht verändert. Musikdateien sind nicht in JSON-Exporten enthalten und müssen bei einem Gerätewechsel erneut ausgewählt werden. „Datei entfernen“ und das vollständige Zurücksetzen löschen die lokale Musikkopie. Android-Dateiauswahl gewährt nur Zugriff auf die ausgewählte Audiodatei; keine allgemeine Speicherfreigabe. Vibration beachtet die Android-Einstellung für Berührungsfeedback. Trends entstehen ausschließlich aus den schon gespeicherten Daten.

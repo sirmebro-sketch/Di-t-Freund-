@@ -77,7 +77,7 @@ await page.evaluate(
 await page.reload();
 assert.deepEqual(
   await page.locator(".bottom-nav button span:last-child").allTextContents(),
-  ["Heute", "Essen", "Training", "Reise", "Profil"],
+  ["Heute", "Essen", "Training", "Trends", "Reise", "Profil"],
 );
 assert.equal(await page.locator('main [data-action="checkin"]').count(), 1);
 await axe("Gen-IV dashboard");

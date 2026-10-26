@@ -11,7 +11,17 @@ Ein ruhiger, deutschsprachiger Android-Begleiter für Ernährung, Gewicht, Kraft
 
 Android 8.0 oder neuer, aktuelles Android System WebView. Das ist ein persönlicher Testbuild, keine Play-Store-Veröffentlichung. Seit 0.4.1 ist die feste Release-Signatur eingerichtet und erfolgreich geprüft. Der private Schlüssel wird über GitHub-Actions-Secrets eingebunden; ohne eingerichtete Secrets gibt es kein installierbares Release-Artifact. Einmalige Einrichtung und Umstieg von bisherigen Debug-APKs: [Signierung](docs/SIGNING.md). Vor diesem einmaligen Wechsel JSON sichern. Künftige gleich signierte Updates über die bestehende App installieren.
 
-## Neu in 0.7.2 · Musik ohne Menü-Unterbrechung
+## Neu in 0.8.0 · Bedienfeedback & langfristige Trends
+
+- **♪ Ton:** originale kurze Pokémon-Menüeffekte für Schaltflächen, Formularbestätigungen, Aufklappfelder und Auswahlen. Vibration und Effekte getrennt einstellbar, mit direktem Test. Bereits gespeicherte Stummschaltung bleibt erhalten; „Töne & Vibration einschalten“ aktiviert beides.
+- **Trends:** eigener Reiter für 7/30 Tage, drei Monate, ein Jahr oder den gesamten gespeicherten Verlauf. Gewicht, Makros, vorhandene Mikronährstoffe, Schritte, Schlaf, Trinken, Training und Messwerte. Fehlende Daten bleiben Lücken; Tabellen machen alle Werte zugänglich.
+- **Eigene Menümusik:** lokale Audiodatei bis 10 MB/5 Minuten wählen und anschließend als Musikstück übernehmen. Kein Upload, keine vollständigen Original-Soundtracks im APK. Die Datei wird separat gespeichert und gehört nicht zur JSON-Sicherung.
+- Health-Connect-Tageskopien bleiben ab jetzt für bis zu 3660 erfasste Tage erhalten. Bereits früher entfernte Daten werden dadurch nicht wiederhergestellt.
+- Musik läuft wie seit 0.7.2 bei Menüwechseln weiter. Gleiche Paketkennung und feste Signatur; versionCode 12.
+
+Details und Grenzen: [Update 0.8.0](docs/UPDATE-0.8.md).
+
+## Seit 0.7.2 · Musik ohne Menü-Unterbrechung
 
 Musik und kurze Effekte verwenden jetzt dieselbe Audioausgabe. Die Musikschleife läuft unabhängig vom Seitenaufbau weiter; Reiterwechsel, Menüs und Lautstärkeänderungen starten sie nicht neu. Bei App-Pause wird die Position gespeichert und beim nächsten bewussten Tippen fortgesetzt. versionCode 11, bisherige Signatur.
 

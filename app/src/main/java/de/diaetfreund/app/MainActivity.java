@@ -10,6 +10,9 @@ import android.media.AudioManager;
 import android.media.AudioAttributes;
 import android.media.AudioFocusRequest;
 import android.webkit.JavascriptInterface;
+import android.webkit.WebChromeClient;
+import android.webkit.ValueCallback;
+import android.view.HapticFeedbackConstants;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
@@ -41,6 +44,19 @@ public final class MainActivity extends ComponentActivity {
     private static final String ORIGIN = "appassets.androidplatform.net";
     private static final int MAX_BYTES = 10 * 1024 * 1024;
     private WebView web;
+    private ValueCallback<Uri[]> musicFileCallback;
+    private final ActivityResultLauncher<String[]> musicPicker = registerForActivityResult(new ActivityResultContracts.OpenDocument(), uri -> {
+        ValueCallback<Uri[]> callback = musicFileCallback; musicFileCallback = null;
+        if (callback == null) return;
+        boolean valid = uri != null && "content".equals(uri.getScheme()) && uri.getAuthority() != null && !uri.getAuthority().startsWith(getPackageName());
+        if (valid) {
+            try {
+                String type = getContentResolver().getType(uri);
+                valid = type != null && type.startsWith("audio/");
+            } catch (Exception ignored) { valid = false; }
+        }
+        callback.onReceiveValue(valid ? new Uri[]{uri} : null);
+    });
     private AudioManager audioManager;
     private AudioFocusRequest audioFocusRequest;
     private volatile boolean audioFocusGranted;
@@ -94,7 +110,7 @@ public final class MainActivity extends ComponentActivity {
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
         settings.setAllowFileAccess(false);
-        settings.setAllowContentAccess(false);
+        settings.setAllowContentAccess(true); // Explicitly selected audio files; navigation remains blocked by the client.
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         settings.setSupportMultipleWindows(false);
         WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG);
@@ -108,6 +124,20 @@ public final class MainActivity extends ComponentActivity {
                 if ("https".equals(uri.getScheme()) && ORIGIN.equals(uri.getHost())) return assets.shouldInterceptRequest(uri);
                 if ("https".equals(uri.getScheme()) && "world.openfoodfacts.org".equals(uri.getHost()) && uri.getPath() != null && uri.getPath().matches("/api/v2/product/[0-9]{8,14}\\.json")) return null;
                 return new WebResourceResponse("text/plain", "UTF-8", 403, "Blocked", java.util.Collections.emptyMap(), new ByteArrayInputStream(new byte[0]));
+            }
+        });
+        web.setWebChromeClient(new WebChromeClient() {
+            @Override public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback, FileChooserParams params) {
+                Uri page = Uri.parse(view.getUrl() == null ? "" : view.getUrl());
+                if (!"https".equals(page.getScheme()) || !ORIGIN.equals(page.getHost()) || params.getMode() != FileChooserParams.MODE_OPEN) return false;
+                boolean audio = false;
+                for (String type : params.getAcceptTypes()) if (type.startsWith("audio/")) audio = true;
+                if (!audio) return false;
+                if (musicFileCallback != null) musicFileCallback.onReceiveValue(null);
+                musicFileCallback = callback;
+                try { musicPicker.launch(new String[]{"audio/*"}); }
+                catch (Exception ignored) { musicFileCallback = null; callback.onReceiveValue(null); }
+                return true;
             }
         });
         web.addJavascriptInterface(new Bridge(), "Android");
@@ -164,6 +194,9 @@ public final class MainActivity extends ComponentActivity {
             if (request == null || request.length() > 20000) return;
             runOnUiThread(() -> healthBridge.handle(request));
         }
+        @JavascriptInterface public void hapticFeedback() {
+            if (appForeground) runOnUiThread(() -> { if (web != null && appForeground) web.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); });
+        }
         @JavascriptInterface public boolean requestAppAudioFocus() {
             if (!appForeground) return false;
             if (audioFocusGranted) return true;
@@ -184,5 +217,5 @@ public final class MainActivity extends ComponentActivity {
     private void releaseAudioFocus() { audioFocusGranted = false; if (audioManager != null && audioFocusRequest != null) audioManager.abandonAudioFocusRequest(audioFocusRequest); }
     @Override protected void onResume() { super.onResume(); appForeground = true; if(web != null) { web.onResume(); web.post(() -> web.evaluateJavascript("window.onAppResume && window.onAppResume()", null)); } }
     @Override protected void onPause() { appForeground = false; if(web != null) { web.evaluateJavascript("window.onAppPause && window.onAppPause()", null); web.onPause(); } releaseAudioFocus(); super.onPause(); }
-    @Override protected void onDestroy() { releaseAudioFocus(); if(healthBridge != null) healthBridge.close(); if(web != null) { web.removeJavascriptInterface("Android"); web.destroy(); web = null; } super.onDestroy(); }
+    @Override protected void onDestroy() { if (musicFileCallback != null) { musicFileCallback.onReceiveValue(null); musicFileCallback = null; } releaseAudioFocus(); if(healthBridge != null) healthBridge.close(); if(web != null) { web.removeJavascriptInterface("Android"); web.destroy(); web = null; } super.onDestroy(); }
 }
