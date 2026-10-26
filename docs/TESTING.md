@@ -88,3 +88,7 @@ Erster Android-Prüflauf für die neue native OCR und aggregierten Health-Abfrag
 - Neuer Browserablauf `tests/nutrition-balance-ui.mjs`: Ist-/Sollkarten, alle zwölf Mikronährstoffzeilen, Tagesabschluss, Datumswechsel, Änderung der gespeicherten Ziele, Wiederöffnung, 320/393/1280-Pixel-Breiten ohne Seitenüberlauf. Ausgewählte Tagesbilanzansichten hell/dunkel und Detaildialog ohne automatisch erkannte axe-core WCAG2 A/AA-Verstöße; keine vollständige Zertifizierung. Screenshots visuell geprüft.
 - Bestehende Abläufe für Coach, Tagebuch, Mahlzeitenvorlagen, Katalog/Privatprofil und unterbrechungsfreie Musik lokal erfolgreich. CI führt alle zwölf Browserprogramme sowie Android-Build und Lint erneut aus.
 - Keine neue native Hardwarefunktion. Bereits offene Samsung-Gerätetests bleiben offen; Berechnungen sind keine medizinische Validierung.
+
+## Version 0.8.2 · Hintergrundkante
+
+38 Module syntaxgeprüft, 70 Unit-Tests und der bestehende Trainings-/Atmosphäre-Browserablauf erfolgreich. Hellen und dunklen Hintergrund bei 393 Pixeln Breite separat gerendert und visuell auf die vorher sichtbare Rahmenkante geprüft. Keine neue Hardwarefunktion. CI prüft wie bisher alle Browserabläufe, Android-Build, Lint und feste Signatur.

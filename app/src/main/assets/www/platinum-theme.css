@@ -1,5 +1,5 @@
 /* Original Platinum scenery stays decorative; reading surfaces remain opaque. */
-body { background-image:linear-gradient(#dceaf3a8,#dceaf3c0),var(--pt-paper); background-size:auto,304px 224px; background-attachment:fixed; }
+body { background-image:linear-gradient(#dceaf3a8,#dceaf3c0),var(--pt-paper); background-size:auto,288px 192px; background-attachment:fixed; }
 :root[data-theme="dark"] body { background-image:linear-gradient(#101f35bd,#101f35d9),var(--pt-night-paper); }
 .game-scene { isolation:isolate; background:#719db5!important; height:260px; overflow:hidden; }
 .game-scene::before,.game-scene::after { display:none!important; }

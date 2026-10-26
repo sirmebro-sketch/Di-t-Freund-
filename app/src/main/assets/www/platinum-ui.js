@@ -11,7 +11,9 @@ export async function installPlatinum() {
  for(const sheet of ['box','battle']) {
   const source=new Image();source.src=platinum[sheet];
   try { await source.decode(); } catch { continue; }
-  const crops=sheet==='box'?[['--pt-paper',2,238,152,112],['--pt-night-paper',2,356,152,112],['--pt-team-paper',318,356,152,112]]:[['--pt-battle',0,16,256,152]];
+  // Wallpaper borders are not repeatable. Use interior rectangles spanning whole
+  // 16-pixel pattern periods; CSS preserves the original 2x display scale.
+  const crops=sheet==='box'?[['--pt-paper',4,244,144,96],['--pt-night-paper',4,360,144,96],['--pt-team-paper',318,356,152,112]]:[['--pt-battle',0,16,256,152]];
   for(const [key,x,y,w,h] of crops) {
    const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
    const context=canvas.getContext('2d');if(!context)continue;

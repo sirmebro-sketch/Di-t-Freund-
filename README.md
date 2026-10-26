@@ -11,7 +11,11 @@ Ein ruhiger, deutschsprachiger Android-Begleiter für Ernährung, Gewicht, Kraft
 
 Android 8.0 oder neuer, aktuelles Android System WebView. Das ist ein persönlicher Testbuild, keine Play-Store-Veröffentlichung. Seit 0.4.1 ist die feste Release-Signatur eingerichtet und erfolgreich geprüft. Der private Schlüssel wird über GitHub-Actions-Secrets eingebunden; ohne eingerichtete Secrets gibt es kein installierbares Release-Artifact. Einmalige Einrichtung und Umstieg von bisherigen Debug-APKs: [Signierung](docs/SIGNING.md). Vor diesem einmaligen Wechsel JSON sichern. Künftige gleich signierte Updates über die bestehende App installieren.
 
-## Neu in 0.8.1 · Tagesbilanz mit Ist und Soll
+## Neu in 0.8.2 · Hintergrund ohne Trennlinie
+
+Der wiederholte Rahmen der Platin-Hintergrundgrafik wurde aus dem sichtbaren Musterausschnitt entfernt. Helles und dunkles Design verwenden jetzt einen rahmenfreien Ausschnitt mit ganzen Musterperioden bei gleicher Skalierung. versionCode 14, unveränderte Paketkennung und feste Signatur.
+
+## Seit 0.8.1 · Tagesbilanz mit Ist und Soll
 
 Im Reiter **Essen**: Kalorienziel, gegessene Kalorien, Rest/Überschreitung, geschätzter Verbrauch und vorläufige bzw. abgeschlossene Bilanz. Eiweiß, Fett, Kohlenhydrate und Ballaststoffe jeweils mit Ist und Ziel/Planwert. Vitamine und Mineralstoffe stehen direkt darunter, nach Gruppen geordnet und mit Datenabdeckung. Die gesamte Bilanz öffnet sich auch von der Startseite über **Tagesbilanz**. Unbekannte Nährwerte werden nicht als echte Null ausgegeben.
 
