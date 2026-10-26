@@ -47,5 +47,16 @@ await page.setViewportSize({width:360,height:800});assert.equal(await page.locat
 await page.screenshot({path:'test-results/career.png'});await click('close');
 await page.locator('.bottom-nav [data-tab="more"]').click();await click('theme');await click('hc-open');await axe('connection dark');
 await page.screenshot({path:'test-results/health-connect.png'});
+// Full backup replacement and reset must remove optional import fields, too.
+await page.locator('#hc-readSteps').check();await click('hc-connect');await reply({kind:'permissions',mode:'read',granted:['read_steps']});
+await click('hc-sync');await reply(snapshot);await click('hc-sync');const preImport=(await requests()).at(-1).requestId;
+await page.evaluate(s=>window.onImport(JSON.stringify(s)),state);await click('confirm-import');
+assert.equal((await read()).healthConnect,undefined);
+await page.evaluate(p=>window.onHealthConnect(JSON.stringify(p)),{...snapshot,requestId:preImport});assert.equal((await read()).healthConnect,undefined);
+await click('hc-open');await page.locator('#hc-readSteps').check();await click('hc-connect');await reply({kind:'permissions',mode:'read',granted:['read_steps']});
+await click('hc-sync');await reply(snapshot);await click('hc-sync');const preReset=(await requests()).at(-1).requestId;await click('close');
+await page.locator('.bottom-nav [data-tab="more"]').click();await click('reset');await page.locator('#sheet [name="confirm"]').fill('LÖSCHEN');await page.locator('#sheet button[type="submit"]').click();
+assert.equal((await read()).healthConnect,undefined);assert.equal((await read()).weights.length,0);
+await page.evaluate(p=>window.onHealthConnect(JSON.stringify(p)),{...snapshot,requestId:preReset});assert.equal((await read()).healthConnect,undefined);
 assert.deepEqual(errors,[]);await browser.close();
 console.log('PASS: opt-in native bridge, partial permission, explicit export preview, denied write, stale callback after deletion, no health-based rewards, research start, locked themes, planned regions, 360px and light/dark accessibility. Native calls mocked; device verification remains required.');

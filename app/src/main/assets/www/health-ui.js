@@ -162,5 +162,11 @@ export function setupHealthUI({
       }
     },
   };
-  return { card, actions, sync };
+  function invalidatePending() {
+    requestId = null;
+    busy = false;
+    sharePreview = null;
+    message = "";
+  }
+  return { card, actions, sync, invalidatePending };
 }

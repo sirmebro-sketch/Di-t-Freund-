@@ -975,8 +975,9 @@ const actions = {
   "confirm-import": () => {
     if (
       window.pendingImport &&
-      commit((s) => Object.assign(s, window.pendingImport), true)
+      commit((s) => { for (const key of Object.keys(s)) delete s[key]; Object.assign(s, window.pendingImport); }, true)
     ) {
+      healthUI.invalidatePending();
       delete window.pendingImport;
       timerEnd = 0;
       date = today();
@@ -1243,7 +1244,8 @@ document.addEventListener("submit", (e) => {
         break;
       case "reset":
         if (d.confirm !== "LÖSCHEN") throw Error("Bitte LÖSCHEN eingeben.");
-        ok = commit((s) => Object.assign(s, emptyState()), true);
+        ok = commit((s) => { for (const key of Object.keys(s)) delete s[key]; Object.assign(s, emptyState()); }, true);
+        if (ok) healthUI.invalidatePending();
         break;
     }
     if (ok) {
