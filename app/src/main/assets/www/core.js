@@ -1,4 +1,4 @@
-import { validateGame } from "./game.js";
+import { validateGame, migrateGame } from "./game.js";
 import { micros, parseMicros, recipeMicros } from "./micros.js";
 export const VERSION = 2;
 export const meals = ["Frühstück", "Mittagessen", "Abendessen", "Snacks"];
@@ -283,6 +283,8 @@ export function parseBackup(raw) {
     parsed.targetHistory = [];
   }
   if (parsed && parsed.game === undefined) parsed.game = null;
+  validateState(parsed);
+  migrateGame(parsed.game);
   return validateState(parsed);
 }
 // Approximate generic examples, not a branded or scraped food database. Packaging takes precedence.

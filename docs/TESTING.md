@@ -36,3 +36,11 @@ Browser-/Unit-Tests ersetzen weder reale Android-Kamera-/SAF-Tests noch medizini
 - axe-core WCAG2 A/AA: ausgewählte Hauptansichten, Coach-Einrichtung, Nährstoffdialog, Starterwahl, Abenteuer, volles Team und Kampfbericht ohne automatisch erkannte Verstöße. Helles/dunkles Design und 360-Pixel-Dialogbreite geprüft. Systemeinstellung „reduzierte Bewegung“ stoppt die Sprite-Animation. Das ist keine vollständige WCAG- oder TalkBack-Zertifizierung.
 - Unit-Tests: Spielbelohnungen idempotent und unabhängig von Kalorienmenge, Pausen ohne Verlust, deterministische Kämpfe ohne Replay-Belohnung, ungültige Backups abgelehnt.
 - Die UI-Testfixtures sind synthetisch. Android-Ton, Bild-Daten-URLs, echtes TalkBack und große Systemschrift bleiben Gerätetests.
+
+## Version 0.3 · Kanto
+
+- 34 Unit-Tests lokal bestanden: zusätzlich vollständiger 151er-Datensatz mit Sprites, Gen-I-Typen/Entwicklungen, alte Spielstände ohne Erfahrungsverlust, separate Arenaorden statt erfundener Siege, legendäre Freigabebedingungen, drei erreichbare Evoli-Zweige.
+- Für jeden der drei Starter 250 synthetische Tage simuliert: alle 151 Entdeckungen, alle acht Orden und vollständige Liga erreichbar; Backup-Roundtrip gültig.
+- `tests/kanto-ui.mjs`: Migration eines 0.2-Spielstands, 151 geladene Bilder, Nummer-/Namens-/Typ-/Statusfilter, Evoli-Auswahl, 23 Reiseziele, acht Orden, fünf Liga-Gegner, vollständiger Pokédex, 360-Pixel-Dialoge, ausgewählte helle/dunkle Ansichten ohne axe WCAG2 A/AA-Verstöße.
+- Alle bestehenden Browserabläufe weiter erfolgreich. Pokédex und Ordenseite visuell kontrolliert. Gerätetests weiterhin offen (READINESS.md).
+- CI 0.2: Android erfolgreich, alle drei Browser-Skripte meldeten PASS; der Interface-Job wurde nach langsamer Systempaketinstallation am Zeitlimit abgebrochen. 0.3 lädt Chromium ohne unnötige apt-Aktualisierung auf dem vorbereiteten Runner und beendet den Testserver explizit.

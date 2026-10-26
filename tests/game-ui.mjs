@@ -128,7 +128,7 @@ await page.evaluate(
 );
 await page.reload();
 await click("game");
-assert.equal((await read()).game.collection.length, 9);
+assert.ok((await read()).game.collection.length > 20);
 await axe("full team");
 await page.screenshot({
   path: "test-results/pokemon-adventure.png",

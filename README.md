@@ -11,9 +11,20 @@ Ein ruhiger, deutschsprachiger Android-Begleiter für Ernährung, Gewicht, Kraft
 
 Android 8.0 oder neuer, aktuelles Android System WebView. Das ist ein persönlicher Testbuild, keine Play-Store-Veröffentlichung. Der erste Build muss erfolgreich abgeschlossen sein, bevor ein APK verfügbar ist. Debug-Zertifikate können zwischen CI-Läufen wechseln: vor einem Update Sicherung exportieren; bei Signaturkonflikt bisherige App erst nach Sicherung deinstallieren. Für dauerhaft nahtlose Updates ist später ein festes privates Release-Signaturzertifikat erforderlich.
 
-## Neu in 0.2.0
+## Neu in 0.3.0 · Kanto
 
-- **Pokémon-Abenteuer:** Starter wählen, automatisch Team-EP erhalten, Pokémon fangen, entwickeln und kurze Kämpfe bestreiten. 9 Entwicklungslinien / 22 mögliche Formen, wechselbarer Begleiter, Orden und Kampfberichte. Originalsprites und sechs kurze Originaleffekte aus Rot/Blau lokal gebündelt. Ton standardmäßig aus; Animationen abschaltbar. Kein Abo, Server oder Download beim Spielen.
+- **Alle 151 Pokémon:** deutsche Namen, Gen-I-Typen, lokale Originalsprites, durchsuchbarer Pokédex mit Typ-/Entdeckungsfilter und Entwicklungsdetails. Jede entdeckte Zwischenform bleibt registriert.
+- **23 Reiseziele:** von Alabastia über Vertania-Wald, Mondberg, M.S. Anne, Safari-Zone, Silph Co. und Kraftwerk bis zur Liga und Azuria-Höhle. Professor Eich, Bill, Mr. Fuji und weitere Personen begleiten die Stationen mit eigenen kurzen App-Texten.
+- **Acht echte Arenaorden:** Rocko, Misty, Major Bob, Erika, Koga, Sabrina, Pyro und Giovanni; danach Lorelei, Bruno, Agathe, Siegfried und Champ Blau. Begegnungen verwenden jeweils ein Signatur-Pokémon und vereinfachte Regeln.
+- **Besondere Begegnungen:** Arktos, Zapdos, Lavados, Mewtu und Mew mit Fortschrittsbedingungen; Evolis Wunschentwicklung vor Level 24 wählbar.
+- **Bestehende Spielstände bleiben erhalten:** Team, Erfahrung, Tonoptionen und bisherige Ereignisse werden migriert. Frühere allgemeine Orden bleiben Erinnerungsbänder und werden nicht als gewonnene Arenen ausgegeben.
+- **Kein Zeitdruck:** unverändert höchstens drei belohnte Routinen pro Tag, Erholung gleichwertig, keine Verluste bei Pausen. Simulationen bestätigen: alle drei Starter können die Liga und alle 151 Entdeckungen erreichen.
+
+Stand zur täglichen Nutzung und verbleibende Gerätetests: [Nutzungsreife](docs/READINESS.md).
+
+## Bereits enthalten seit 0.2.0
+
+- **Pokémon-Abenteuer:** Starter wählen, automatisch Team-EP erhalten, Pokémon fangen, entwickeln und kurze Kämpfe bestreiten. Ursprünglich 9 Entwicklungslinien / 22 Formen; in 0.3 auf alle 151 erweitert. Wechselbarer Begleiter, Orden und Kampfberichte. Originalsprites und sechs kurze Originaleffekte aus Rot/Blau lokal gebündelt. Ton standardmäßig aus; Animationen abschaltbar. Kein Abo, Server oder Download beim Spielen.
 - **Gesunde Spielregeln:** Ernährungseintrag, Check-in und Bewegung **oder** bewusste Erholung zählen jeweils einmal täglich. Keine Punkte für weniger Kalorien, Gewichtsverlust, zusätzliches Training oder mehr Trinken. Pausen und Niederlagen nehmen nichts weg.
 - **Persönlicher Kompass:** lokale Angaben zu Alter, Alltag, Trainingsort/-zeit und freiwilligen Einschränkungen. Energieformel aktualisiert sich mit dem Gewicht; ein 21-Tage-Rückblick erklärt mögliche Anpassungen. Kalorienziele ändern sich ausschließlich nach ausdrücklicher Übernahme.
 - **Einfacher erfassen:** Favoriten, gemerkte Portionen und Direktbuchung; Kennzeichnung vollständiger Esstage. Änderungen öffnen den Tag wieder.

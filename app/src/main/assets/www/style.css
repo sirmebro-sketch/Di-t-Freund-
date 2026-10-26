@@ -2109,3 +2109,225 @@ small,
   top: 10px;
   left: 10px;
 }
+.game-links {
+  margin: 20px 0;
+  display: flex;
+  flex-wrap: wrap;
+}
+.game-links button {
+  flex: 1;
+  min-width: 120px;
+}
+.journey-next {
+  border-left: 4px solid var(--accent);
+  padding: 12px 16px;
+  background: var(--soft);
+  border-radius: 0 12px 12px 0;
+}
+.journey-next small {
+  display: block;
+  margin-top: 8px;
+}
+.dex-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.dex-mon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: 14px;
+  padding: 10px 3px;
+  min-width: 0;
+}
+.dex-mon strong {
+  font-size: 13px;
+}
+.dex-mon small {
+  font-size: 11px;
+}
+.dex-mon .pokemon-sprite {
+  width: 80px;
+  height: 80px;
+}
+.dex-mon.discovered {
+  background: var(--soft);
+  border-color: var(--accent);
+}
+.dex-mon.undiscovered .pokemon-sprite {
+  filter: grayscale(0.85);
+  opacity: 0.65;
+}
+.species-hero {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin: 15px 0;
+}
+.species-hero .pokemon-sprite {
+  width: 120px;
+  height: 120px;
+}
+.species-hero h3 {
+  font-size: 25px;
+  margin: 5px 0;
+}
+.evolution-row {
+  width: 100%;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  color: var(--ink);
+  margin: 8px 0;
+}
+.evolution-row small {
+  display: block;
+}
+.evolution-row .pokemon-sprite {
+  width: 75px;
+  height: 75px;
+}
+.kanto-banner {
+  padding: 20px;
+  border-radius: 18px;
+  background: var(--soft);
+  border: 1px solid var(--border);
+}
+.kanto-banner h3 {
+  font-size: 24px;
+  margin: 6px 0;
+}
+.kanto-route {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0;
+  position: relative;
+}
+.kanto-route:before {
+  content: "";
+  position: absolute;
+  left: 20px;
+  top: 20px;
+  bottom: 20px;
+  width: 4px;
+  background: var(--border);
+}
+.kanto-route li {
+  position: relative;
+  margin: 8px 0;
+}
+.kanto-route button {
+  display: flex;
+  width: 100%;
+  gap: 16px;
+  align-items: center;
+  text-align: left;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  padding: 12px 0;
+}
+.route-node {
+  display: grid;
+  place-items: center;
+  flex: 0 0 44px;
+  height: 44px;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  font-weight: 800;
+}
+.kanto-route .visited .route-node {
+  background: var(--accent);
+  color: var(--surface);
+  border-color: var(--accent);
+}
+.kanto-route .current {
+  background: var(--soft);
+  border-radius: 14px;
+  padding-right: 10px;
+}
+.kanto-route small {
+  display: block;
+}
+.badge-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 20px 0;
+}
+.badge-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  text-align: center;
+  padding: 15px 8px;
+}
+.badge-icon {
+  width: 48px;
+  height: 52px;
+  display: block;
+  margin: auto;
+  color: var(--ink);
+}
+.badge-icon.locked {
+  opacity: 0.5;
+}
+.badge-card h3 {
+  font-size: 16px;
+  margin: 8px 0;
+}
+.badge-card small {
+  display: block;
+}
+.badge-card p {
+  font-size: 12px;
+}
+.badge-card .pokemon-sprite {
+  width: 64px;
+  height: 64px;
+}
+.league-row {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding: 12px 0;
+}
+.league-row small {
+  display: block;
+}
+.league-row p {
+  margin: 3px 0;
+}
+.league-row .pokemon-sprite {
+  width: 75px;
+  height: 75px;
+}
+@media (max-width: 380px) {
+  .dex-mon .pokemon-sprite {
+    width: 68px;
+    height: 68px;
+  }
+  .dex-mon strong {
+    font-size: 12px;
+  }
+  .species-hero {
+    gap: 8px;
+  }
+  .species-hero .pokemon-sprite {
+    width: 100px;
+    height: 100px;
+  }
+  .game-topline {
+    flex-wrap: wrap;
+  }
+}

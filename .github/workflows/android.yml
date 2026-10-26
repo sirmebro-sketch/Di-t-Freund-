@@ -40,20 +40,23 @@ jobs:
           path: app/build/reports/lint-results-debug.html
   interface:
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
       - run: npm install --no-save --package-lock=false playwright@1.56.1 @axe-core/playwright@4.10.2
-      - run: npx playwright install --with-deps chromium
+      - run: npx playwright install chromium
       - name: Browser flow tests
         run: |
-          python3 -m http.server 4173 --directory app/src/main/assets/www &
+          python3 -m http.server 4173 --directory app/src/main/assets/www > /tmp/diaetfreund-http.log 2>&1 &
+          diaetfreund_server_pid=$!
+          trap 'kill "$diaetfreund_server_pid" 2>/dev/null || true' EXIT
           node tests/ui.mjs
           node tests/coach-ui.mjs
           node tests/game-ui.mjs
+          node tests/kanto-ui.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

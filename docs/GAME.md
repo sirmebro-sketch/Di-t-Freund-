@@ -1,25 +1,45 @@
-# Pokémon-Abenteuer (0.2.0)
+# Pokémon-Abenteuer · Kanto (0.3.0)
 
-Auf ausdrücklichen Wunsch des Eigentümers ergänzt ein lokaler Pokémon-Fan-Spielteil das Tagebuch. Kein Konto, Spielserver, Kauf, Zufallskauf oder laufender Dienst. Die App ist nicht mit Nintendo, Creatures oder GAME FREAK verbunden. Pokémon-Namen, Sprites und Originalsounds werden nicht als frei lizenzierter eigener Inhalt ausgegeben.
+Ein lokaler, inoffizieller Fan-Spielteil auf ausdrücklichen Nutzerwunsch. Kein Konto, Server, Kauf, Zufallskauf oder laufender Dienst. Nicht mit Nintendo, Creatures oder GAME FREAK verbunden. Pokémon-Inhalte werden nicht als frei lizenzierte eigene Inhalte ausgegeben.
 
-## Spielkreislauf
+## Umfang
 
-- Einmal Bisasam, Glumanda oder Schiggy wählen. Der Spielstand bleibt im privaten App-Speicher und JSON-Backup.
-- Drei tägliche Aufgaben: mindestens ein Ernährungseintrag; Tages-Check-in; protokollierte Bewegung oder explizit eingetragene bewusste Erholung. Jede Aufgabe zählt einmal, jeweils 10 EP für alle bereits gefangenen Pokémon. Kein Wiege-, Kalorien-, Wasser- oder Intensitätsbonus.
-- Pro 3 Punkten eine automatische Begegnung mit garantiertem Fang einer noch fehlenden Entwicklungslinie. Nach 9 Linien ist die Sammlung der Basisformen vollständig. Später gefangene Pokémon starten mit Level 5.
-- Level 5 + 1 pro 20 EP, maximal 100. Die Pokémon entwickeln sich automatisch; ursprüngliche Formen verschwinden als aktive Teamform, die Linie bleibt erhalten. 22 Formen sind enthalten. Keine vollständige Nationaldex-Sammlung.
-- Pro 6 Punkten ein automatischer Kampf mit dem ausgewählten Begleiter. Vereinfacht: Level, Typenvorteil und abwechselnde Treffer. Kämpfe verwenden keine Gesundheitswerte. Kampfberichte sind wiederholbare Ansichten ohne erneute Belohnung.
-- Pro 3 Siege ein Orden. Keine dauerhaften KP-Verluste, keine Einbußen bei Niederlagen, keine Strafen für fehlende Tage. Keine Streak-Verluste. Fortschritt bleibt nach Tagebuchkorrekturen bestehen, damit Korrekturen nicht bestraft werden; erneutes Hinzufügen derselben Tagesaufgabe erzeugt keine weiteren EP.
-- Entwicklungen der Starter, Raupy, Taubsi und Karpador orientieren sich an Levelentwicklungen. Pikachu und Evoli entwickeln sich in dieser vereinfachten App mit Level 24 zu Raichu bzw. Aquana; die Originalspiele verwenden hierfür Steine. Keine Behauptung vollständiger originalgetreuer Kampfregeln.
+Alle 151 Pokémon der ersten Generation mit deutschen Namen, den damaligen Typen (keine spätere Fee-/Stahl-Umtypisierung), 151 statischen Originalsprites und Entwicklungsdaten. Der Pokédex ist nach Name/Nummer, Typ und Entdeckungsstand filterbar. Er zeigt Fundort-Hinweise, Fortschrittsbedingungen und die tatsächlichen Unterschiede der vereinfachten App-Entwicklungen.
 
-## Originalassets
+23 Reiseziele verbinden die Stationen mit eigenen kurzen Begleittexten. Bekannte Personen wie Professor Eich, Bill, Mr. Fuji, der Kapitän, die Arenaleiter, Team Rocket und die Top Vier haben passende Rollen. Es ist kein begehbares Remake und kein vollständiger NPC-/Dialogbestand der Originalspiele.
 
-22 statische Schwarz/Weiß-Sprites von https://pokemondb.net/sprites, auf Nutzerwunsch. Pokémon Database erlaubt im Seitenhinweis das lokale Speichern statt Hotlinking; das ist keine Aussage über eine allgemeine freie Lizenz an Pokémon-Marken oder -Grafiken. Die App lädt sie nicht extern nach.
+Die acht Arenaorden sind Fels-, Quell-, Donner-, Farb-, Seelen-, Sumpf-, Vulkan- und Erdorden. Eigene Vektor-Abzeichen symbolisieren sie. Die Kämpfe gegen Rocko, Misty, Major Bob, Erika, Koga, Sabrina, Pyro und Giovanni werden in dieser Reihenfolge freigeschaltet. Danach folgen Lorelei, Bruno, Agathe, Siegfried und Champ Blau. Trainerbilder werden nicht vorgetäuscht: gezeigt werden Namen, Ort und ihr Signatur-Pokémon.
 
-Sechs kurze Originaleffekte aus Pokémon Rot/Blau (zusammen ca. 6,8 Sekunden) aus „General Sound Effects“, The Sounds Resource, hochgeladen von thatrs: https://sounds.spriters-resource.com/game_boy_gbc/pokemonredblue/asset/410769/ . Verwendet: PRESS_AB, START_MENU, BALL_TOSS, FAINT_THUD, LEVEL_UP, CAUGHT_MON. Keine vollständigen Musikstücke. Für kleine Dateigröße nach Mono-Vorbis transkodiert, keine nachgebauten Syntheseeffekte. Ton startet erst nach Einschalten und einer Nutzeraktion, Lautstärke 30 %, ausblendende App stoppt den Ton.
+## Fortschritt
 
-Original-URLs, Dateinamen und SHA-256 der Quelldateien: GAME-ASSETS.json. Reproduzierbarer Asset-Import: `python3 scripts/fetch-game-assets.py` (benötigt Internet und ffmpeg). Bilder und Ton sind in `game-assets.js` als lokale Daten gebündelt. Das Repository gibt keine Erlaubnis zur kommerziellen Weiterverwertung fremder Assets; vor anderer Verbreitung Rechte gesondert klären.
+1. Bisasam, Glumanda oder Schiggy wählen. Das gesamte Team erhält 10 EP je Tagesaufgabe.
+2. Drei Aufgaben zählen je höchstens einmal täglich: Ernährungseintrag, Check-in, protokollierte Bewegung oder bewusst eingetragene Erholung. Kein Kalorien-, Wasser-, Gewicht- oder Intensitätsbonus.
+3. Alle 3 Punkte automatische Begegnung mit garantiertem Fang einer noch nicht entdeckten, freigeschalteten Art. Aktuelle Orts-Pools haben Vorrang; weitere Arten werden über freigeschaltete Orte und ab 96 Punkten über Kanto-Routen erreichbar. Entwicklungen registrieren dauerhaft jede Zwischenform, ohne den Basiseintrag zu verlieren.
+4. Level 5 + 1 je 20 EP, maximal Level 100. Alle bereits gefangenen Pokémon erhalten Erfahrung, nicht nur der aktive Begleiter. Der Begleiter lässt sich auch über den Pokédex wechseln. Neu gefangene Pokémon starten mit Level 5.
+5. Alle 6 Punkte ein automatischer Kampf. Ein freigegebener, noch offener Arena-/Liga-Gegner hat Vorrang; andernfalls kommen bekannte Trainerklassen, Rocket-Rüpel oder der Rivale. Ein Signatur-Pokémon pro Gegner, vereinfachter Typenvorteil und Rundenberechnung. Keine Gesundheitsdaten in Kampfformeln.
+6. Arena-Freigaben bei 24/48/72/96/120/144/168/192 Punkten; ein Sieg ist zusätzlich erforderlich. Top Vier und Champ bei 204/216/228/240/252 Punkten und nach allen acht Arena-Siegen. Niederlagen werden im nächsten passenden Kampf erneut versucht, ohne Verlust. Nach dem Champ bleibt die Sammlung offen.
+7. Arktos: 180 Punkte + 6 Orden; Zapdos: 204 + 8; Lavados: 216 + 8; Mewtu: 264 + Champ; Mew: 300 + Champ + 100 entdeckte Formen. Keine zeitlich verfallenden Begegnungen.
+
+Pausen entfernen nichts. Bereits erhaltene Punkte bleiben auch nach Tagebuchkorrekturen bestehen; dieselbe Tagesaufgabe kann nicht erneut belohnt werden. Das Spiel ist ein privater Motivationsbegleiter, kein manipulationssicherer Wettkampf. Kampfberichte bringen beim Wiederansehen keine Belohnung.
+
+## Vereinfachte Entwicklungen
+
+Levelentwicklungen verwenden die Kanto-Levelgrenzen. Stein-Entwicklungen passieren in dieser App auf Level 24, Tausch-Entwicklungen auf Level 32 – ohne Gegenstände oder Tauschpartner. Evoli hat die drei Gen-I-Ziele Aquana, Blitza und Flamara; vor Level 24 wählbar, Standard Aquana. Alle drei Formen sind zusätzlich direkt fangbar. Keine später eingeführten Baby-Pokémon, Entwicklungen, Megaformen oder regionalen Formen.
+
+## Migration
+
+App-Datenschema bleibt Version 2; der Spielstand erhält ein eigenes `version: 2`. Alte Version-0.2-Spielstände behalten Fänge, Erfahrung, Begleiter, Optionen, Punkte und Ereignisse. Entdeckte Zwischenformen werden rekonstruiert. Alte allgemeine Orden werden als Erinnerungsbänder bewahrt, nicht nachträglich als Arena-Siege ausgegeben. Ungültige Spielstände werden vor Migration abgelehnt. JSON-Sicherungen enthalten den vollständigen Spielstand.
+
+## Daten und Assets
+
+- Sprites: https://pokemondb.net/sprites (Schwarz/Weiß), bei Abrufproblemen PokeAPI-Spritearchiv. Original-URLs und Quell-Hashes in GAME-ASSETS.json. Kein Hotlinking zur Laufzeit.
+- Namen, Gen-I-Typanpassung und Entwicklungsgraph: PokeAPI-CSV-Snapshot. Quell-URLs und Hashes in KANTO-DATA-SOURCES.json. `scripts/build-kanto-data.py` erzeugt den kompakten Snapshot. Keine übernommenen Pokédex-Fließtexte.
+- Deutsche Orte/Orden: https://www.bisafans.de/routendex/kanto/index.php ; https://nintendo.fandom.com/de/wiki/Kanto . Original Trainer-/Liga-Zuordnung: https://pokemondb.net/red-blue/gymleaders-elitefour ; deutsche Namen auch https://pokemonletsgo.pokemon.com/de-de/kanto-region/ . Eigene Reisebeschreibungen; keine Originaldialoge kopiert.
+- Sechs kurze Originaleffekte aus Rot/Blau, zusammen ca. 6,8 Sekunden: PRESS_AB, START_MENU, BALL_TOSS, FAINT_THUD, LEVEL_UP, CAUGHT_MON. The Sounds Resource, „General Sound Effects“, hochgeladen von thatrs: https://sounds.spriters-resource.com/game_boy_gbc/pokemonredblue/asset/410769/ . Mono-Vorbis-Transkodierung, keine vollständigen Musikstücke. Ton standardmäßig aus, bei aktivem Ton 30 % Lautstärke, App-Ausblendung stoppt Wiedergabe.
+- `scripts/fetch-game-assets.py` erneuert die 151 Sprites und erhält die bereits verifizierten kurzen Soundeffekte unverändert. Anwendung lädt keine Spielassets extern nach.
+
+Die Nutzung im Fanprojekt begründet keine allgemeine Lizenz zur öffentlichen oder kommerziellen Weiterverwertung fremder Inhalte. Eine spätere Store-Veröffentlichung ist damit nicht als rechtlich freigegeben behauptet.
 
 ## Zugänglichkeit
 
-Beschriftete Auswahlbuttons, aktive Auswahl mit aria-pressed, Text-Kampfberichte, Ton aus als Standard. Animationen können ausgeschaltet werden; Systemeinstellung „reduzierte Bewegung“ hat Vorrang. Keine Blinkeffekte und kein Zeitlimit für Aufgaben oder Bedienung.
+Beschriftete Auswahlbuttons, aria-pressed für aktive Auswahl, Text-Kampfberichte, Ton standardmäßig aus. Animationen abschaltbar; „reduzierte Bewegung“ des Systems hat Vorrang. Kein Blinkeffekt oder Bedienzeitlimit. Kleine Bildschirmbreiten, helle/dunkle Ansichten und automatisierte axe-Prüfungen sind Teil der Browser-Tests; reale TalkBack-Prüfung bleibt erforderlich.

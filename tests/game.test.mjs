@@ -46,8 +46,11 @@ test("daily points are idempotent and independent of calorie amount, weight or t
 test("capture, automatic battles, evolution and badges progress without duplicate species", () => {
   const s = fixture();
   for (let i = 0; i < 50; i++) day(s, shiftDate("2026-01-01", i));
-  assert.equal(s.game.collection.length, 9);
-  assert.equal(new Set(s.game.collection.map((m) => m.base)).size, 9);
+  assert.ok(s.game.collection.length > 40);
+  assert.equal(
+    new Set(s.game.collection.map((m) => m.base)).size,
+    s.game.collection.length,
+  );
   assert.equal(s.game.battles, 25);
   assert.ok(s.game.wins >= 3);
   assert.equal(monster(s.game.collection[0]).id, 6);

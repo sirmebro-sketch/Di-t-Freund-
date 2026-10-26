@@ -1,30 +1,27 @@
 // A local, simplified fan game. Health values never determine combat strength.
-export const dex = {
-  1: ["Bisasam", "Pflanze", 2, 16],
-  2: ["Bisaknosp", "Pflanze", 3, 32],
-  3: ["Bisaflor", "Pflanze"],
-  4: ["Glumanda", "Feuer", 5, 16],
-  5: ["Glutexo", "Feuer", 6, 36],
-  6: ["Glurak", "Feuer"],
-  7: ["Schiggy", "Wasser", 8, 16],
-  8: ["Schillok", "Wasser", 9, 36],
-  9: ["Turtok", "Wasser"],
-  10: ["Raupy", "Käfer", 11, 7],
-  11: ["Safcon", "Käfer", 12, 10],
-  12: ["Smettbo", "Käfer"],
-  16: ["Taubsi", "Flug", 17, 18],
-  17: ["Tauboga", "Flug", 18, 36],
-  18: ["Tauboss", "Flug"],
-  25: ["Pikachu", "Elektro", 26, 24],
-  26: ["Raichu", "Elektro"],
-  129: ["Karpador", "Wasser", 130, 20],
-  130: ["Garados", "Wasser"],
-  133: ["Evoli", "Normal", 134, 24],
-  134: ["Aquana", "Wasser"],
-  143: ["Relaxo", "Normal"],
-};
-export const wild = [10, 16, 25, 129, 133, 143, 1, 4, 7];
+import { pokemon } from "./kanto-data.js";
+import {
+  gyms,
+  league,
+  places,
+  placeAt,
+  encounters,
+  specialGates,
+} from "./kanto-world.js";
+export { pokemon, gyms, league, places, placeAt };
+export const dex = Object.fromEntries(
+  Object.entries(pokemon).map(([id, p]) => [
+    id,
+    [p.name, p.types.join(" / "), p.evolutions[0]?.to, p.evolutions[0]?.level],
+  ]),
+);
+export const wild = Object.keys(pokemon).map(Number);
 export const newGame = (starter, date) => ({
+  version: 2,
+  discovered: [starter],
+  badges: [],
+  leagueWins: [],
+  legacyRibbons: 0,
   starter,
   buddy: starter,
   started: date,
@@ -38,18 +35,76 @@ export const newGame = (starter, date) => ({
   battles: 0,
   wins: 0,
 });
-export function monster(m) {
-  const level = Math.min(100, 5 + Math.floor(m.xp / 20));
+export function evolutionPath(m) {
+  const level = Math.min(100, 5 + Math.floor(m.xp / 20)),
+    path = [m.base];
   let id = m.base;
-  while (dex[id][2] && level >= dex[id][3]) id = dex[id][2];
+  while (pokemon[id]) {
+    const choices = pokemon[id].evolutions;
+    const e = choices.find((e) => e.to === m.choice) || choices[0];
+    if (!e || level < e.level) break;
+    id = e.to;
+    path.push(id);
+  }
+  return path;
+}
+export function monster(m) {
+  const id = evolutionPath(m).at(-1);
   return {
     id,
-    name: dex[id][0],
-    type: dex[id][1],
-    level,
+    name: pokemon[id].name,
+    type: pokemon[id].types[0],
+    types: pokemon[id].types,
+    level: Math.min(100, 5 + Math.floor(m.xp / 20)),
     xp: m.xp,
     base: m.base,
   };
+}
+export function migrateGame(g) {
+  if (!g || g.version === 2) return g;
+  if (g.version !== undefined) throw Error("Unbekannte Abenteuer-Version.");
+  // Preserve existing partner, experience, catches, settings and events. Generic ribbons are not gym victories.
+  g.version = 2;
+  g.discovered = [...new Set(g.collection.flatMap(evolutionPath))].sort(
+    (a, b) => a - b,
+  );
+  g.badges = [];
+  g.leagueWins = [];
+  g.legacyRibbons = Math.floor(g.wins / 3);
+  return g;
+}
+export function recordDiscovery(g) {
+  g.discovered = [
+    ...new Set([...g.discovered, ...g.collection.flatMap(evolutionPath)]),
+  ].sort((a, b) => a - b);
+}
+export function nextChallenge(g) {
+  const gym = gyms.find((x) => !g.badges.includes(x.id));
+  if (gym) return { ...gym, kind: "gym" };
+  const elite = league.find((x) => !g.leagueWins.includes(x.id));
+  return elite ? { ...elite, city: "Indigo-Plateau", kind: "league" } : null;
+}
+export function canEncounter(g, id) {
+  const points = gamePoints(g),
+    gate = specialGates[id];
+  if (gate)
+    return (
+      points >= gate.points &&
+      (!gate.badges || g.badges.length >= gate.badges) &&
+      (!gate.champion || g.leagueWins.includes("blue")) &&
+      (!gate.discovered || g.discovered.length >= gate.discovered)
+    );
+  const homes = places.filter((p) => p.pool.includes(id));
+  return (
+    points >= (homes.length ? Math.min(...homes.map((p) => p.points)) : 96)
+  );
+}
+export function encounterLocation(id) {
+  return (
+    specialGates[id]?.place ||
+    places.find((p) => p.pool.includes(id))?.name ||
+    "Kanto-Routen · ab 96 Punkten"
+  );
 }
 export function gamePoints(g) {
   return Object.values(g.earned).reduce((n, a) => n + a.length, 0);
@@ -79,26 +134,36 @@ export function quests(s, date) {
   ];
 }
 function advantage(a, b) {
-  return {
-    Feuer: "Pflanze",
-    Pflanze: "Wasser",
-    Wasser: "Feuer",
-    Elektro: "Wasser",
-    Flug: "Käfer",
-  }[a] === b
-    ? 1.25
-    : 1;
+  const strengths = {
+    Normal: [],
+    Feuer: ["Pflanze", "Eis", "Käfer"],
+    Wasser: ["Feuer", "Boden", "Gestein"],
+    Elektro: ["Wasser", "Flug"],
+    Pflanze: ["Wasser", "Boden", "Gestein"],
+    Eis: ["Pflanze", "Boden", "Flug", "Drache"],
+    Kampf: ["Normal", "Eis", "Gestein"],
+    Gift: ["Pflanze", "Käfer"],
+    Boden: ["Feuer", "Elektro", "Gift", "Gestein"],
+    Flug: ["Pflanze", "Kampf", "Käfer"],
+    Psycho: ["Kampf", "Gift"],
+    Käfer: ["Pflanze", "Gift", "Psycho"],
+    Gestein: ["Feuer", "Eis", "Flug", "Käfer"],
+    Geist: ["Geist"],
+    Drache: ["Drache"],
+  };
+  return strengths[a]?.includes(b) ? 1.25 : 1;
 }
-export function battle(g, index) {
+export function battle(g, index, challenge = null) {
   const ally = monster(
     g.collection.find((m) => m.base === g.buddy) || g.collection[0],
   );
-  const enemyId = wild[(index * 3 + 1) % wild.length],
+  const trainer = encounters[index % encounters.length];
+  const enemyId = challenge?.pokemon || trainer[1],
     enemy = {
       id: enemyId,
       name: dex[enemyId][0],
-      type: dex[enemyId][1],
-      level: Math.min(90, 5 + index * 2),
+      type: pokemon[enemyId].types[0],
+      level: challenge?.level || Math.min(90, 5 + index * 2),
     };
   let hp = 35 + ally.level * 3,
     foe = 35 + enemy.level * 3;
@@ -121,7 +186,17 @@ export function battle(g, index) {
       foe,
     });
   }
-  return { ally, enemy, maxHp, maxFoe, rounds, won: foe === 0 };
+  return {
+    ally,
+    enemy,
+    maxHp,
+    maxFoe,
+    rounds,
+    won: foe === 0,
+    trainer: challenge?.trainer || trainer[0],
+    place: challenge?.city || trainer[2],
+    challenge: challenge ? { kind: challenge.kind, id: challenge.id } : null,
+  };
 }
 export function syncGame(s, date) {
   const g = s.game;
@@ -129,6 +204,7 @@ export function syncGame(s, date) {
   const earned = g.earned[date] || [],
     fresh = quests(s, date).filter((q) => q.done && !earned.includes(q.key));
   if (!fresh.length) return;
+  migrateGame(g);
   const before = gamePoints(g);
   g.earned[date] = [...earned, ...fresh.map((q) => q.key)];
   const old = new Map(g.collection.map((m) => [m.base, monster(m)]));
@@ -153,14 +229,29 @@ export function syncGame(s, date) {
         species: now.id,
       });
   });
+  recordDiscovery(g);
   const after = gamePoints(g);
+  const oldPlace = placeAt(before),
+    newPlace = placeAt(after);
+  if (oldPlace.id !== newPlace.id)
+    event(
+      "place",
+      `${newPlace.name} erreicht. ${newPlace.person} erwartet dich.`,
+      { placeId: newPlace.id },
+    );
   for (let i = Math.floor(before / 3) + 1; i <= Math.floor(after / 3); i++) {
     const available = wild.filter(
-      (id) => !g.collection.some((m) => m.base === id),
+      (id) =>
+        !g.discovered.includes(id) &&
+        !g.collection.some((m) => m.base === id) &&
+        canEncounter(g, id),
     );
-    if (available.length) {
-      const base = available[(i - 1) % available.length];
+    const local = available.filter((id) => newPlace.pool.includes(id));
+    const pool = local.length ? local : available;
+    if (pool.length) {
+      const base = pool[(i - 1) % pool.length];
       g.collection.push({ base, xp: 0, caught: date });
+      recordDiscovery(g);
       event(
         "catch",
         `${dex[base][0]} ist dir begegnet. Pokéball geworfen – gefangen!`,
@@ -169,22 +260,43 @@ export function syncGame(s, date) {
     } else
       event(
         "explore",
-        "Dein Team erkundet einen neuen Abschnitt. Alle 9 Entwicklungslinien sind bei dir.",
+        g.discovered.length === 151
+          ? "Alle 151 Pokémon entdeckt! Kanto bleibt dein Zuhause."
+          : "Dieses Gebiet ist gut erforscht. Auf deiner Reise warten neue Pokémon.",
       );
   }
   for (let i = Math.floor(before / 6) + 1; i <= Math.floor(after / 6); i++) {
-    const result = battle(g, g.battles);
+    const next = nextChallenge(g),
+      challenge = next && after >= next.points ? next : null;
+    if (challenge?.id === "blue")
+      challenge.pokemon = { 1: 6, 4: 9, 7: 3 }[g.starter];
+    const result = battle(g, g.battles, challenge);
     g.battles++;
     if (result.won) g.wins++;
     event(
       "battle",
       result.won
-        ? `Dein Team gewinnt Begegnung ${g.battles}!`
-        : `Begegnung ${g.battles}: guter Einsatz. Dein Team erholt sich vollständig.`,
+        ? `Sieg gegen ${result.trainer}!`
+        : `Begegnung mit ${result.trainer}: Dein Team erholt sich vollständig.`,
       { result },
     );
-    if (result.won && g.wins % 3 === 0)
-      event("badge", `Abenteuerorden ${g.wins / 3} erhalten!`);
+    if (result.won && challenge) {
+      if (challenge.kind === "gym") {
+        g.badges.push(challenge.id);
+        event("badge", `${challenge.name} von ${challenge.trainer} erhalten!`, {
+          badgeId: challenge.id,
+        });
+      } else {
+        g.leagueWins.push(challenge.id);
+        event(
+          "league",
+          challenge.id === "blue"
+            ? "Du bist Kanto-Champ! Willkommen in der Ruhmeshalle."
+            : `${challenge.trainer} besiegt. Der nächste Abschnitt der Liga wartet.`,
+          { leagueId: challenge.id },
+        );
+      }
+    }
   }
   g.events = g.events.slice(-80);
 }
@@ -193,7 +305,7 @@ export function validateGame(g) {
   const obj = (x) => x && typeof x === "object" && !Array.isArray(x),
     integer = (x, max) => Number.isInteger(x) && x >= 0 && x <= max,
     date = (x) => typeof x === "string" && /^\d{4}-\d{2}-\d{2}$/.test(x),
-    ids = [1, 4, 7, ...wild];
+    ids = wild;
   if (
     !obj(g) ||
     ![1, 4, 7].includes(g.starter) ||
@@ -206,7 +318,7 @@ export function validateGame(g) {
     Object.keys(g.earned).length > 36500 ||
     !Array.isArray(g.collection) ||
     !g.collection.length ||
-    g.collection.length > 9 ||
+    g.collection.length > 151 ||
     !Array.isArray(g.events) ||
     g.events.length > 80 ||
     !integer(g.battles, 20000) ||
@@ -219,7 +331,9 @@ export function validateGame(g) {
         obj(m) &&
         ids.includes(m.base) &&
         integer(m.xp, 20000) &&
-        date(m.caught),
+        date(m.caught) &&
+        (m.choice === undefined ||
+          pokemon[m.base].evolutions.some((e) => e.to === m.choice)),
     ) ||
     new Set(g.collection.map((m) => m.base)).size !== g.collection.length ||
     !g.collection.some((m) => m.base === g.buddy)
@@ -236,6 +350,24 @@ export function validateGame(g) {
     )
   )
     throw Error("Ungültige Abenteuerpunkte.");
+  if (g.version !== undefined) {
+    if (
+      g.version !== 2 ||
+      !Array.isArray(g.discovered) ||
+      g.discovered.length > 151 ||
+      new Set(g.discovered).size !== g.discovered.length ||
+      !g.discovered.every((id) => ids.includes(id)) ||
+      !Array.isArray(g.badges) ||
+      g.badges.length > 8 ||
+      !g.badges.every((id, i) => id === gyms[i].id) ||
+      !Array.isArray(g.leagueWins) ||
+      g.leagueWins.length > 5 ||
+      !g.leagueWins.every((id, i) => id === league[i].id) ||
+      (g.leagueWins.length > 0 && g.badges.length !== 8) ||
+      !integer(g.legacyRibbons, 20000)
+    )
+      throw Error("Ungültiger Kanto-Fortschritt.");
+  }
   for (const e of g.events) {
     if (
       !obj(e) ||
@@ -247,6 +379,8 @@ export function validateGame(g) {
         "explore",
         "battle",
         "badge",
+        "place",
+        "league",
       ].includes(e.kind) ||
       typeof e.text !== "string" ||
       e.text.length > 500 ||
@@ -256,6 +390,14 @@ export function validateGame(g) {
       throw Error("Ungültiges Abenteuerereignis.");
     if (e.kind === "battle") {
       const r = e.result;
+      if (
+        r?.trainer !== undefined &&
+        (typeof r.trainer !== "string" ||
+          r.trainer.length > 100 ||
+          typeof r.place !== "string" ||
+          r.place.length > 100)
+      )
+        throw Error("Ungültige Trainerbegegnung.");
       if (
         !obj(r) ||
         typeof r.won !== "boolean" ||
