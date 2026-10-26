@@ -7,8 +7,8 @@ on:
 permissions:
   contents: read
 jobs:
-  verify:
-    runs-on: ubuntu-latest
+  android:
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
@@ -16,17 +16,6 @@ jobs:
         with:
           node-version: '22'
       - run: npm run check && npm test
-      - run: npm install --no-save --package-lock=false playwright@1.56.1
-      - run: npx playwright install --with-deps chromium
-      - name: Browser flow tests
-        run: |
-          python3 -m http.server 4173 --directory app/src/main/assets/www &
-          node tests/ui.mjs
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: UI-Screenshots
-          path: test-results/
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -49,3 +38,22 @@ jobs:
         with:
           name: Android-Lint
           path: app/build/reports/lint-results-debug.html
+  interface:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save --package-lock=false playwright@1.56.1
+      - run: npx playwright install --with-deps chromium
+      - name: Browser flow tests
+        run: |
+          python3 -m http.server 4173 --directory app/src/main/assets/www &
+          node tests/ui.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: UI-Screenshots
+          path: test-results/
