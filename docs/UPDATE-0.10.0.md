@@ -25,6 +25,7 @@ Zucker bedeutet Gesamtzucker laut Quelle, einschließlich natürlich enthaltenem
 - Sicherungen mit doppelten Tagebuch-, Lebensmittel-, Gesundheits- oder Trainings-IDs werden abgewiesen, damit Änderungen/Löschungen nicht mehrere Datensätze treffen.
 - Fehler während einer Zustandsänderung werden ebenfalls von der atomaren Speicherbehandlung abgefangen.
 - Kalorienbilanz ohne berechenbaren Verbrauch konnte bei 393 px seitlich überlaufen; Budgetzeilen umbrechen jetzt sauber.
+- Beim Wechsel hell/dunkel wechselte die Schrift sofort, der Schaltflächenhintergrund aber verzögert. Farben wechseln nun gemeinsam; das vermeidet kurzzeitig schlechten Kontrast.
 - Mahlzeitenaktionen standen ohne Abstand direkt aneinander. Sie haben jetzt getrennte Berührungsflächen und umbrechen auf kleinen Displays.
 - Belohnungsmeldungen teilen sich einen Ablauf-Timer. Ein alter Routine-Timer kann eine neue Ei-/Schlupfmeldung nicht mehr frühzeitig ausblenden.
 - CSV gab zeitbasierte Trainingssätze als Wiederholungen aus. Nun stehen dort Sekunden; die fünf neuen Nährwertspalten und unbekannte Ballaststoffe werden korrekt exportiert.
