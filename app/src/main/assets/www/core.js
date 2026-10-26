@@ -1,3 +1,5 @@
+import { validateTrainingExtras } from './training.js';
+import { validateAudio } from './atmosphere-settings.js';
 import { validateTemplates } from "./meal-templates.js";
 import { validatePersonalPlan } from "./personal-plan.js";
 import { validateConnection } from "./health-sync.js";
@@ -138,6 +140,8 @@ function assert(ok) {
     );
 }
 export function validateState(s) {
+  validateAudio(s?.audioSettings);
+  validateTrainingExtras(s || {});
   if (s?.personalPlan != null) validatePersonalPlan(s.personalPlan);
   validateGame(s?.game);
   validateConnection(s?.healthConnect);

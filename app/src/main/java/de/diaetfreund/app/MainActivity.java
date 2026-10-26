@@ -4,6 +4,11 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.media.AudioManager;
+import android.media.AudioAttributes;
+import android.media.AudioFocusRequest;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
@@ -36,6 +41,10 @@ public final class MainActivity extends ComponentActivity {
     private static final String ORIGIN = "appassets.androidplatform.net";
     private static final int MAX_BYTES = 10 * 1024 * 1024;
     private WebView web;
+    private AudioManager audioManager;
+    private AudioFocusRequest audioFocusRequest;
+    private volatile boolean audioFocusGranted;
+    private volatile boolean appForeground;
     private HealthConnectBridge healthBridge;
     private AtomicFile stateFile;
     private File pendingExport;
@@ -155,8 +164,25 @@ public final class MainActivity extends ComponentActivity {
             if (request == null || request.length() > 20000) return;
             runOnUiThread(() -> healthBridge.handle(request));
         }
+        @JavascriptInterface public boolean requestAppAudioFocus() {
+            if (!appForeground) return false;
+            if (audioFocusGranted) return true;
+            if (audioManager == null) audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+            if (audioManager == null) return false;
+            if (audioFocusRequest == null) audioFocusRequest = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                .setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_GAME).setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build())
+                .setOnAudioFocusChangeListener(change -> {
+                    audioFocusGranted = change == AudioManager.AUDIOFOCUS_GAIN && appForeground;
+                    if (web != null) web.evaluateJavascript("window.onAudioFocusChanged && window.onAudioFocusChanged(" + audioFocusGranted + ")", null);
+                }, new Handler(Looper.getMainLooper())).build();
+            audioFocusGranted = audioManager.requestAudioFocus(audioFocusRequest) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
+            return audioFocusGranted;
+        }
+        @JavascriptInterface public void abandonAppAudioFocus() { releaseAudioFocus(); }
         @JavascriptInterface public void exitApp() { runOnUiThread(() -> finish()); }
     }
-    @Override protected void onResume() { super.onResume(); if(web != null) web.post(() -> web.evaluateJavascript("window.onAppResume && window.onAppResume()", null)); }
-    @Override protected void onDestroy() { if(healthBridge != null) healthBridge.close(); if(web != null) { web.removeJavascriptInterface("Android"); web.destroy(); web = null; } super.onDestroy(); }
+    private void releaseAudioFocus() { audioFocusGranted = false; if (audioManager != null && audioFocusRequest != null) audioManager.abandonAudioFocusRequest(audioFocusRequest); }
+    @Override protected void onResume() { super.onResume(); appForeground = true; if(web != null) { web.onResume(); web.post(() -> web.evaluateJavascript("window.onAppResume && window.onAppResume()", null)); } }
+    @Override protected void onPause() { appForeground = false; if(web != null) { web.evaluateJavascript("window.onAppPause && window.onAppPause()", null); web.onPause(); } releaseAudioFocus(); super.onPause(); }
+    @Override protected void onDestroy() { releaseAudioFocus(); if(healthBridge != null) healthBridge.close(); if(web != null) { web.removeJavascriptInterface("Android"); web.destroy(); web = null; } super.onDestroy(); }
 }

@@ -55,7 +55,7 @@ test('Personal import preserves physician clearance and activity factor in exist
 test('Invalid personal values, extra keys, versions and oversized imports are rejected',()=>{
   for(const change of [{stepMin:9000},{stepMax:8000.5},{height:0},{goal:35},{commuteMode:'<script>'},{commuteMode:['bicycle']},{commuteKm:-1},{hypertension:'true'},{unexpected:123}])
     assert.throws(()=>parsePersonalPlan(envelope({...plan,...change})));
-  assert.throws(()=>parsePersonalPlan(JSON.stringify({kind:'diaetfreund-personal-plan',version:2,values:plan})));
+  assert.throws(()=>parsePersonalPlan(JSON.stringify({kind:'diaetfreund-personal-plan',version:99,values:plan})));
   assert.throws(()=>parsePersonalPlan(' '.repeat(64001)));
   assert.throws(()=>validatePersonalPlan(null));
   assert.throws(()=>applyPersonalPlan(emptyState(),plan),/Grundprofil/);

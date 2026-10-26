@@ -1,0 +1,68 @@
+{
+  "rights": "Pokémon © Nintendo / Creatures / GAME FREAK. Fan project; no free licence or affiliation claimed.",
+  "assets": [
+    {
+      "id": "battle",
+      "url": "https://www.spriters-resource.com/media/assets/17/18502.png?updated=1755472519",
+      "credit": "Sunday_Domeko",
+      "sha256": "1d8940127c65cf0b903e77a16531f475f835d78178edf5df0ab7fe3a39ba130f",
+      "handling": "Unedited original PNG sheet; display through SVG viewports."
+    },
+    {
+      "id": "box",
+      "url": "https://www.spriters-resource.com/media/assets/17/18504.png?updated=1755472519",
+      "credit": "Dragoon",
+      "sha256": "4314eb85a977e3ea2d0100d26b047a2b59db07bdec8122728ae750b9149ad778",
+      "handling": "Unedited original PNG sheet; display through SVG viewports."
+    },
+    {
+      "id": "hit",
+      "game": "Pokémon Diamond/Pearl",
+      "archiveUrl": "https://sounds.spriters-resource.com/media/assets/425/428218.zip?updated=1755546054",
+      "archiveSha256": "9253c7acd20c7fe045e7622fac98dc8b524835e17600d6a387a48ed23eea6e9a",
+      "file": "Hit Normal Damage.mp3",
+      "credit": "BellBlitzKing",
+      "originalSha256": "8bb89da898419484bd484550e1a9ae632dd7b4ae49c09ea9f61005d3bea76328",
+      "sha256": "9ad8a41bb22ad50badfe40fbdf1790413072e8fef73947eaacf083048ff33d12",
+      "seconds": 0.992653,
+      "handling": "Audio stream copied; artwork and metadata removed."
+    },
+    {
+      "id": "heal",
+      "game": "Pokémon Diamond/Pearl",
+      "archiveUrl": "https://sounds.spriters-resource.com/media/assets/425/428218.zip?updated=1755546054",
+      "archiveSha256": "9253c7acd20c7fe045e7622fac98dc8b524835e17600d6a387a48ed23eea6e9a",
+      "file": "In-Battle Heal HP Restore.mp3",
+      "credit": "BellBlitzKing",
+      "originalSha256": "99a1a4a7ec190dee0afe05fd59797ddf3e9670e4806a1484e2c808b9e79e39ec",
+      "sha256": "7977e03ac9851ff387d46aace6cf90c040ea928350806175a88b4630104bf5e6",
+      "seconds": 1.515102,
+      "handling": "Audio stream copied; artwork and metadata removed."
+    },
+    {
+      "id": "recall",
+      "game": "Pokémon Diamond/Pearl",
+      "archiveUrl": "https://sounds.spriters-resource.com/media/assets/425/428218.zip?updated=1755546054",
+      "archiveSha256": "9253c7acd20c7fe045e7622fac98dc8b524835e17600d6a387a48ed23eea6e9a",
+      "file": "In-Battle Recall Switch Pokeball.mp3",
+      "credit": "BellBlitzKing",
+      "originalSha256": "6bd896786da152cd1f57e72a95a7d1198577a7f9f5e8a9abea32e6ef5b7839fa",
+      "sha256": "539abd55d16aa1a821ed50f6af21f8f9f22e2cb3d80745761f5c5ac7cfffa883",
+      "seconds": 0.888163,
+      "handling": "Audio stream copied; artwork and metadata removed."
+    },
+    {
+      "id": "bubble",
+      "game": "Pokémon Diamond/Pearl",
+      "archiveUrl": "https://sounds.spriters-resource.com/media/assets/425/428218.zip?updated=1755546054",
+      "archiveSha256": "9253c7acd20c7fe045e7622fac98dc8b524835e17600d6a387a48ed23eea6e9a",
+      "file": "Bubble.mp3",
+      "credit": "BellBlitzKing",
+      "originalSha256": "c33ba1055a52c92dcc704fb7f4640085c39a6f3024fdc86313896fde4eb06cbe",
+      "sha256": "367789c301630d595eb40d0536c0c6042e07d863ed557c7bea94301674bc9769",
+      "seconds": 1.933061,
+      "handling": "Audio stream copied; artwork and metadata removed."
+    }
+  ],
+  "music": "Original procedural compositions in atmosphere.js; not copied Pokémon soundtrack recordings."
+}

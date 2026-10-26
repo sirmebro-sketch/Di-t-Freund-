@@ -27,3 +27,7 @@ Beim ausdrücklich ausgelösten Aktualisieren können bereits in Android erteilt
 USDA-Grundnahrungsmittel sind im APK enthalten. Suchen und Eintragen benötigen keinen zusätzlichen Netzwerkzugriff. Die Daten sind generisch und enthalten keine persönlichen Gesundheitsdaten.
 
 Die optionale persönliche Profildatei ergänzt nach Vorschau ausschließlich die bestätigten Einstellungen; sie ersetzt kein Tagebuch. Arbeitsweg, Bewegungsziele und Gesundheitsflags bleiben im lokalen Speicher und sind Bestandteil normaler Sicherungen. Solche Dateien enthalten private Angaben, sind unverschlüsselt und gehören nicht in öffentliche Repositories.
+
+# Ergänzung 0.7.0
+
+Musik wird offline erzeugt; Bilder und kurze Effekte sind lokal gebündelt. Audiofokus verwendet Android-Systemfunktionen ohne neue Datenerhebung. Eigene Trainingspläne und Toneinstellungen liegen im bestehenden privaten Speicher und sind Bestandteil der Sicherung. Der optionale private Profilimport kann ein ausdrücklich angegebenes datiertes Gewicht und den Trainingsstand übernehmen; die Vorschau zeigt dies vor der Bestätigung.

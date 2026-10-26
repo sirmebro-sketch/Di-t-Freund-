@@ -15,7 +15,7 @@ const click=async a=>page.locator(`[data-action="${a}"]:visible`).first().click(
 const plan={height:180,goal:85,sex:'male',hypertension:true,betaBlocker:true,muscleBuild:true,commuteMode:'bicycle',nextCommuteMode:'ebike',commuteKm:18,stepMin:5000,stepMax:8000};
 const raw=JSON.stringify({kind:'diaetfreund-personal-plan',version:1,values:plan});
 await page.evaluate(raw=>window.onImport(raw),raw);
-assert.match(await page.locator('#sheet').innerText(),/Tagebuch, Gewichte, Pokémon/);
+assert.match(await page.locator('#sheet').innerText(),/Tagebuch, Pokémon/);
 await click('close');assert.deepEqual(await read(),initial);
 await page.evaluate(raw=>window.onImport(raw),raw);
 await page.evaluate(()=>window.failWrite=true);await click('confirm-personal-plan');assert.deepEqual(await read(),initial);

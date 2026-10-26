@@ -1,3 +1,4 @@
+import { platinumScene } from './platinum-ui.js';
 import {gen4} from "./gen4-assets.js";
 import {
   activeRegion,
@@ -43,21 +44,12 @@ export function setupGameUI({
   esc,
   notify,
   close,
+  playEffect,
 }) {
   const sprites = gen4;
-  let playing = null;
   const sprite = (id, cls = "") =>
     `<img class="pokemon-sprite ${cls}" src="${sprites[id]}" alt="${esc(dex[id][0])}" width="96" height="96">`;
-  function sound(key) {
-    if (!getState().game?.sound) return;
-    playing?.pause();
-    playing = new Audio(sounds[key]);
-    playing.volume = 0.3;
-    playing.play().catch(() => {});
-  }
-  document.addEventListener("visibilitychange", () => {
-    if (document.hidden) playing?.pause();
-  });
+  function sound(key) { playEffect?.(key); }
   function card() {
     const g = getState().game;
     if (!g)
@@ -72,7 +64,7 @@ export function setupGameUI({
     if (!g)
       return sheet(
         "Dein Pokémon-Abenteuer",
-        `<div class="game-intro"><span class="eyebrow">WÄHLE DEINEN ERSTEN PARTNER</span><h3>Zusammen ist jeder kleine Schritt größer.</h3><p>Du kümmerst dich um dich. Dein Team sammelt dabei automatisch Erfahrung, fängt Pokémon und bestreitet kleine Kämpfe.</p><div class="starter-grid">${[1, 4, 7].map((id) => `<button class="starter" data-action="game-start" data-id="${id}">${sprite(id)}<strong>${dex[id][0]}</strong><small>${dex[id][1]}</small></button>`).join("")}</div><p class="hint">Keine Belohnung für Unteressen, Gewichtsverlust oder extra Training. Kein Verlust bei Pausen. Ernährungseintrag, Check-in und Bewegung oder Erholung zählen jeweils höchstens einmal täglich.</p><p class="footnote">Inoffizieller Fan-Spielteil mit vereinfachten Regeln. Pokémon © Nintendo / Creatures / GAME FREAK. Originalsprites: Pokémon Database. Kurze Originaleffekte: Rot/Blau, The Sounds Resource.</p></div>`,
+        `<div class="game-intro"><span class="eyebrow">WÄHLE DEINEN ERSTEN PARTNER</span><h3>Zusammen ist jeder kleine Schritt größer.</h3><p>Du kümmerst dich um dich. Dein Team sammelt dabei automatisch Erfahrung, fängt Pokémon und bestreitet kleine Kämpfe.</p><div class="starter-grid">${[1, 4, 7].map((id) => `<button class="starter" data-action="game-start" data-id="${id}">${sprite(id)}<strong>${dex[id][0]}</strong><small>${dex[id][1]}</small></button>`).join("")}</div><p class="hint">Keine Belohnung für Unteressen, Gewichtsverlust oder extra Training. Kein Verlust bei Pausen. Ernährungseintrag, Check-in und Bewegung oder Erholung zählen jeweils höchstens einmal täglich.</p><p class="footnote">Inoffizieller Fan-Spielteil mit vereinfachten Regeln. Pokémon © Nintendo / Creatures / GAME FREAK. Originalsprites: Pokémon Database. Hintergründe: Pokémon Platin, The Spriters Resource (Sunday_Domeko, Dragoon). Kurze Originaleffekte: Rot/Blau und Diamant/Perl, The Sounds Resource (BellBlitzKing). Musik: drei eigene Retro-Kompositionen.</p></div>`,
       );
     const m = monster(g.collection.find((x) => x.base === g.buddy)),
       points = regionPoints(g),
@@ -86,7 +78,7 @@ export function setupGameUI({
         .reverse();
     sheet(
       "Dein Abenteuer",
-      `<div class="game-world ${g.motion ? "" : "still"}"><div class="game-topline"><span>${esc(world.placeAt(points).name.toUpperCase())} · ${g.paused ? "PAUSE" : "UNTERWEGS"}</span><span>${progress.badges.length}/8 ◈ ORDEN</span></div><div class="game-scene theme-${g.career?.theme || "classic"}"><div class="game-cloud cloud-one"></div><div class="game-cloud cloud-two"></div><div class="scene-platform"></div>${sprite(m.id, "companion")}<span class="scene-caption">Jeder kleine Schritt zählt.</span></div><div class="game-status"><div><strong>${m.name}</strong><span>Lv. ${m.level} · ${m.type}</span></div><div class="track"><i style="width:${m.level === 100 ? 100 : (m.xp % 20) * 5}%"></i></div><small>${m.level === 100 ? "Maximales Level erreicht" : `${20 - (m.xp % 20)} EP bis zum nächsten Level`} · EP gelten fürs ganze Team</small></div></div><div class="toolbar game-links">${btn("Pokédex · " + g.discovered.length + "/251", "game-dex", "secondary")}${btn(regionName + "-Karte", "game-map", "secondary")}${btn("Region wechseln", "game-regions", "secondary")}${btn("Orden & Liga", "game-badges", "secondary")}${btn("Forschung & Freundschaft", "game-career", "secondary")}</div><section class="journey-next"><span class="eyebrow">${esc(world.placeAt(points).person)}</span><p>${esc(world.placeAt(points).text)}</p>${nextChallenge(g) ? `<strong>Nächstes Ziel: ${esc(nextChallenge(g).trainer)} · ${Math.max(0, nextChallenge(g).points - points)} Punkte bis zur Freigabe</strong><small>Bei Freigabe im nächsten automatischen Kampf. Nach einer Niederlage erneut, ohne Verlust.</small>` : "<strong>Du bist Champ dieser Region. Entdecke die übrigen Pokémon!</strong>"}</section><section class="game-section"><div class="section-head"><h3>Deine heutigen Abenteuerpunkte</h3><strong>${earned.length}/3</strong></div>${quests(
+      `<div class="game-world ${g.motion ? "" : "still"}"><div class="game-topline"><span>${esc(world.placeAt(points).name.toUpperCase())} · ${g.paused ? "PAUSE" : "UNTERWEGS"}</span><span>${progress.badges.length}/8 ◈ ORDEN</span></div><div class="game-scene theme-${g.career?.theme || "classic"}">${platinumScene(g.career?.theme)}${sprite(m.id, "companion")}<span class="scene-caption">Jeder kleine Schritt zählt.</span></div><div class="game-status"><div><strong>${m.name}</strong><span>Lv. ${m.level} · ${m.type}</span></div><div class="track"><i style="width:${m.level === 100 ? 100 : (m.xp % 20) * 5}%"></i></div><small>${m.level === 100 ? "Maximales Level erreicht" : `${20 - (m.xp % 20)} EP bis zum nächsten Level`} · EP gelten fürs ganze Team</small></div></div><div class="toolbar game-links">${btn("Pokédex · " + g.discovered.length + "/251", "game-dex", "secondary")}${btn(regionName + "-Karte", "game-map", "secondary")}${btn("Region wechseln", "game-regions", "secondary")}${btn("Orden & Liga", "game-badges", "secondary")}${btn("Forschung & Freundschaft", "game-career", "secondary")}</div><section class="journey-next"><span class="eyebrow">${esc(world.placeAt(points).person)}</span><p>${esc(world.placeAt(points).text)}</p>${nextChallenge(g) ? `<strong>Nächstes Ziel: ${esc(nextChallenge(g).trainer)} · ${Math.max(0, nextChallenge(g).points - points)} Punkte bis zur Freigabe</strong><small>Bei Freigabe im nächsten automatischen Kampf. Nach einer Niederlage erneut, ohne Verlust.</small>` : "<strong>Du bist Champ dieser Region. Entdecke die übrigen Pokémon!</strong>"}</section><section class="game-section"><div class="section-head"><h3>Deine heutigen Abenteuerpunkte</h3><strong>${earned.length}/3</strong></div>${quests(
         s,
         today(),
       )
@@ -107,7 +99,7 @@ export function setupGameUI({
         })
         .join(
           "",
-        )}</div></section><section class="game-section"><h3>Was auf deiner Reise passiert ist</h3>${latest.length ? latest.map((e) => `<article class="game-event">${e.species ? sprite(e.species) : '<span class="event-medal" aria-hidden="true">' + (e.kind === "battle" ? "⚔" : "◈") + "</span>"}<div><small>${esc(e.date)}</small><p>${esc(e.text)}</p>${e.kind === "battle" ? btn("Kampf ansehen", "game-battle", "text-button", `data-index="${g.events.indexOf(e)}"`) : e.species ? btn("Moment ansehen", "game-moment", "text-button", `data-index="${g.events.indexOf(e)}"`) : ""}</div></article>`).join("") : "<p>Dein erstes Kapitel beginnt mit einem kleinen Eintrag.</p>"}</section><div class="toolbar">${btn(g.sound ? "Ton an" : "Ton aus", "game-sound", "secondary", `aria-pressed="${g.sound}"`)}${btn(g.motion ? "Animationen an" : "Animationen aus", "game-motion", "secondary", `aria-pressed="${g.motion}"`)}${btn(g.paused ? "Abenteuer fortsetzen" : "Abenteuer pausieren", "game-pause", "secondary")}</div><details class="below"><summary>Spielregeln & Bild-/Tonquellen</summary><p>Pro 3 Punkten wird automatisch ein noch nicht entdecktes, freigeschaltetes Pokémon gefangen. Entwicklungen registrieren jede Zwischenform im Pokédex. Alle 151 Kanto- und 100 Johto-Pokémon sind erreichbar. Reise- und Ordenfortschritt werden je Region geführt. Insgesamt bleiben es höchstens drei tägliche Aufgaben. Pro 6 Punkten findet ein Kampf statt; freigegebene Arenen und danach die Top Vier haben Vorrang.</p><p>Alle Begleiter erhalten 10 EP je täglicher Aufgabe; 20 EP bedeuten ein Level. Kein Punkteverlust bei Pausen oder Niederlagen. Acht Arenaorden werden einzeln durch Siege verdient. Alte Abenteuerorden bleiben als Erinnerungsbänder erhalten: ${g.legacyRibbons}.</p><p>Vereinfachte eigene Kampfregeln mit jeweils einem Signatur-Pokémon des Trainers. Stein-Entwicklungen erfolgen hier automatisch auf Level 24, Tausch-Entwicklungen auf Level 32. Evoli: Wunschentwicklung vor Level 24 wählen; alle drei Formen sind zusätzlich einzeln fangbar. Keine Originalspiel-Kopie, kein vollständiges Kampfsystem.</p><p>Sprites: PokeAPI, HeartGold/SoulSilver. Deutsche Namen und Gen-I-/II-Daten: PokeAPI. Kurze Originaleffekte: Rot/Blau, The Sounds Resource. Pokémon © Nintendo / Creatures / GAME FREAK. Inoffizielles Fanprojekt.</p></details>`,
+        )}</div></section><section class="game-section"><h3>Was auf deiner Reise passiert ist</h3>${latest.length ? latest.map((e) => `<article class="game-event">${e.species ? sprite(e.species) : '<span class="event-medal" aria-hidden="true">' + (e.kind === "battle" ? "⚔" : "◈") + "</span>"}<div><small>${esc(e.date)}</small><p>${esc(e.text)}</p>${e.kind === "battle" ? btn("Kampf ansehen", "game-battle", "text-button", `data-index="${g.events.indexOf(e)}"`) : e.species ? btn("Moment ansehen", "game-moment", "text-button", `data-index="${g.events.indexOf(e)}"`) : ""}</div></article>`).join("") : "<p>Dein erstes Kapitel beginnt mit einem kleinen Eintrag.</p>"}</section><div class="toolbar">${btn("Musik & Klänge", "audio-open", "secondary")}${btn(g.motion ? "Animationen an" : "Animationen aus", "game-motion", "secondary", `aria-pressed="${g.motion}"`)}${btn(g.paused ? "Abenteuer fortsetzen" : "Abenteuer pausieren", "game-pause", "secondary")}</div><details class="below"><summary>Spielregeln & Bild-/Tonquellen</summary><p>Pro 3 Punkten wird automatisch ein noch nicht entdecktes, freigeschaltetes Pokémon gefangen. Entwicklungen registrieren jede Zwischenform im Pokédex. Alle 151 Kanto- und 100 Johto-Pokémon sind erreichbar. Reise- und Ordenfortschritt werden je Region geführt. Insgesamt bleiben es höchstens drei tägliche Aufgaben. Pro 6 Punkten findet ein Kampf statt; freigegebene Arenen und danach die Top Vier haben Vorrang.</p><p>Alle Begleiter erhalten 10 EP je täglicher Aufgabe; 20 EP bedeuten ein Level. Kein Punkteverlust bei Pausen oder Niederlagen. Acht Arenaorden werden einzeln durch Siege verdient. Alte Abenteuerorden bleiben als Erinnerungsbänder erhalten: ${g.legacyRibbons}.</p><p>Vereinfachte eigene Kampfregeln mit jeweils einem Signatur-Pokémon des Trainers. Stein-Entwicklungen erfolgen hier automatisch auf Level 24, Tausch-Entwicklungen auf Level 32. Evoli: Wunschentwicklung vor Level 24 wählen; alle drei Formen sind zusätzlich einzeln fangbar. Keine Originalspiel-Kopie, kein vollständiges Kampfsystem.</p><p>Sprites: PokeAPI, HeartGold/SoulSilver. Deutsche Namen und Gen-I-/II-Daten: PokeAPI. Hintergründe: Pokémon Platin, The Spriters Resource (Sunday_Domeko, Dragoon). Kurze Originaleffekte: Rot/Blau und Diamant/Perl, The Sounds Resource (BellBlitzKing). Musik: drei eigene Retro-Kompositionen. Pokémon © Nintendo / Creatures / GAME FREAK. Inoffizielles Fanprojekt.</p></details>`,
     );
     sound("open");
   }
@@ -368,6 +360,7 @@ export function setupGameUI({
     "game-buddy": (b) => {
       const id = Number(b.dataset.id);
       if (!getState().game?.collection.some((m) => m.base === id)) return;
+      sound("recall");
       change((s) => (s.game.buddy = id));
     },
     "game-rest": () => {
@@ -376,10 +369,6 @@ export function setupGameUI({
         if (!s.game.restDays.includes(today())) s.game.restDays.push(today());
       });
       notify("Bewusste Erholung festgehalten.");
-    },
-    "game-sound": () => {
-      change((s) => (s.game.sound = !s.game.sound));
-      if (!getState().game.sound) playing?.pause();
     },
     "game-motion": () => change((s) => (s.game.motion = !s.game.motion)),
     "game-pause": () => change((s) => (s.game.paused = !s.game.paused)),
@@ -390,7 +379,7 @@ export function setupGameUI({
       if (!e?.species) return;
       sheet(
         e.kind === "catch" ? "Ein neuer Freund!" : "Dein Team wächst!",
-        `<div class="game-world ${g.motion ? "" : "still"}"><div class="game-scene">${sprite(e.species, "companion")}<div class="catch-ball" aria-hidden="true"></div></div><div class="game-status"><h3>${esc(e.text)}</h3><p>Dieser Moment gehört zu deiner Reise. Wiederansehen verändert deinen Spielstand nicht.</p>${btn("Zurück zum Team", "game", "primary")}</div></div>`,
+        `<div class="game-world ${g.motion ? "" : "still"}"><div class="game-scene">${platinumScene(g.career?.theme)}${sprite(e.species, "companion")}<div class="catch-ball" aria-hidden="true"></div></div><div class="game-status"><h3>${esc(e.text)}</h3><p>Dieser Moment gehört zu deiner Reise. Wiederansehen verändert deinen Spielstand nicht.</p>${btn("Zurück zum Team", "game", "primary")}</div></div>`,
       );
       sound(e.kind === "catch" ? "capture" : "level");
     },

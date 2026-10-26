@@ -116,6 +116,7 @@ await fill("value", 99.5);
 await submit();
 assert.equal((await read()).weights[0].value, 99.5);
 await page.locator('.bottom-nav [data-tab="train"]').click();
+await page.locator(".training-presets summary").click();
 await click("start-workout");
 await page.locator('[data-set="0"][data-key="kg"]').fill("5");
 await page.locator('[data-set="0"][data-key="kg"]').blur();

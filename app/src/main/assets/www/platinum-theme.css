@@ -1,0 +1,39 @@
+/* Original Platinum scenery stays decorative; reading surfaces remain opaque. */
+body { background-image:linear-gradient(#dceaf3a8,#dceaf3c0),var(--pt-paper); background-size:auto,304px 224px; background-attachment:fixed; }
+:root[data-theme="dark"] body { background-image:linear-gradient(#101f35bd,#101f35d9),var(--pt-night-paper); }
+.game-scene { isolation:isolate; background:#719db5!important; height:260px; overflow:hidden; }
+.game-scene::before,.game-scene::after { display:none!important; }
+.platinum-backdrop { position:absolute;inset:0;width:100%;height:100%;z-index:-2;image-rendering:pixelated; }
+.platinum-platform { position:absolute;bottom:30px;left:50%;transform:translateX(-50%);width:230px;height:76px;z-index:-1; }
+.platinum-platform svg { width:100%;height:100%;image-rendering:pixelated; }
+.game-scene .companion { bottom:48px;filter:drop-shadow(0 3px 1px #17351355); }
+.game-scene .scene-caption { background:#fffef8e8;color:#18354c;bottom:0;padding:7px; }
+.team-mon .pokemon-sprite,.starter .pokemon-sprite { background-image:var(--pt-team-paper);background-size:cover;border-radius:8px;border:1px solid #7b9fac;margin-bottom:7px; }
+.team-mon.selected { box-shadow:inset 0 0 0 2px var(--accent); }
+.battle-arena { background-image:var(--pt-battle);background-size:cover;image-rendering:pixelated;border:2px solid var(--frame);border-radius:10px;padding:18px 10px; }
+.battle-arena .fighter strong,.battle-arena .fighter span { background:#fffef8eb;color:#18354c;border-radius:4px;padding:3px 5px;image-rendering:auto; }
+.audio-header { min-height:44px;padding:7px 12px;background:var(--soft);border:2px solid var(--frame);border-radius:8px;font-size:13px;white-space:nowrap; }
+.training-start { margin-top:18px;border-top:5px solid var(--accent); }
+.training-session { padding:16px; }
+.training-session .section-head { align-items:flex-start; }
+.training-session .section-head h2 { margin-bottom:4px; }
+.training-session .section-head p { margin:0; }
+.exercise-block { margin-top:20px;padding:14px 10px;background:var(--soft);border:1px solid var(--border);border-radius:10px; }
+.exercise-block h3 { font-size:16px;line-height:1.3;margin:4px 0 12px; }
+.exercise-order { display:flex;gap:4px;flex-shrink:0; }
+.exercise-block .set-row { display:grid;grid-template-columns:minmax(34px,.8fr) minmax(48px,1fr) minmax(48px,1fr) 44px 44px;gap:5px;padding:8px 0;align-items:end; }
+.exercise-block .set-row input { width:100%;padding:9px 5px;min-height:44px; }
+.exercise-block .set-row label { font-size:11px;min-width:0; }
+.exercise-block .set-row strong { font-size:12px; }
+.exercise-block .set-row .icon-button { padding:4px;min-width:44px;min-height:44px; }
+.exercise-block .toolbar { gap:5px;margin-top:12px; }
+.exercise-block .toolbar button { font-size:12px;padding:7px 9px; }
+.training-footer { border-top:1px solid var(--border);margin-top:18px;padding-top:15px; }
+.training-empty { padding:18px 0; }
+.training-presets { background:var(--surface);padding:12px;border:1px solid var(--border);border-radius:10px; }
+.training-presets summary { min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:700; }
+#exercise-results { margin-top:15px; }
+#exercise-results .food-row { width:100%; }
+@media(max-width:370px) { .training-session { padding:10px; }.exercise-block { padding:12px 7px; }.exercise-order { gap:0; }.exercise-order button { min-width:40px; }.exercise-block .section-head { gap:4px; } }
+@media(prefers-reduced-motion:reduce) { body { background-attachment:scroll; }.game-scene .companion { animation:none!important; } }
+.exercise-block .set-row.done > div { opacity:1; }

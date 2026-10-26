@@ -64,3 +64,7 @@ Erster Android-Prüflauf für die neue native OCR und aggregierten Health-Abfrag
 ## Ergänzung 0.6.1
 
 57 Unit-Tests insgesamt. `tests/catalogue-personal-ui.mjs` ergänzt die sieben vorhandenen Browser-Skripte um USDA-Erfassung, Mikronährstoffe, stabile Favoriten-IDs, gezielten Profilimport mit Vorschau und Abbruch, Schreibfehler und Datenerhalt. CI führt alle acht aus. Die Rezept-Erwartung verwendet für neu ausgewählte Haferflocken jetzt den USDA-Quellenwert 379 kcal/100 g; vorhandene Tagebuch-Snapshots bleiben unverändert.
+
+## Ergänzung 0.7.0
+
+`node tests/training-atmosphere-ui.mjs` bei laufendem lokalen Server ergänzt flexible Einheiten, Gerätefilter, Satzgruppen, Zeitübungen, eigene Pläne, Reload, fehlgeschlagene Writes, Journalabschluss, Audiopause/Fokusverlust, tatsächliches Rendern aller drei Musikstücke und geladene Hintergrundgrafiken. `npm test` enthält vier weitere Domänentests (insgesamt 61). Signierte Android-Installation und Audiofokus auf echtem Gerät separat prüfen.

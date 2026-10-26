@@ -1,3 +1,8 @@
+import { setupAtmosphere } from './atmosphere.js';
+import { installPlatinum } from './platinum-ui.js';
+installPlatinum();
+import { setupTrainingUI } from './training-ui.js';
+import { makeSets } from './training.js';
 import { setupTrainerUI, dsIcon } from "./trainer-ui.js";
 import { offlineFoods, usdaFoods, matchesFood, foodDetails } from "./food-catalogue.js";
 import { parsePersonalPlan, applyPersonalPlan, commuteNames } from "./personal-plan.js";
@@ -183,7 +188,7 @@ function render() {
     return;
   }
   $("#app").innerHTML =
-    `<div class="shell"><aside><div class="brand">${dsIcon("home")} DiätFreund</div><p>Mehr für dich. Jeden Tag.</p><div class="desktop-nav">${nav()}</div><div class="aside-note">${icon("leaf")} Fortschritt braucht<br>keine Perfektion.</div></aside><div class="content"><header><a class="wordmark" href="#" aria-label="DiätFreund Start">${dsIcon("home")} DiätFreund</a><span class="local-badge"><i></i> Nur auf deinem Gerät</span></header>${trainerUI.status()}<main><div class="page-title"><div><span class="eyebrow">${{ home: "DEIN TÄGLICHER BEGLEITER", food: "BEWUSST GENIESSEN", chart: "JEDER SCHRITT ZÄHLT", train: "STÄRKER IM ALLTAG", more: "DEINE TRAINERKARTE", journey: "DEINE REISE" }[tab]}</span><h1>${{ home: `Hallo${p.name ? ", " + esc(p.name) : " Trainer"}!`, food: "Dein Proviant", chart: "Dein Fortschritt", train: "Training & Erholung", more: "Profil & Einstellungen", journey: "Dein Abenteuer" }[tab]}</h1></div>${tab === "food" ? `<div class="date-picker">${btn("‹", "prev", "icon-button", 'aria-label="Vorheriger Tag"')}<input type="date" id="day" aria-label="Tag auswählen" value="${date}" max="${today()}">${btn("›", "next", "icon-button", date >= today() ? 'disabled aria-label="Nächster Tag"' : 'aria-label="Nächster Tag"')}</div>` : ""}</div>${{ home: homeView, food: foodView, chart: chartView, train: trainView, more: moreView, journey: () => trainerUI.journey() }[tab]()}</main></div><nav class="bottom-nav" aria-label="Hauptnavigation">${nav()}</nav></div>`;
+    `<div class="shell"><aside><div class="brand">${dsIcon("home")} DiätFreund</div><p>Mehr für dich. Jeden Tag.</p><div class="desktop-nav">${nav()}</div><div class="aside-note">${icon("leaf")} Fortschritt braucht<br>keine Perfektion.</div></aside><div class="content"><header><a class="wordmark" href="#" aria-label="DiätFreund Start">${dsIcon("home")} DiätFreund</a>${btn("♪ Ton", "audio-open", "audio-header", 'aria-label="Musik und Klänge einstellen"')}</header>${trainerUI.status()}<main><div class="page-title"><div><span class="eyebrow">${{ home: "DEIN TÄGLICHER BEGLEITER", food: "BEWUSST GENIESSEN", chart: "JEDER SCHRITT ZÄHLT", train: "STÄRKER IM ALLTAG", more: "DEINE TRAINERKARTE", journey: "DEINE REISE" }[tab]}</span><h1>${{ home: `Hallo${p.name ? ", " + esc(p.name) : " Trainer"}!`, food: "Dein Proviant", chart: "Dein Fortschritt", train: "Training & Erholung", more: "Profil & Einstellungen", journey: "Dein Abenteuer" }[tab]}</h1></div>${tab === "food" ? `<div class="date-picker">${btn("‹", "prev", "icon-button", 'aria-label="Vorheriger Tag"')}<input type="date" id="day" aria-label="Tag auswählen" value="${date}" max="${today()}">${btn("›", "next", "icon-button", date >= today() ? 'disabled aria-label="Nächster Tag"' : 'aria-label="Nächster Tag"')}</div>` : ""}</div>${{ home: homeView, food: foodView, chart: chartView, train: trainView, more: moreView, journey: () => trainerUI.journey() }[tab]()}</main></div><nav class="bottom-nav" aria-label="Hauptnavigation">${nav()}</nav></div>`;
 }
 function nav() {
   return [
@@ -271,15 +276,16 @@ function trainView() {
         w.date <= today() &&
         w.sets.some((set) => set.done),
     ).length;
-  return `<section class="training-readiness"><strong>${esc(readiness(state).title)}</strong><p>${esc(readiness(state).message)}</p>${btn("Tages-Check-in", "checkin", "text-button")}</section><div class="training-banner"><div><span class="eyebrow">DEINE WOCHE</span><h2>${count} / ${state.profile.sessions} Einheiten</h2><p>Regelmäßigkeit vor Rekorden. Zwischen Krafttagen Zeit zur Erholung lassen.</p></div><span class="training-mark">${icon("train")}</span></div>${
+  const guidance=`<strong>${esc(readiness(state).title)}</strong><p>${esc(readiness(state).message)}</p>${btn("Tages-Check-in", "checkin", "text-button")}`;
+  return `${active ? `<details class="training-readiness"><summary>${count} / ${state.profile.sessions} Einheiten diese Woche · Hinweise</summary>${guidance}</details>` : `<section class="training-readiness">${guidance}</section><div class="training-banner"><div><span class="eyebrow">DEINE WOCHE</span><h2>${count} / ${state.profile.sessions} Einheiten</h2><p>Regelmäßigkeit vor Rekorden. Zwischen Krafttagen Zeit zur Erholung lassen.</p></div><span class="training-mark">${icon("train")}</span></div>`}${
     active
-      ? `<section class="card below"><div class="section-head"><div><span class="eyebrow">TRAINING LÄUFT · AUTOMATISCH GESICHERT</span><h2>${esc(active.name)}</h2></div><span id="rest" class="pill">Pause bereit</span></div><p>Wähle die Last so, dass noch 2–3 saubere Wiederholungen möglich wären. 0 kg = ohne Zusatzgewicht. Gleichmäßig atmen.</p>${active.sets.map((s, i) => `<div class="set-row ${s.done ? "done" : ""}"><div><strong>${esc(s.exercise)}</strong><small>${esc(cues[s.exercise] || "Kontrolliert und ohne Schmerzen bewegen.")}</small></div><label>kg<input aria-label="${esc(s.exercise)} Gewicht Satz ${i + 1}" data-set="${i}" data-key="kg" type="number" min="0" max="500" step="0.5" value="${s.kg}"></label><label>Wdh.<input aria-label="${esc(s.exercise)} Wiederholungen Satz ${i + 1}" data-set="${i}" data-key="reps" type="number" min="1" max="100" value="${s.reps}"></label>${btn(s.done ? "✓" : "○", "toggle-set", "set-check", `data-index="${i}" aria-label="Satz ${i + 1} ${s.done ? "zurücksetzen" : "abhaken"}" aria-pressed="${s.done}"`)}</div>`).join("")}<div class="toolbar">${btn("+ Eigene Übung", "custom-exercise", "secondary")}${btn("90 s Pause", "rest", "secondary")}${btn("Training abschließen", "finish-workout", "primary")}${btn("Verwerfen", "discard-workout", "text-button")}</div></section>`
-      : `<div class="two-grid below">${trainingRoutines(state, routines)
+      ? trainingUI.activeView(active)
+      : `${trainingUI.startView()}<details class="training-presets below"><summary>Mit einer Einstiegsvorlage beginnen</summary><div class="two-grid below">${trainingRoutines(state, routines)
           .map(
             (r, i) =>
               `<section class="card routine"><div class="tile-icon">${icon("train")}</div><h2>${r.name}</h2><p>${r.subtitle}</p><ul>${r.exercises.map((e) => `<li>${e}</li>`).join("")}</ul><p>Je 2 Sätze · Einstieg mit 8 Wiederholungen.<br>Vorherige Lasten werden als editierbare Erinnerung übernommen, niemals automatisch gesteigert. 5–10 Minuten locker aufwärmen.</p>${btn("Einheit starten →", "start-workout", "primary wide", `data-index="${i}"`)}</section>`,
           )
-          .join("")}</div>`
+          .join("")}</div></details>`
   }<p class="footnote">Allgemeine Einstiegsvorlagen, kein individueller Therapieplan. Bei Vorerkrankungen oder längerem Wiedereinstieg Belastung ärztlich abstimmen. Bei Schmerzen, Schwindel oder Atemnot abbrechen.</p><section class="card below"><div class="section-head"><h2>Trainingsjournal</h2>${btn("+ Aktivität", "activity", "secondary")}</div>${
     state.workouts.length
       ? state.workouts
@@ -294,7 +300,7 @@ function trainView() {
   }</section>`;
 }
 function moreView() {
-  return `<div class="profile-menu"><section class="card"><h2>${dsIcon("profile")} Dein Profil & Plan</h2><p>Ziele, persönliche Voraussetzungen und Vorschläge haben hier ihren gemeinsamen Platz.</p>${state.personalPlan ? `<p><strong>${fmt(state.profile.goal)} kg${state.personalPlan.muscleBuild ? " + Muskelaufbau" : ""}</strong><br>${esc(commuteNames[state.personalPlan.commuteMode])} · ${fmt(state.personalPlan.commuteKm)} km pro Arbeitstag<br>Schrittziel: ${fmt(state.personalPlan.stepMin)}–${fmt(state.personalPlan.stepMax)} · tatsächliche Werte unter Messwerte & Verbindungen</p>` : ""}<div class="toolbar">${btn("Profil & Ziele", "settings", "primary")}${btn("Persönliche Voraussetzungen", "coach-settings", "secondary")}${btn("Profildatei laden", "import", "secondary")}${btn("Ziele & Empfehlungen", "coach", "secondary")}${btn("Gewichtsverlauf", "go-chart", "secondary")}</div></section><section class="card"><h2>Messwerte & Verbindungen</h2><p>Der Tages-Check-in für Hunger und Befinden liegt unter Heute. Hier findest du gemessene Werte und verbundene Apps.</p><div class="toolbar">${btn("Samsung Health / Schritte", "hc-open", "primary")}${btn("Messwert eintragen", "health", "secondary")}${btn("Messwerte ansehen", "health-history", "secondary")}</div></section><section class="card"><h2>Darstellung & Sicherung</h2><div class="toolbar">${btn(state.theme === "light" ? "Dunkles Design" : "Helles Design", "theme", "secondary")}${btn("Sicherung exportieren", "export", "primary")}${btn("Sicherung importieren", "import", "secondary")}${btn("CSV exportieren", "csv", "secondary")}</div><p class="footnote">Sicherungen enthalten deine persönlichen Daten. Bewahre sie geschützt auf.</p></section><section class="card"><h2>Hilfe</h2>${btn("Datenschutz, Quellen & Hilfe", "about", "text-button")}${btn("Alle Daten löschen", "reset", "text-button danger")}</section></div>`;
+  return `<div class="profile-menu"><section class="card"><h2>${dsIcon("profile")} Dein Profil & Plan</h2><p>Ziele, persönliche Voraussetzungen und Vorschläge haben hier ihren gemeinsamen Platz.</p>${state.personalPlan ? `<p><strong>${fmt(state.profile.goal)} kg${state.personalPlan.muscleBuild ? " + Muskelaufbau" : ""}</strong><br>${esc(commuteNames[state.personalPlan.commuteMode])} · ${fmt(state.personalPlan.commuteKm)} km pro Arbeitstag<br>Schrittziel: ${fmt(state.personalPlan.stepMin)}–${fmt(state.personalPlan.stepMax)} · tatsächliche Werte unter Messwerte & Verbindungen</p>` : ""}<div class="toolbar">${btn("Profil & Ziele", "settings", "primary")}${btn("Persönliche Voraussetzungen", "coach-settings", "secondary")}${btn("Profildatei laden", "import", "secondary")}${btn("Ziele & Empfehlungen", "coach", "secondary")}${btn("Gewichtsverlauf", "go-chart", "secondary")}</div></section><section class="card"><h2>Messwerte & Verbindungen</h2><p>Der Tages-Check-in für Hunger und Befinden liegt unter Heute. Hier findest du gemessene Werte und verbundene Apps.</p><div class="toolbar">${btn("Samsung Health / Schritte", "hc-open", "primary")}${btn("Messwert eintragen", "health", "secondary")}${btn("Messwerte ansehen", "health-history", "secondary")}</div></section><section class="card"><h2>Darstellung & Sicherung</h2><div class="toolbar">${btn("Musik & Klänge", "audio-open", "primary")}${btn(state.theme === "light" ? "Dunkles Design" : "Helles Design", "theme", "secondary")}${btn("Sicherung exportieren", "export", "primary")}${btn("Sicherung importieren", "import", "secondary")}${btn("CSV exportieren", "csv", "secondary")}</div><p class="footnote">Sicherungen enthalten deine persönlichen Daten. Bewahre sie geschützt auf.</p></section><section class="card"><h2>Hilfe</h2>${btn("Datenschutz, Quellen & Hilfe", "about", "text-button")}${btn("Alle Daten löschen", "reset", "text-button danger")}</section></div>`;
 }
 function healthHistory() {
   sheet(
@@ -544,7 +550,7 @@ function importData(raw) {
     if (JSON.parse(raw)?.kind === "diaetfreund-personal-plan") {
       const plan = parsePersonalPlan(raw);
       applyPersonalPlan(state, plan);
-      sheet("Persönliche Einstellungen übernehmen?", `<p>Diese Profildatei ergänzt ausschließlich folgende Einstellungen:</p><ul><li>Größe: ${plan.height} cm · Zielgewicht: ${plan.goal} kg</li><li>Berechnungsgrundlage: ${esc({male:"Männlich",female:"Weiblich",unspecified:"Keine Angabe"}[plan.sex])}</li><li>Muskelaufbau: ${plan.muscleBuild ? "Ja" : "Nein"}</li><li>Arbeitsweg: ${esc(commuteNames[plan.commuteMode])} · ${plan.commuteKm} km insgesamt pro Arbeitstag</li><li>Später geplant: ${esc(commuteNames[plan.nextCommuteMode])}</li><li>Schrittziel: ${plan.stepMin}–${plan.stepMax} pro Tag · keine gemessenen Schritte</li><li>Bluthochdruck berücksichtigen: ${plan.hypertension ? "Ja" : "Nein"}</li><li>Betablocker berücksichtigen: ${plan.betaBlocker ? "Ja" : "Nein"}</li></ul><p>Tagebuch, Gewichte, Pokémon und bisherige Kalorienziele bleiben erhalten. Keine automatische Sportfreigabe oder Aktivitätsberechnung.</p>${!state.coach ? '<p>Geburtsdatum und tatsächlichen Aktivitätsumfang bitte anschließend unter „Persönliche Voraussetzungen“ ergänzen.</p>' : ''}${btn("Abbrechen", "close", "secondary")}${btn("Einstellungen übernehmen", "confirm-personal-plan", "primary wide")}`);
+      sheet("Persönliche Einstellungen übernehmen?", `<p>Diese Profildatei ergänzt ausschließlich folgende Einstellungen:</p><ul><li>Größe: ${plan.height} cm · Zielgewicht: ${plan.goal} kg</li><li>Berechnungsgrundlage: ${esc({male:"Männlich",female:"Weiblich",unspecified:"Keine Angabe"}[plan.sex])}</li><li>Muskelaufbau: ${plan.muscleBuild ? "Ja" : "Nein"}</li>${plan.currentWeight ? `<li>Gewicht am ${esc(plan.currentWeight.date)}: ${plan.currentWeight.value} kg${state.weights.some(w=>w.date===plan.currentWeight.date)?" · ersetzt den vorhandenen Wert dieses Tages":""}</li>` : ""}${plan.trainingStage ? `<li>Trainingsstand: ${esc({restart:"Gerade wieder eingestiegen",regular:"Regelmäßig dabei",unspecified:"Keine Angabe"}[plan.trainingStage])}</li>` : ""}<li>Arbeitsweg: ${esc(commuteNames[plan.commuteMode])} · ${plan.commuteKm} km insgesamt pro Arbeitstag</li><li>Später geplant: ${esc(commuteNames[plan.nextCommuteMode])}</li><li>Schrittziel: ${plan.stepMin}–${plan.stepMax} pro Tag · keine gemessenen Schritte</li><li>Bluthochdruck berücksichtigen: ${plan.hypertension ? "Ja" : "Nein"}</li><li>Betablocker berücksichtigen: ${plan.betaBlocker ? "Ja" : "Nein"}</li></ul><p>Tagebuch, Pokémon und bisherige Kalorienziele bleiben erhalten. ${plan.currentWeight ? "Nur der oben angezeigte Gewichtstag wird ergänzt oder ersetzt; alle anderen Gewichtswerte bleiben erhalten." : "Vorhandene Gewichtswerte bleiben erhalten."} Keine automatische Sportfreigabe oder Aktivitätsberechnung.</p>${!state.coach ? '<p>Geburtsdatum und tatsächlichen Aktivitätsumfang bitte anschließend unter „Persönliche Voraussetzungen“ ergänzen.</p>' : ''}${btn("Abbrechen", "close", "secondary")}${btn("Einstellungen übernehmen", "confirm-personal-plan", "primary wide")}`);
       pendingPlan = plan;
       return;
     }
@@ -646,6 +652,7 @@ function confirmAction(title, message, action) {
   );
 }
 const gameUI = setupGameUI({
+  playEffect: key => atmosphere.effect(key),
   getState: () => state,
   commit,
   render,
@@ -655,6 +662,7 @@ const gameUI = setupGameUI({
   notify,
   close,
 });
+const trainingUI = setupTrainingUI({ getState: () => state, commit, render, form, sheet, btn, field, num, select, esc, notify, close });
 const coachUI = setupCoachUI({
   getState: () => state,
   getDate: () => date,
@@ -702,8 +710,11 @@ const ocrUI = setupNutritionOCR({
   beforeOpen: () => searchToken++,
 });
 const trainerUI = setupTrainerUI({ getState: () => state, btn, esc, sheet });
+const atmosphere = setupAtmosphere({getState:()=>state,commit,render,sheet,btn,select,num,notify});
 const actions = {
+  ...atmosphere.actions,
   ...trainerUI.actions,
+  ...trainingUI.actions,
   "health-history": healthHistory,
   "go-chart": () => {
     close();
@@ -821,8 +832,10 @@ const actions = {
             Math.min(10000, (s.water[date] || 0) + Number(b.dataset.amount)),
           )),
       )
-    )
+    ) {
+      atmosphere.effect('bubble');
       render();
+    }
   },
   "delete-entry": () => {
     if (
@@ -950,7 +963,7 @@ const actions = {
         (s) => (s.activeWorkout.sets[i].done = !s.activeWorkout.sets[i].done),
       )
     ) {
-      if (state.activeWorkout.sets[i].done) timerEnd = Date.now() + 90000;
+      if (state.activeWorkout.sets[i].done) { timerEnd = Date.now() + 90000; atmosphere.effect("heal"); }
       render();
     }
   },
@@ -962,7 +975,7 @@ const actions = {
     form(
       "Eigene Übung",
       "exercise",
-      `${field("Übungsname", "exercise", "", "text", 'required maxlength="100"')}${num("Anzahl Sätze", "sets", 2, 1, 10, 1)}${num("Wiederholungen", "reps", 8, 1, 100, 1)}${num("Zusatzgewicht · kg", "kg", 0, 0, 500, 0.5)}`,
+      `${field("Übungsname", "exercise", "", "text", 'required maxlength="100"')}${field("Gerät / Variante", "equipment", "Eigene Angabe", "text", 'maxlength="100"')}${num("Anzahl Sätze", "sets", 2, 1, 10, 1)}${num("Wiederholungen", "reps", 8, 1, 100, 1)}${num("Zusatzgewicht · kg", "kg", 0, 0, 500, 0.5)}`,
     ),
   "finish-workout": () => {
     const w = state.activeWorkout;
@@ -1001,7 +1014,7 @@ const actions = {
     const w = state.workouts.find((w) => w.id === editing);
     sheet(
       w.name,
-      `<p>${dateLabel(w.date)} · ${w.minutes} Minuten${w.effort ? " · Anstrengung " + w.effort + "/10" : ""}</p>${w.sets.map((s) => `<div class="food-row"><strong>${esc(s.exercise)}</strong><span>${s.kg} kg × ${s.reps}</span></div>`).join("")}<p>${esc(w.note)}</p>${btn("Aktivität löschen", "delete-workout", "text-button danger")}`,
+      `<p>${dateLabel(w.date)} · ${w.minutes} Minuten${w.effort ? " · Anstrengung " + w.effort + "/10" : ""}</p>${w.sets.map((s) => `<div class="food-row"><strong>${esc(s.exercise)}</strong><span>${s.kg} kg · ${s.mode === "time" ? s.seconds + " s" : s.reps + " Wdh."}</span></div>`).join("")}<p>${esc(w.note)}</p>${btn("Aktivität löschen", "delete-workout", "text-button danger")}`,
     );
   },
   "delete-workout": () =>
@@ -1061,6 +1074,7 @@ const actions = {
     ) {
       healthUI.invalidatePending();
       ocrUI.invalidate();
+      atmosphere.stop();
       delete window.pendingImport;
       timerEnd = 0;
       date = today();
@@ -1092,7 +1106,7 @@ const actions = {
   about: () =>
     sheet(
       "Über DiätFreund",
-      `<h3>Dein Alltag, ohne Abo.</h3><p>Version 0.6.1 · Offline-Tagebuch für Erwachsene. Keine Werbung, Telemetrie, Konten oder kostenpflichtigen KI-Dienste.</p><h3>Datenschutz</h3><p>Deine Daten liegen im privaten App-Speicher. Android-Cloud-Backup ist deaktiviert. Die App setzt die Gerätesperre voraus; sie bietet keine eigene Verschlüsselung oder PIN. Exportdateien sind unverschlüsselt. Deinstallation entfernt lokale Daten. Sichere regelmäßig.</p><h3>Health Connect</h3><p>Optional Schritte, Schlafdauer und Gewicht lesen. Eigene Gewichte nur nach Vorschau ausdrücklich teilen. Freigaben lassen sich in Android widerrufen. Lokale Importkopien kannst du unter Schritte & Erholung entfernen; bereits geteilte Werte verwaltest du in Health Connect.</p><h3>Barcode & Kamera</h3><p>Nur nach deiner Aktion wird ein Barcode an world.openfoodfacts.org gesendet (einschließlich technisch notwendiger IP-Adresse). Kamerabilder verlassen das Gerät nicht. Nährwerttabellen werden mit Tesseract lokal erkannt; übernommene Werte müssen geprüft werden. Kein automatisches Schätzen von Mahlzeitenfotos.</p><h3>Quellen & Lizenzen</h3><p>Produktdaten: Open Food Facts (opendatacommons.org/licenses/odbl/1-0/). Datenbank ODbL, einzelne Inhalte Database Contents License. Eigene Lebensmittel sind getrennt gekennzeichnet. Prüfe die Verpackung, insbesondere Portionsgrößen und Allergene. Die App beurteilt keine Allergensicherheit.</p><p>Offline-Lebensmittel: ${usdaFoods.length} ausgewählte Datensätze aus USDA FoodData Central, SR Legacy April 2018 (CC0). Deutsche Bezeichnungen, FDC-IDs und Herkunft sind hinterlegt. US-Durchschnittswerte; keine vollständige Datenbank und kein Ersatz für aktuelle Packungsangaben. Kohlenhydrate näherungsweise ohne Ballaststoffe, Vitamin E als Alpha-Tocopherol, Folat als DFE. Fehlende Werte bleiben unbekannt.</p><p>Barcode-Erkennung: ZXing / JourneyApps (Apache 2.0). AndroidX (Apache 2.0). Foto-OCR: Tesseract4Android / Tesseract und deutsches tessdata_fast-Modell (Apache 2.0), Leptonica, libjpeg und libpng. Keine OCR-Telemetrie oder Bild-Uploads. Vollständige Hinweise im Repository.</p>${btn("Lizenztexte offline lesen", "licenses", "secondary")}<p>Originalgrafiken aus Pokémon HeartGold/SoulSilver: PokeAPI-Sprite-Spiegel und The Spriters Resource (Menü: redblueyellow; Orte: Latias Tamer). Pokémon © Nintendo / Creatures / GAME FREAK. Inoffizielles Fanprojekt; keine freie Lizenz für die Originalgrafiken.</p><h3>Gesundheit</h3><p>Kalorienformel: Mifflin–St. Jeor (1990), Schätzung mit individuell gewähltem Aktivitätsfaktor. Bewegungsvorlagen orientieren sich an allgemeinen NHS-Empfehlungen. Keine Diagnose, Überwachung, Notfallerkennung oder garantierte Gewichtsabnahme. Gesundheitseinträge werden nicht medizinisch bewertet.</p><h3>Bedienung</h3><p>Essen: Lebensmittel wählen, Gramm eingeben, speichern. Einträge antippen zum Bearbeiten. Verlauf: pro Datum ein Gewicht. Training: Sätze bearbeiten, abhaken, abschließen. Mehr: Gesundheitsjournal, Ziele und Sicherungen. Barcode braucht Internet; alles andere funktioniert offline.</p>`,
+      `<h3>Dein Alltag, ohne Abo.</h3><p>Version 0.7.0 · Offline-Tagebuch für Erwachsene. Keine Werbung, Telemetrie, Konten oder kostenpflichtigen KI-Dienste.</p><h3>Datenschutz</h3><p>Deine Daten liegen im privaten App-Speicher. Android-Cloud-Backup ist deaktiviert. Die App setzt die Gerätesperre voraus; sie bietet keine eigene Verschlüsselung oder PIN. Exportdateien sind unverschlüsselt. Deinstallation entfernt lokale Daten. Sichere regelmäßig.</p><h3>Health Connect</h3><p>Optional Schritte, Schlafdauer und Gewicht lesen. Eigene Gewichte nur nach Vorschau ausdrücklich teilen. Freigaben lassen sich in Android widerrufen. Lokale Importkopien kannst du unter Schritte & Erholung entfernen; bereits geteilte Werte verwaltest du in Health Connect.</p><h3>Barcode & Kamera</h3><p>Nur nach deiner Aktion wird ein Barcode an world.openfoodfacts.org gesendet (einschließlich technisch notwendiger IP-Adresse). Kamerabilder verlassen das Gerät nicht. Nährwerttabellen werden mit Tesseract lokal erkannt; übernommene Werte müssen geprüft werden. Kein automatisches Schätzen von Mahlzeitenfotos.</p><h3>Quellen & Lizenzen</h3><p>Produktdaten: Open Food Facts (opendatacommons.org/licenses/odbl/1-0/). Datenbank ODbL, einzelne Inhalte Database Contents License. Eigene Lebensmittel sind getrennt gekennzeichnet. Prüfe die Verpackung, insbesondere Portionsgrößen und Allergene. Die App beurteilt keine Allergensicherheit.</p><p>Offline-Lebensmittel: ${usdaFoods.length} ausgewählte Datensätze aus USDA FoodData Central, SR Legacy April 2018 (CC0). Deutsche Bezeichnungen, FDC-IDs und Herkunft sind hinterlegt. US-Durchschnittswerte; keine vollständige Datenbank und kein Ersatz für aktuelle Packungsangaben. Kohlenhydrate näherungsweise ohne Ballaststoffe, Vitamin E als Alpha-Tocopherol, Folat als DFE. Fehlende Werte bleiben unbekannt.</p><p>Barcode-Erkennung: ZXing / JourneyApps (Apache 2.0). AndroidX (Apache 2.0). Foto-OCR: Tesseract4Android / Tesseract und deutsches tessdata_fast-Modell (Apache 2.0), Leptonica, libjpeg und libpng. Keine OCR-Telemetrie oder Bild-Uploads. Vollständige Hinweise im Repository.</p>${btn("Lizenztexte offline lesen", "licenses", "secondary")}<p>Zusätzliche Originalgrafiken aus Pokémon Platin: Kampfkulissen (Sunday_Domeko), Box-Hintergründe (Dragoon), The Spriters Resource. Vier kurze Originaleffekte aus Diamant/Perl (BellBlitzKing, The Sounds Resource). Hintergrundmusik: drei eigene prozedurale Kompositionen, keine Original-Soundtrackaufnahmen. Originalgrafiken aus Pokémon HeartGold/SoulSilver: PokeAPI-Sprite-Spiegel und The Spriters Resource (Menü: redblueyellow; Orte: Latias Tamer). Pokémon © Nintendo / Creatures / GAME FREAK. Inoffizielles Fanprojekt; keine freie Lizenz für die Originalgrafiken.</p><h3>Gesundheit</h3><p>Kalorienformel: Mifflin–St. Jeor (1990), Schätzung mit individuell gewähltem Aktivitätsfaktor. Bewegungsvorlagen orientieren sich an allgemeinen NHS-Empfehlungen. Keine Diagnose, Überwachung, Notfallerkennung oder garantierte Gewichtsabnahme. Gesundheitseinträge werden nicht medizinisch bewertet.</p><h3>Bedienung</h3><p>Essen: Lebensmittel wählen, Gramm eingeben, speichern. Einträge antippen zum Bearbeiten. Verlauf: pro Datum ein Gewicht. Training: Sätze bearbeiten, abhaken, abschließen. Mehr: Gesundheitsjournal, Ziele und Sicherungen. Barcode braucht Internet; alles andere funktioniert offline.</p>`,
     ),
 };
 document.addEventListener("click", (e) => {
@@ -1101,6 +1115,7 @@ document.addEventListener("click", (e) => {
     e.preventDefault();
     try {
       actions[b.dataset.action]?.(b);
+      if (!b.dataset.action.startsWith("audio-") && b.dataset.action !== "toggle-set") atmosphere.effect("menu");
     } catch (err) {
       notify(err.message);
     }
@@ -1112,10 +1127,12 @@ document.addEventListener("click", (e) => {
   }
 });
 document.addEventListener("input", (e) => {
+  if (e.target.id === "exercise-search") trainingUI.results();
   if (e.target.id === "food-search") foodResults(e.target.value);
   if (e.target.name === "amount") updatePortionPreview();
 });
 document.addEventListener("change", (e) => {
+  if (e.target.name === "equipmentFilter") trainingUI.results();
   if (e.target.id === "day") {
     if (e.target.value && e.target.value <= today()) {
       date = e.target.value;
@@ -1128,7 +1145,7 @@ document.addEventListener("change", (e) => {
       const n = number(
         t.value,
         t.dataset.key === "kg" ? 0 : 1,
-        t.dataset.key === "kg" ? 500 : 100,
+        t.dataset.key === "kg" ? 500 : t.dataset.key === "seconds" ? 3600 : 100,
       );
       if (
         !commit(
@@ -1150,6 +1167,9 @@ document.addEventListener("submit", (e) => {
   const d = Object.fromEntries(new FormData(f));
   try {
     let ok = false;
+    if (f.dataset.form === "audio-settings") { if(atmosphere.apply(d)) close(); return; }
+    const trainingResult = trainingUI.submit(f.dataset.form, d);
+    if (trainingResult !== null) return;
     const coachResult = coachUI.submit(f.dataset.form, d);
     if (coachResult !== null) {
       if (coachResult) {
@@ -1293,12 +1313,7 @@ document.addEventListener("submit", (e) => {
       case "exercise":
         ok = commit((s) =>
           s.activeWorkout.sets.push(
-            ...Array.from({ length: number(d.sets, 1, 10) }, () => ({
-              exercise: d.exercise.trim(),
-              reps: number(d.reps, 1, 100),
-              kg: number(d.kg, 0, 500),
-              done: false,
-            })),
+            ...makeSets({name:d.exercise.trim(),equipment:d.equipment?.trim()||"Eigene Angabe",mode:"reps"}, number(d.sets,1,10), number(d.reps,1,100), number(d.kg,0,500)),
           ),
         );
         break;

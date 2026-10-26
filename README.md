@@ -11,7 +11,16 @@ Ein ruhiger, deutschsprachiger Android-Begleiter für Ernährung, Gewicht, Kraft
 
 Android 8.0 oder neuer, aktuelles Android System WebView. Das ist ein persönlicher Testbuild, keine Play-Store-Veröffentlichung. Seit 0.4.1 ist die feste Release-Signatur eingerichtet und erfolgreich geprüft. Der private Schlüssel wird über GitHub-Actions-Secrets eingebunden; ohne eingerichtete Secrets gibt es kein installierbares Release-Artifact. Einmalige Einrichtung und Umstieg von bisherigen Debug-APKs: [Signierung](docs/SIGNING.md). Vor diesem einmaligen Wechsel JSON sichern. Künftige gleich signierte Updates über die bestehende App installieren.
 
-## Neu in 0.6.1 · Lebensmittel & persönlicher Plan
+## Neu in 0.7.0 · Atmosphäre & flexibles Training
+
+- Originale Pokémon-Platin-Kulissen für Team, Kämpfe und App-Hintergrund.
+- Drei eigene Retro-Musikstücke und weitere kurze Originaleffekte, offline und getrennt regelbar über **♪ Ton**.
+- Freie Einheiten mit 42 Übungen, Gerätefilter, eigenen Übungen, Satzgruppen, Zeitübungen und persönlichen Trainingsplänen.
+- Optionaler privater Import für datiertes Gewicht und Wiedereinstieg; keine persönlichen Daten im Repository.
+
+Details: [Update 0.7.0](docs/UPDATE-0.7.md), [Bild-/Tonquellen](docs/PLATINUM-ASSETS.json). Gleiche feste Signatur, versionCode 9.
+
+## Seit 0.6.1 · Lebensmittel & persönlicher Plan
 
 - **118 USDA-Lebensmittel offline:** deutsch beschriftet, roh/gekocht getrennt, Energie/Makros und vorhandene Mikronährstoffe. Nachvollziehbare FDC-Quellen; keine API-Kosten. Markenprodukte weiterhin über Open Food Facts.
 - **Persönlicher Alltag:** normales Fahrrad und E-Bike, Gesamtstrecke am Arbeitstag, Schrittzielbereich und Muskelaufbau. Geplante Bewegung wird nicht als bereits geleistete Aktivität verrechnet.

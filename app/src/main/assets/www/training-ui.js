@@ -1,0 +1,57 @@
+import { exercises, equipment, setGroups, makeSets, moveGroup, freshSets } from './training.js';
+import { today, uid, number } from './core.js';
+export function setupTrainingUI(ctx) {
+ const {getState,commit,render,form,sheet,btn,field,num,select,esc,notify,close}=ctx;
+ let replaceStart=null,chosen=null;
+ const update=fn=>{if(commit(fn)){close();render();return true;}return false;};
+ function activeView(w) {
+  const groups=setGroups(w.sets);
+  return `<section class="card below training-session"><div class="section-head"><div><span class="eyebrow">DEINE EINHEIT · AUTOMATISCH GESICHERT</span><h2>${esc(w.name)}</h2><p>${groups.length} Übungen · ${w.sets.filter(s=>s.done).length}/${w.sets.length} Sätze erledigt</p></div>${btn('Umbenennen','tw-rename','text-button')}</div><p class="footnote">Gerätegewichte sind nicht direkt vergleichbar. Trage deine gewählte Last ein; keine automatische Steigerung. Bei Kurzhanteln einheitlich das Gewicht pro Hantel verwenden.</p><div class="toolbar">${btn('+ Übungen & Geräte','tw-library','primary')}${btn('Eigene Übung','custom-exercise','secondary')}${btn('Als Plan speichern','tw-save-plan','secondary')}</div>${groups.length?groups.map((g,gi)=>`<article class="exercise-block"><div class="section-head"><div><span class="eyebrow">${esc(g.equipment)}</span><h3>${gi+1}. ${esc(g.name)}</h3></div><div class="exercise-order">${btn('↑','tw-up','icon-button',`data-start="${g.start}" aria-label="${esc(g.name)} nach oben" ${gi===0?'disabled':''}`)}${btn('↓','tw-down','icon-button',`data-start="${g.start}" aria-label="${esc(g.name)} nach unten" ${gi===groups.length-1?'disabled':''}`)}</div></div>${g.sets.map((s,i)=>`<div class="set-row ${s.done?'done':''}"><div><strong>Satz ${i+1}</strong></div><label>kg<input aria-label="${esc(s.exercise)} Gewicht Satz ${i+1}" data-set="${s.index}" data-key="kg" type="number" min="0" max="500" step="0.5" value="${s.kg}"></label><label>${s.mode==='time'?'Sekunden':'Wdh.'}<input aria-label="${esc(s.exercise)} ${s.mode==='time'?'Sekunden':'Wiederholungen'} Satz ${i+1}" data-set="${s.index}" data-key="${s.mode==='time'?'seconds':'reps'}" type="number" min="1" max="${s.mode==='time'?3600:100}" step="1" value="${s.mode==='time'?s.seconds:s.reps}"></label>${btn(s.done?'✓':'○','toggle-set','set-check',`data-index="${s.index}" aria-label="Satz ${i+1} ${s.done?'zurücksetzen':'abhaken'}" aria-pressed="${s.done}"`)}${btn('×','tw-remove-set','icon-button',`data-index="${s.index}" aria-label="${esc(s.exercise)} Satz ${i+1} entfernen"`)}</div>`).join('')}<div class="toolbar">${btn('+ Satz','tw-add-set','secondary',`data-start="${g.start}"`)}${btn('Übung ersetzen','tw-replace','text-button',`data-start="${g.start}"`)}${btn('Entfernen','tw-remove-group','text-button danger',`data-start="${g.start}"`)}</div></article>`).join(''):'<p class="training-empty">Stelle deine Einheit zusammen. Wähle ein Gerät oder suche eine Übung — du kannst alles während der Einheit ändern.</p>'}<div class="training-footer"><span id="rest" class="pill">Pause bereit</span><div class="toolbar">${btn('90 s Pause','rest','secondary')}${btn('Training abschließen','finish-workout','primary')}${btn('Verwerfen','discard-workout','text-button')}</div></div></section>`;
+ }
+ function startView() {
+  const plans=getState().trainingPlans||[];
+  return `<section class="card training-start"><span class="eyebrow">DEIN TRAINING. DEINE AUSWAHL.</span><h2>Was steht heute an?</h2><p>${getState().trainingStage==='restart'?'Wiedereinstieg: Beginne mit einem Umfang, den du gut verträgst. Übungen und Belastung bleiben frei wählbar.':'Stelle Geräte und Übungen passend zu deinem heutigen Training zusammen.'}</p>${btn('+ Freie Einheit starten','tw-new','primary wide')}<div class="toolbar">${btn('Meine Pläne · '+plans.length,'tw-plans','secondary')}${btn('Aktivität eintragen','activity','secondary')}</div></section>`;
+ }
+ function library(start=null) {
+  if(!getState().activeWorkout)return;
+  replaceStart=start;chosen=null;
+  sheet(start===null?'Übungen & Geräte auswählen':'Übung ersetzen',`<p>Wähle eine Übung. Sätze, Last und Wiederholungen legst du anschließend selbst fest.</p><label>Übung suchen<input id="exercise-search" type="search" placeholder="z. B. Beinpresse, Rücken, Kurzhantel"></label>${select('Gerätefilter','equipmentFilter',equipment,'Alle Geräte')}<div id="exercise-results"></div><p class="footnote">Die Liste ist eine Auswahlhilfe, keine persönliche Belastungsfreigabe. Unbekannte Geräte zuerst erklären lassen.</p>`);results();
+ }
+ function results() {
+  const q=(document.querySelector('#exercise-search')?.value||'').toLowerCase();
+  const eq=document.querySelector('[name="equipmentFilter"]')?.value||'Alle Geräte';
+  const el=document.querySelector('#exercise-results');if(!el)return;
+  el.innerHTML=exercises.filter(e=>(eq==='Alle Geräte'||e.equipment===eq)&&`${e.name} ${e.equipment} ${e.muscle}`.toLowerCase().includes(q)).map(e=>`<button class="food-row" data-action="tw-select" data-id="${e.id}"><div><strong>${esc(e.name)}</strong><small>${esc(e.equipment)} · ${esc(e.muscle)}${e.mode==='time'?' · Zeit statt Wiederholungen':''}</small></div><span aria-hidden="true">＋</span></button>`).join('')||'<p>Kein Treffer. Filter ändern oder eine eigene Übung anlegen.</p>';
+ }
+ function plansView() {
+  const plans=getState().trainingPlans||[];
+  sheet('Meine Trainingspläne',`<p>Pläne speichern deine Übungsauswahl und Satzvorgaben. Beim Start sind alle Häkchen wieder frei.</p>${plans.map(p=>`<article class="card below"><h3>${esc(p.name)}</h3><p>${setGroups(p.sets).map(g=>esc(g.name)).join(' · ')}</p><div class="toolbar">${btn('Plan starten','tw-load','primary',`data-id="${p.id}"`)}${btn('Löschen','tw-delete-plan','text-button danger',`data-id="${p.id}"`)}</div></article>`).join('')||'<p>Noch kein Plan gespeichert. Starte eine freie Einheit und speichere deine Auswahl als Plan.</p>'}`);
+ }
+ const actions={
+  'tw-new':()=>{if(getState().activeWorkout)return;form('Freie Einheit starten','tw-new',`${field('Name der Einheit','name','Mein Training','text','required maxlength="100"')}<p>Danach wählst du die passenden Übungen und Geräte.</p>`,'Einheit anlegen');},
+  'tw-library':()=>library(), 'tw-replace':b=>library(Number(b.dataset.start)),
+  'tw-select':b=>{chosen=exercises.find(e=>e.id===b.dataset.id);if(!chosen)return;const old=replaceStart===null?null:setGroups(getState().activeWorkout.sets).find(g=>g.start===replaceStart);form(chosen.name,'tw-add',`<p>${esc(chosen.equipment)} · ${esc(chosen.muscle)}</p>${old?`<p class="hint">Ersetzt ${esc(old.name)} mit allen zugehörigen Sätzen, einschließlich vorhandener Häkchen.</p>`:''}${num('Sätze','sets',2,1,10,1)}${chosen.mode==='time'?num('Sekunden pro Satz','seconds',30,1,3600,1):num('Wiederholungen pro Satz','reps',8,1,100,1)}${num('Gewicht · kg (0 ohne Zusatzgewicht)','kg',0,0,500,0.5)}<p class="footnote">Vorgaben sind editierbare Platzhalter. Wähle eine für dich passende Belastung.</p>`,old?'Übung ersetzen':'Zur Einheit hinzufügen');},
+  'tw-up':b=>update(s=>{s.activeWorkout.sets=moveGroup(s.activeWorkout.sets,Number(b.dataset.start),-1);}),
+  'tw-down':b=>update(s=>{s.activeWorkout.sets=moveGroup(s.activeWorkout.sets,Number(b.dataset.start),1);}),
+  'tw-add-set':b=>update(s=>{const g=setGroups(s.activeWorkout.sets).find(g=>g.start===Number(b.dataset.start));if(!g)return;const {index,...last}=g.sets.at(-1);s.activeWorkout.sets.splice(g.start+g.sets.length,0,{...last,done:false});}),
+  'tw-remove-set':b=>{const index=Number(b.dataset.index),w=getState().activeWorkout;if(!w?.sets[index])return;if(w.sets[index].done){sheet('Abgehakten Satz entfernen?',`<p>Dieser Satz wird aus der laufenden Einheit entfernt.</p>${btn('Abbrechen','close','secondary')}${btn('Satz entfernen','tw-confirm-set','primary',`data-index="${index}"`)}`);}else update(s=>s.activeWorkout.sets.splice(index,1));},
+  'tw-confirm-set':b=>update(s=>s.activeWorkout.sets.splice(Number(b.dataset.index),1)),
+  'tw-remove-group':b=>{const start=Number(b.dataset.start),g=setGroups(getState().activeWorkout.sets).find(g=>g.start===start);if(g)sheet('Übung entfernen?',`<p>${esc(g.name)} und ${g.sets.length} Sätze werden aus dieser Einheit entfernt.</p>${btn('Abbrechen','close','secondary')}${btn('Übung entfernen','tw-confirm-group','primary',`data-start="${start}"`)}`);},
+  'tw-confirm-group':b=>update(s=>{const g=setGroups(s.activeWorkout.sets).find(g=>g.start===Number(b.dataset.start));if(g)s.activeWorkout.sets.splice(g.start,g.sets.length);}),
+  'tw-rename':()=>form('Einheit umbenennen','tw-rename',field('Name','name',getState().activeWorkout.name,'text','required maxlength="100"')),
+  'tw-save-plan':()=>{const s=getState();if(!s.activeWorkout?.sets.length)return notify('Füge zuerst Übungen hinzu.');form('Auswahl als Plan speichern','tw-save-plan',`${field('Planname','name',s.activeWorkout.name,'text','required maxlength="100"')}${select('Speichern als','target',[['new','Neuer Plan'],...(s.trainingPlans||[]).map(p=>[p.id,'Vorhandenen Plan ersetzen: '+p.name])],'new')}<p>Häkchen werden zurückgesetzt. Die laufende Einheit bleibt erhalten.</p>`);},
+  'tw-plans':plansView,
+  'tw-load':b=>{if(getState().activeWorkout)return notify('Beende oder verwirf zuerst die laufende Einheit.');const p=(getState().trainingPlans||[]).find(p=>p.id===b.dataset.id);if(p)update(s=>{s.activeWorkout={id:uid(),name:p.name,date:today(),started:Date.now(),note:'',sets:freshSets(p.sets)};});},
+  'tw-delete-plan':b=>{const p=(getState().trainingPlans||[]).find(p=>p.id===b.dataset.id);if(p)sheet('Plan löschen?',`<p>${esc(p.name)} wird entfernt. Bereits absolvierte Einheiten bleiben erhalten.</p>${btn('Abbrechen','close','secondary')}${btn('Plan löschen','tw-confirm-plan','primary',`data-id="${p.id}"`)}`);},
+  'tw-confirm-plan':b=>{if(commit(s=>{s.trainingPlans=s.trainingPlans.filter(p=>p.id!==b.dataset.id);}))plansView();},
+ };
+ function submit(kind,d) {
+  if(!kind.startsWith('tw-'))return null;
+  if(kind==='tw-new')return update(s=>{if(s.activeWorkout)throw Error('Eine Einheit läuft bereits.');if(!d.name.trim())throw Error('Name fehlt.');s.activeWorkout={id:uid(),name:d.name.trim(),date:today(),started:Date.now(),note:'',sets:[]};});
+  if(kind==='tw-add')return update(s=>{if(!chosen||!s.activeWorkout)throw Error('Übungsauswahl ist nicht mehr gültig.');const sets=makeSets(chosen,number(d.sets,1,10),chosen.mode==='time'?1:number(d.reps,1,100),number(d.kg,0,500),chosen.mode==='time'?number(d.seconds,1,3600):30);if(replaceStart===null)s.activeWorkout.sets.push(...sets);else{const g=setGroups(s.activeWorkout.sets).find(g=>g.start===replaceStart);if(!g)throw Error('Übung ist nicht mehr vorhanden.');s.activeWorkout.sets.splice(g.start,g.sets.length,...sets);}});
+  if(kind==='tw-rename')return update(s=>{s.activeWorkout.name=d.name.trim();if(!s.activeWorkout.name)throw Error('Name fehlt.');});
+  if(kind==='tw-save-plan')return update(s=>{s.trainingPlans||=[];const name=d.name.trim();if(!name)throw Error('Name fehlt.');if(s.trainingPlans.some(p=>p.name===name&&p.id!==d.target))throw Error('Dieser Planname existiert bereits. Wähle den vorhandenen Plan zum Ersetzen oder einen anderen Namen.');const item={id:d.target==='new'?uid():d.target,name,sets:freshSets(s.activeWorkout.sets)};if(d.target!=='new'&&!s.trainingPlans.some(p=>p.id===d.target))throw Error('Plan nicht mehr vorhanden.');s.trainingPlans=s.trainingPlans.filter(p=>p.id!==d.target);s.trainingPlans.push(item);});
+  return false;
+ }
+ return {activeView,startView,actions,submit,results};
+}
