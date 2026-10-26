@@ -105,8 +105,7 @@ assert.match(
 await click("quick-food");
 assert.equal((await read()).entries.at(-1).amount, 65);
 assert.equal((await read()).completeDays[today()], false);
-await page.locator(".food-tools summary").click();
-await click("micros");
+await click("nutrition-day");
 assert.match(await page.locator("#sheet").innerText(), /Unbekannt/);
 await a11y("nutrient sheet");
 await click("close");
@@ -126,8 +125,7 @@ await fill("micro_vitaminC", 25);
 await submit();
 await fill("amount", 200);
 await submit();
-await page.locator(".food-tools summary").click();
-await click("micros");
+await click("nutrition-day");
 assert.match(await page.locator("#sheet").innerText(), /50,0 mg/);
 assert.match(
   await page.locator("#sheet").innerText(),

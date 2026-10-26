@@ -70,6 +70,7 @@ export function recipeFood(name, ingredients, cookedWeight) {
     id: uid(),
     name,
     micros: recipeMicros(ingredients, weight),
+    fiberKnown: ingredients.every(e => e.fiberKnown !== false && !(e.fiberKnown === undefined && e.fiber === 0 && e.source?.includes("Open Food Facts"))),
     source: ingredients.some((i) => i.source.includes("ODbL"))
       ? "Rezept · mit Open Food Facts (ODbL)"
       : "Eigenes Rezept",
@@ -113,6 +114,7 @@ export function parseProduct(data, code) {
     ),
     source: "Open Food Facts · ODbL",
     barcode: code,
+    fiberKnown: n.fiber_100g !== undefined && n.fiber_100g !== null && n.fiber_100g !== "",
     micros: parseMicros(n),
     ...Object.fromEntries(
       nutrients.map((k) => [
@@ -215,6 +217,7 @@ export function validateState(s) {
     nutrients.forEach((k) =>
       assert(finite(f[k], 0, k === "kcal" ? 1000 : 100)),
     );
+    if (f.fiberKnown !== undefined) assert(typeof f.fiberKnown === "boolean");
     if (f.micros !== undefined) {
       assert(
         f.micros && typeof f.micros === "object" && !Array.isArray(f.micros),

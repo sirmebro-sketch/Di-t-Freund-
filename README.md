@@ -11,7 +11,13 @@ Ein ruhiger, deutschsprachiger Android-Begleiter für Ernährung, Gewicht, Kraft
 
 Android 8.0 oder neuer, aktuelles Android System WebView. Das ist ein persönlicher Testbuild, keine Play-Store-Veröffentlichung. Seit 0.4.1 ist die feste Release-Signatur eingerichtet und erfolgreich geprüft. Der private Schlüssel wird über GitHub-Actions-Secrets eingebunden; ohne eingerichtete Secrets gibt es kein installierbares Release-Artifact. Einmalige Einrichtung und Umstieg von bisherigen Debug-APKs: [Signierung](docs/SIGNING.md). Vor diesem einmaligen Wechsel JSON sichern. Künftige gleich signierte Updates über die bestehende App installieren.
 
-## Neu in 0.8.0 · Bedienfeedback & langfristige Trends
+## Neu in 0.8.1 · Tagesbilanz mit Ist und Soll
+
+Im Reiter **Essen**: Kalorienziel, gegessene Kalorien, Rest/Überschreitung, geschätzter Verbrauch und vorläufige bzw. abgeschlossene Bilanz. Eiweiß, Fett, Kohlenhydrate und Ballaststoffe jeweils mit Ist und Ziel/Planwert. Vitamine und Mineralstoffe stehen direkt darunter, nach Gruppen geordnet und mit Datenabdeckung. Die gesamte Bilanz öffnet sich auch von der Startseite über **Tagesbilanz**. Unbekannte Nährwerte werden nicht als echte Null ausgegeben.
+
+[Details, Berechnung und Grenzen](docs/UPDATE-0.8.1.md). Bestehende Ziele bleiben erhalten. versionCode 13, gleiche feste Signatur.
+
+## Seit 0.8.0 · Bedienfeedback & langfristige Trends
 
 - **♪ Ton:** originale kurze Pokémon-Menüeffekte für Schaltflächen, Formularbestätigungen, Aufklappfelder und Auswahlen. Vibration und Effekte getrennt einstellbar, mit direktem Test. Bereits gespeicherte Stummschaltung bleibt erhalten; „Töne & Vibration einschalten“ aktiviert beides.
 - **Trends:** eigener Reiter für 7/30 Tage, drei Monate, ein Jahr oder den gesamten gespeicherten Verlauf. Gewicht, Makros, vorhandene Mikronährstoffe, Schritte, Schlaf, Trinken, Training und Messwerte. Fehlende Daten bleiben Lücken; Tabellen machen alle Werte zugänglich.

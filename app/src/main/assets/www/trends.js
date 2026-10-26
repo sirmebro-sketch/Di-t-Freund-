@@ -1,3 +1,4 @@
+import {fiberIsKnown} from './nutrition-balance.js';
 import {combinedWeights} from './health-sync.js';
 import {micros} from './micros.js';
 export const trendMetrics=[
@@ -22,7 +23,7 @@ export function metricSeries(state,id,completeOnly=false){
  const add=(date,value,partial=false)=>{if(!Number.isFinite(value))return;const d=days.get(date)||{values:[],partial:false};d.values.push(value);d.partial||=partial;days.set(date,d);};
  if(metric.nutrition){
   const byDay=new Map();for(const e of state.entries){if(completeOnly&&!state.completeDays?.[e.date])continue;const a=byDay.get(e.date)||[];a.push(e);byDay.set(e.date,a);}
-  for(const [date,entries] of byDay){const values=entries.map(e=>metric.micro?e.micros?.[metric.micro]:e[id]);const known=values.filter(Number.isFinite).length;if(known)add(date,entries.reduce((sum,e,i)=>sum+(Number.isFinite(values[i])?values[i]*e.amount/100:0),0),known<entries.length||!state.completeDays?.[date]);}
+  for(const [date,entries] of byDay){const values=entries.map(e=>id==='fiber'&&!fiberIsKnown(e)?null:metric.micro?e.micros?.[metric.micro]:e[id]);const known=values.filter(Number.isFinite).length;if(known)add(date,entries.reduce((sum,e,i)=>sum+(Number.isFinite(values[i])?values[i]*e.amount/100:0),0),known<entries.length||!state.completeDays?.[date]);}
  }else if(id==='water')Object.entries(state.water).forEach(([date,ml])=>add(date,ml/1000));
  else if(metric.group==='Training')for(const w of state.workouts)add(w.date,id==='sessions'?1:w.minutes);
  else {

@@ -12,6 +12,7 @@ test('Trend dates preserve zero, missing days, leap dates and disjoint segments'
 test('Nutrition graphs preserve incomplete coverage and never invent missing micronutrients',()=>{
  const s=emptyState();s.entries=[{date:'2026-01-01',amount:200,kcal:100,protein:10,micros:{vitaminC:5}},{date:'2026-01-01',amount:100,kcal:50,protein:3,micros:{vitaminC:null}},{date:'2026-01-02',amount:100,kcal:200,micros:{vitaminC:null}}];s.completeDays={'2026-01-02':true};
  assert.deepEqual(metricSeries(s,'kcal').map(p=>p.value),[250,200]);assert.equal(metricSeries(s,'kcal',true).length,1);
+ s.entries[0].fiber=4;s.entries[1].fiber=0;s.entries[1].fiberKnown=false;assert.equal(metricSeries(s,'fiber')[0].value,8);assert.equal(metricSeries(s,'fiber')[0].partial,true);
  const micro=metricSeries(s,'micro-vitaminC');assert.equal(micro.length,1);assert.equal(micro[0].value,10);assert.equal(micro[0].partial,true);
 });
 test('Health graphs prefer own daily steps/sleep and average repeated pressure readings',()=>{
