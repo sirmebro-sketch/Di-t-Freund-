@@ -1,17 +1,23 @@
-# DiätFreund 🌿
+# FitDex
 
 Ein ruhiger, deutschsprachiger Android-Begleiter für Ernährung, Gewicht, Krafttraining und Wohlbefinden. **Ohne Abo, Konto, Werbung oder Backend.**
 
 ## Auf Android installieren
 
 1. Unter [Actions → Android APK & Checks](https://github.com/sirmebro-sketch/Di-t-Freund-/actions/workflows/android.yml) den neuesten **grünen** Lauf öffnen.
-2. Bei **Artifacts** `DiaetFreund-Android-APK` herunterladen (GitHub-Anmeldung erforderlich).
-3. ZIP entpacken, `DiaetFreund.apk` auf dem Smartphone öffnen und die Installation für die verwendete Dateien-App erlauben.
+2. Bei **Artifacts** `FitDex-Android-APK` herunterladen (GitHub-Anmeldung erforderlich).
+3. ZIP entpacken, `FitDex.apk` auf dem Smartphone öffnen und die Installation für die verwendete Dateien-App erlauben.
 4. Profil und Ziele auf dem Gerät einrichten. Persönliche Angaben sind nicht im Repository hinterlegt.
 
 Android 8.0 oder neuer, aktuelles Android System WebView. Das ist ein persönlicher Testbuild, keine Play-Store-Veröffentlichung. Seit 0.4.1 ist die feste Release-Signatur eingerichtet und erfolgreich geprüft. Der private Schlüssel wird über GitHub-Actions-Secrets eingebunden; ohne eingerichtete Secrets gibt es kein installierbares Release-Artifact. Einmalige Einrichtung und Umstieg von bisherigen Debug-APKs: [Signierung](docs/SIGNING.md). Vor diesem einmaligen Wechsel JSON sichern. Künftige gleich signierte Updates über die bestehende App installieren.
 
-## Neu in 0.7.0 · Atmosphäre & flexibles Training
+## Neu in 0.7.1 · FitDex
+
+Neuer Name, vom Eigentümer bereitgestelltes App-Icon und überarbeiteter Kopfbereich mit **FitDex · Ernährung · Training · Abenteuer**. Das Icon erscheint im Android-Launcher, beim Einstieg und in der App. Die Tonsteuerung bleibt direkt erreichbar. Datenschutzinformationen sind in den Einstellungen zu finden.
+
+Die interne Paketkennung, der lokale Speicher und der feste Signaturschlüssel bleiben erhalten: als Update über DiätFreund installieren. Alte Sicherungen und Health-Connect-Einträge bleiben kompatibel. APK-Dateien und neue Exporte tragen den Namen FitDex. versionCode 10.
+
+## Seit 0.7.0 · Atmosphäre & flexibles Training
 
 - Originale Pokémon-Platin-Kulissen für Team, Kämpfe und App-Hintergrund.
 - Drei eigene Retro-Musikstücke und weitere kurze Originaleffekte, offline und getrennt regelbar über **♪ Ton**.

@@ -93,7 +93,7 @@ class HealthConnectBridge(private val activity: ComponentActivity, private val c
         val steps=(selected.optBoolean("steps")||discover)&&readSteps in granted
         val sleep=(selected.optBoolean("sleep")||discover)&&readSleep in granted
         val weight=(selected.optBoolean("weight")||discover)&&readWeight in granted
-        if(!steps&&(selected.optBoolean("steps")||discover))warnings.put("Schritte: Lesefreigabe für DiätFreund fehlt.")
+        if(!steps&&(selected.optBoolean("steps")||discover))warnings.put("Schritte: Lesefreigabe für FitDex fehlt.")
         if(!sleep&&selected.optBoolean("sleep"))warnings.put("Schlaf: Lesefreigabe fehlt.")
         if(!weight&&selected.optBoolean("weight"))warnings.put("Gewicht: Lesefreigabe fehlt.")
         // One deduplicated local-calendar query per type. A denied/broken sleep query must not discard steps.

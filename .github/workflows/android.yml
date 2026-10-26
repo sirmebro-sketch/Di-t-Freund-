@@ -30,7 +30,7 @@ jobs:
       - run: gradle :app:assembleDebug :app:assembleRelease :app:lintDebug :app:lintRelease --no-daemon
       - uses: actions/upload-artifact@v4
         with:
-          name: DiaetFreund-Unsigned-Release
+          name: FitDex-Unsigned-Release
           path: app/build/outputs/apk/release/app-release-unsigned.apk
           retention-days: 30
       - uses: actions/upload-artifact@v4
@@ -95,7 +95,7 @@ jobs:
       - uses: actions/download-artifact@v4
         if: steps.signing.outputs.ready == 'true'
         with:
-          name: DiaetFreund-Unsigned-Release
+          name: FitDex-Unsigned-Release
           path: unsigned
       - uses: actions/setup-java@v4
         if: steps.signing.outputs.ready == 'true'
@@ -120,20 +120,20 @@ jobs:
           printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$signing_dir/release.p12"
           unset KEYSTORE_BASE64
           mkdir -p signed
-          "$ANDROID_HOME/build-tools/36.0.0/apksigner" sign             --ks "$signing_dir/release.p12" --ks-type PKCS12             --ks-key-alias diaetfreund-release             --ks-pass env:KEYSTORE_PASSWORD --key-pass env:KEYSTORE_PASSWORD             --out signed/DiaetFreund.apk unsigned/app-release-unsigned.apk
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" sign             --ks "$signing_dir/release.p12" --ks-type PKCS12             --ks-key-alias diaetfreund-release             --ks-pass env:KEYSTORE_PASSWORD --key-pass env:KEYSTORE_PASSWORD             --out signed/FitDex.apk unsigned/app-release-unsigned.apk
           unset KEYSTORE_PASSWORD
-          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs signed/DiaetFreund.apk > "$signing_dir/verification.txt"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs signed/FitDex.apk > "$signing_dir/verification.txt"
           expected="$(tr -d '\r\n ' < signing/certificate-sha256.txt)"
           actual="$(sed -n 's/^Signer #1 certificate SHA-256 digest: //p' "$signing_dir/verification.txt")"
           test "$actual" = "$expected" || { echo 'Unexpected signing certificate. APK withheld.'; exit 1; }
           printf 'Verified certificate SHA-256: %s\n' "$actual"
-          sha256sum signed/DiaetFreund.apk > signed/DiaetFreund.apk.sha256
+          sha256sum signed/FitDex.apk > signed/FitDex.apk.sha256
       - uses: actions/upload-artifact@v4
         if: steps.signing.outputs.ready == 'true'
         with:
-          name: DiaetFreund-Android-APK
+          name: FitDex-Android-APK
           path: |
-            signed/DiaetFreund.apk
-            signed/DiaetFreund.apk.sha256
+            signed/FitDex.apk
+            signed/FitDex.apk.sha256
           if-no-files-found: error
           retention-days: 30

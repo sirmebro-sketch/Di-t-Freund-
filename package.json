@@ -1,6 +1,6 @@
 {
-  "name": "diaetfreund",
-  "version": "0.7.0",
+  "name": "fitdex",
+  "version": "0.7.1",
   "private": true,
   "type": "module",
   "scripts": {

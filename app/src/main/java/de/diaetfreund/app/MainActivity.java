@@ -151,7 +151,7 @@ public final class MainActivity extends ComponentActivity {
         }
         @JavascriptInterface public void exportFile(String content, String filename, String mime) {
             if (content == null || content.getBytes(StandardCharsets.UTF_8).length > MAX_BYTES) { callback("onNativeError", "Export zu groß."); return; }
-            if (!filename.matches("diaetfreund-[0-9-]+\\.(json|csv)") || !(mime.equals("application/json") || mime.equals("text/csv"))) return;
+            if (!filename.matches("(?:fitdex|diaetfreund)-[0-9-]+\\.(json|csv)") || !(mime.equals("application/json") || mime.equals("text/csv"))) return;
             try (FileOutputStream out = new FileOutputStream(pendingExport)) { out.write(content.getBytes(StandardCharsets.UTF_8)); }
             catch (Exception e) { callback("onNativeError", "Sicherung konnte nicht vorbereitet werden."); return; }
             runOnUiThread(() -> {

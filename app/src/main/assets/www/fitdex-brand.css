@@ -1,0 +1,27 @@
+/* FitDex: the owner's icon is shared by launcher, welcome and app header. */
+.fitdex-icon { display:block;width:48px;height:48px;object-fit:contain;border-radius:11px;flex:none; }
+.brand { display:flex;align-items:center;gap:10px; }
+.brand .fitdex-icon { width:44px;height:44px; }
+.fitdex-header {
+ margin:0;padding:12px 20px;min-height:80px;height:auto;
+ display:flex;align-items:center;justify-content:space-between;gap:12px;
+ background:linear-gradient(115deg,#08283f,#103b50);
+ border-top:3px solid #f35c50;border-bottom:2px solid #4ebdb8;
+ box-shadow:0 3px 0 #09233222;
+}
+.fitdex-header .wordmark { display:flex;align-items:center;gap:10px;min-width:0;color:#f9fcff;text-decoration:none;letter-spacing:0; }
+.fitdex-wordmark { display:flex;flex-direction:column;gap:2px;min-width:0; }
+.fitdex-wordmark strong { font-size:25px;line-height:1.05;font-weight:850;letter-spacing:-.8px; }
+.fitdex-wordmark strong span { color:#74eee1; }
+.fitdex-wordmark small { color:#d4e5eb;font-size:11px;font-weight:500;line-height:1.35;letter-spacing:0; }
+.fitdex-header .audio-header { min-width:56px;min-height:44px;padding:8px 10px;color:#f9fcff;background:#153e54;border:1px solid #79a5b7;border-radius:10px;font-weight:650;box-shadow:0 2px 0 #041c2b;flex:none; }
+.fitdex-header .audio-header:hover { background:#20546a; }
+.fitdex-header .wordmark:focus-visible,.fitdex-header .audio-header:focus-visible { outline:3px solid #ffce67;outline-offset:4px; }
+.welcome .brand .fitdex-icon { width:64px;height:64px;border-radius:15px; }
+@media(max-width:370px) {
+ .fitdex-header { padding:11px 12px;gap:8px; }
+ .fitdex-header .fitdex-icon { width:42px;height:42px;border-radius:10px; }
+ .fitdex-header .wordmark { gap:8px; }
+ .fitdex-wordmark strong { font-size:23px; }
+ .fitdex-wordmark small { font-size:10px; }
+}
