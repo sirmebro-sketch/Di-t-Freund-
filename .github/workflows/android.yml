@@ -60,6 +60,7 @@ jobs:
           node tests/health-ui.mjs
           node tests/johto-meals-ui.mjs
           node tests/update06-ui.mjs
+          node tests/catalogue-personal-ui.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

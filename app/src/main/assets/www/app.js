@@ -1,4 +1,6 @@
 import { setupTrainerUI, dsIcon } from "./trainer-ui.js";
+import { offlineFoods, usdaFoods, matchesFood, foodDetails } from "./food-catalogue.js";
+import { parsePersonalPlan, applyPersonalPlan, commuteNames } from "./personal-plan.js";
 import { setupNutritionOCR } from "./nutrition-ocr-ui.js";
 import { setupMealUI } from "./meal-templates-ui.js";
 import { combinedWeights } from "./health-sync.js";
@@ -21,7 +23,6 @@ import {
   parseBackup,
   validateState,
   invalidateCompletedDays,
-  staples,
   routines,
   cues,
 } from "./core.js";
@@ -105,7 +106,8 @@ let tab = "home",
   timerEnd = 0,
   searchToken = 0,
   lastLookup = 0;
-const foods = () => [...state.foods, ...staples];
+const foods = () => [...state.foods, ...offlineFoods];
+let pendingPlan = null;
 const dayEntries = () => state.entries.filter((e) => e.date === date);
 const notify = (s) => {
   const t = $("#toast");
@@ -138,11 +140,13 @@ function commit(mutator, preserveCompletion = false) {
   }
 }
 function close() {
+  pendingPlan = null;
   searchToken++;
   ocrUI.invalidate();
   $("#sheet").close();
 }
 function sheet(title, html) {
+  pendingPlan = null;
   const d = $("#sheet");
   const reward = document.querySelector("#reward");
   d.innerHTML = `<div class="sheet-head"><h2 id="sheet-title">${esc(title)}</h2>${btn("×", "close", "icon-button", 'aria-label="Schließen"')}</div>${reward && !reward.hidden ? `<aside class="inline-reward">${reward.innerHTML}</aside>` : ""}${html}`;
@@ -290,7 +294,7 @@ function trainView() {
   }</section>`;
 }
 function moreView() {
-  return `<div class="profile-menu"><section class="card"><h2>${dsIcon("profile")} Dein Profil & Plan</h2><p>Ziele, persönliche Voraussetzungen und Vorschläge haben hier ihren gemeinsamen Platz.</p><div class="toolbar">${btn("Profil & Ziele", "settings", "primary")}${btn("Persönliche Voraussetzungen", "coach-settings", "secondary")}${btn("Ziele & Empfehlungen", "coach", "secondary")}${btn("Gewichtsverlauf", "go-chart", "secondary")}</div></section><section class="card"><h2>Messwerte & Verbindungen</h2><p>Der Tages-Check-in für Hunger und Befinden liegt unter Heute. Hier findest du gemessene Werte und verbundene Apps.</p><div class="toolbar">${btn("Samsung Health / Schritte", "hc-open", "primary")}${btn("Messwert eintragen", "health", "secondary")}${btn("Messwerte ansehen", "health-history", "secondary")}</div></section><section class="card"><h2>Darstellung & Sicherung</h2><div class="toolbar">${btn(state.theme === "light" ? "Dunkles Design" : "Helles Design", "theme", "secondary")}${btn("Sicherung exportieren", "export", "primary")}${btn("Sicherung importieren", "import", "secondary")}${btn("CSV exportieren", "csv", "secondary")}</div><p class="footnote">Sicherungen enthalten deine persönlichen Daten. Bewahre sie geschützt auf.</p></section><section class="card"><h2>Hilfe</h2>${btn("Datenschutz, Quellen & Hilfe", "about", "text-button")}${btn("Alle Daten löschen", "reset", "text-button danger")}</section></div>`;
+  return `<div class="profile-menu"><section class="card"><h2>${dsIcon("profile")} Dein Profil & Plan</h2><p>Ziele, persönliche Voraussetzungen und Vorschläge haben hier ihren gemeinsamen Platz.</p>${state.personalPlan ? `<p><strong>${fmt(state.profile.goal)} kg${state.personalPlan.muscleBuild ? " + Muskelaufbau" : ""}</strong><br>${esc(commuteNames[state.personalPlan.commuteMode])} · ${fmt(state.personalPlan.commuteKm)} km pro Arbeitstag<br>Schrittziel: ${fmt(state.personalPlan.stepMin)}–${fmt(state.personalPlan.stepMax)} · tatsächliche Werte unter Messwerte & Verbindungen</p>` : ""}<div class="toolbar">${btn("Profil & Ziele", "settings", "primary")}${btn("Persönliche Voraussetzungen", "coach-settings", "secondary")}${btn("Profildatei laden", "import", "secondary")}${btn("Ziele & Empfehlungen", "coach", "secondary")}${btn("Gewichtsverlauf", "go-chart", "secondary")}</div></section><section class="card"><h2>Messwerte & Verbindungen</h2><p>Der Tages-Check-in für Hunger und Befinden liegt unter Heute. Hier findest du gemessene Werte und verbundene Apps.</p><div class="toolbar">${btn("Samsung Health / Schritte", "hc-open", "primary")}${btn("Messwert eintragen", "health", "secondary")}${btn("Messwerte ansehen", "health-history", "secondary")}</div></section><section class="card"><h2>Darstellung & Sicherung</h2><div class="toolbar">${btn(state.theme === "light" ? "Dunkles Design" : "Helles Design", "theme", "secondary")}${btn("Sicherung exportieren", "export", "primary")}${btn("Sicherung importieren", "import", "secondary")}${btn("CSV exportieren", "csv", "secondary")}</div><p class="footnote">Sicherungen enthalten deine persönlichen Daten. Bewahre sie geschützt auf.</p></section><section class="card"><h2>Hilfe</h2>${btn("Datenschutz, Quellen & Hilfe", "about", "text-button")}${btn("Alle Daten löschen", "reset", "text-button danger")}</section></div>`;
 }
 function healthHistory() {
   sheet(
@@ -352,14 +356,14 @@ function foodPicker() {
   editing = null;
   sheet(
     "Essen hinzufügen",
-    `${select("Mahlzeit", "meal", meals, meal)}<label class="search">Lebensmittel finden<input id="food-search" type="search" placeholder="z. B. Quark, Kartoffeln, Haferflocken" autocomplete="off"></label><div class="toolbar">${btn(icon("scan") + " Barcode", "barcode", "secondary")}${btn("Nährwerttabelle fotografieren", "ocr-open", "secondary")}${btn("Gespeicherte Mahlzeiten", "templates", "secondary")}${btn("+ Eigenes Lebensmittel", "custom-food", "secondary")}</div><div id="food-results"></div><p class="footnote">Suche in deinen gespeicherten Lebensmitteln und einer kleinen Offline-Grundauswahl. Weitere Produkte über Barcode.</p>`,
+    `${select("Mahlzeit", "meal", meals, meal)}<label class="search">Lebensmittel finden<input id="food-search" type="search" placeholder="z. B. Quark, Kartoffeln, Haferflocken" autocomplete="off"></label><div class="toolbar">${btn(icon("scan") + " Barcode", "barcode", "secondary")}${btn("Nährwerttabelle fotografieren", "ocr-open", "secondary")}${btn("Gespeicherte Mahlzeiten", "templates", "secondary")}${btn("+ Eigenes Lebensmittel", "custom-food", "secondary")}</div><div id="food-results"></div><p class="footnote">Offline-Suche: ${usdaFoods.length} deutsch beschriftete USDA-Lebensmittel, eigene Produkte und ergänzende Orientierungswerte. Alle USDA-Werte pro 100 g; Zubereitungszustand beachten. Markenprodukte über Barcode.</p>`,
   );
   foodResults("");
 }
 function foodResults(q, showAll = false) {
   const recent = new Set(state.entries.slice(-20).map(foodKey));
   const list = foods()
-    .filter((f) => f.name.toLowerCase().includes(q.toLowerCase()))
+    .filter((f) => matchesFood(f, q))
     .sort(
       (a, b) =>
         Number(state.favorites.includes(foodKey(b))) * 2 +
@@ -379,7 +383,7 @@ function foodResults(q, showAll = false) {
     "<p>Kein Treffer. Lege das Lebensmittel selbst an oder nutze den Barcode.</p>";
   if (shown.length < list.length)
     $("#food-results").innerHTML += btn(
-      "Alle gespeicherten Lebensmittel anzeigen",
+      "Alle Lebensmittel anzeigen",
       "food-all",
       "secondary wide",
     );
@@ -390,7 +394,7 @@ function portion(f, entry = null) {
   form(
     entry ? "Eintrag bearbeiten" : "Deine Portion",
     "portion",
-    `<h3>${esc(f.name)}</h3><p>${esc(f.source)}</p>${num(f.name.includes("100 ml") ? "Menge · ml" : "Menge · g", "amount", entry?.amount || rememberedAmount(state, f), 1, 10000)}${select("Mahlzeit", "meal", meals, entry?.meal || meal)}<div class="portion-preview" id="portion-preview" aria-live="polite"></div>${entry ? btn("Eintrag löschen", "delete-entry", "text-button danger") : ""}`,
+    `<h3>${esc(f.name)}</h3><p>${esc(f.source)}</p>${foodDetails(f) ? `<p class="footnote">${esc(foodDetails(f))}</p>` : ""}${num(f.name.includes("100 ml") ? "Menge · ml" : "Menge · g", "amount", entry?.amount || rememberedAmount(state, f), 1, 10000)}${select("Mahlzeit", "meal", meals, entry?.meal || meal)}<div class="portion-preview" id="portion-preview" aria-live="polite"></div>${entry ? btn("Eintrag löschen", "delete-entry", "text-button danger") : ""}`,
     "Ins Tagebuch speichern",
   );
   updatePortionPreview();
@@ -535,6 +539,15 @@ window.onExportComplete = () => notify("Sicherung gespeichert.");
 window.onImport = (raw) => importData(raw);
 function importData(raw) {
   try {
+    pendingPlan = null;
+    if (raw.length > 10 * 1024 * 1024) throw Error("Datei ist zu groß.");
+    if (JSON.parse(raw)?.kind === "diaetfreund-personal-plan") {
+      const plan = parsePersonalPlan(raw);
+      applyPersonalPlan(state, plan);
+      sheet("Persönliche Einstellungen übernehmen?", `<p>Diese Profildatei ergänzt ausschließlich folgende Einstellungen:</p><ul><li>Größe: ${plan.height} cm · Zielgewicht: ${plan.goal} kg</li><li>Berechnungsgrundlage: ${esc({male:"Männlich",female:"Weiblich",unspecified:"Keine Angabe"}[plan.sex])}</li><li>Muskelaufbau: ${plan.muscleBuild ? "Ja" : "Nein"}</li><li>Arbeitsweg: ${esc(commuteNames[plan.commuteMode])} · ${plan.commuteKm} km insgesamt pro Arbeitstag</li><li>Später geplant: ${esc(commuteNames[plan.nextCommuteMode])}</li><li>Schrittziel: ${plan.stepMin}–${plan.stepMax} pro Tag · keine gemessenen Schritte</li><li>Bluthochdruck berücksichtigen: ${plan.hypertension ? "Ja" : "Nein"}</li><li>Betablocker berücksichtigen: ${plan.betaBlocker ? "Ja" : "Nein"}</li></ul><p>Tagebuch, Gewichte, Pokémon und bisherige Kalorienziele bleiben erhalten. Keine automatische Sportfreigabe oder Aktivitätsberechnung.</p>${!state.coach ? '<p>Geburtsdatum und tatsächlichen Aktivitätsumfang bitte anschließend unter „Persönliche Voraussetzungen“ ergänzen.</p>' : ''}${btn("Abbrechen", "close", "secondary")}${btn("Einstellungen übernehmen", "confirm-personal-plan", "primary wide")}`);
+      pendingPlan = plan;
+      return;
+    }
     const imported = parseBackup(raw);
     sheet(
       "Sicherung wiederherstellen?",
@@ -1029,6 +1042,15 @@ const actions = {
     };
     input.click();
   },
+  "confirm-personal-plan": () => {
+    if (!pendingPlan) return;
+    const plan = pendingPlan;
+    if (commit(s => Object.assign(s, applyPersonalPlan(s, plan)))) {
+      close();
+      render();
+      notify("Deine persönlichen Einstellungen sind übernommen. Tagebuch und Spielstand bleiben erhalten.");
+    }
+  },
   "confirm-import": () => {
     if (
       window.pendingImport &&
@@ -1070,7 +1092,7 @@ const actions = {
   about: () =>
     sheet(
       "Über DiätFreund",
-      `<h3>Dein Alltag, ohne Abo.</h3><p>Version 0.6.0 · Offline-Tagebuch für Erwachsene. Keine Werbung, Telemetrie, Konten oder kostenpflichtigen KI-Dienste.</p><h3>Datenschutz</h3><p>Deine Daten liegen im privaten App-Speicher. Android-Cloud-Backup ist deaktiviert. Die App setzt die Gerätesperre voraus; sie bietet keine eigene Verschlüsselung oder PIN. Exportdateien sind unverschlüsselt. Deinstallation entfernt lokale Daten. Sichere regelmäßig.</p><h3>Health Connect</h3><p>Optional Schritte, Schlafdauer und Gewicht lesen. Eigene Gewichte nur nach Vorschau ausdrücklich teilen. Freigaben lassen sich in Android widerrufen. Lokale Importkopien kannst du unter Schritte & Erholung entfernen; bereits geteilte Werte verwaltest du in Health Connect.</p><h3>Barcode & Kamera</h3><p>Nur nach deiner Aktion wird ein Barcode an world.openfoodfacts.org gesendet (einschließlich technisch notwendiger IP-Adresse). Kamerabilder verlassen das Gerät nicht. Nährwerttabellen werden mit Tesseract lokal erkannt; übernommene Werte müssen geprüft werden. Kein automatisches Schätzen von Mahlzeitenfotos.</p><h3>Quellen & Lizenzen</h3><p>Produktdaten: Open Food Facts (opendatacommons.org/licenses/odbl/1-0/). Datenbank ODbL, einzelne Inhalte Database Contents License. Eigene Lebensmittel sind getrennt gekennzeichnet. Prüfe die Verpackung, insbesondere Portionsgrößen und Allergene. Die App beurteilt keine Allergensicherheit.</p><p>Barcode-Erkennung: ZXing / JourneyApps (Apache 2.0). AndroidX (Apache 2.0). Foto-OCR: Tesseract4Android / Tesseract und deutsches tessdata_fast-Modell (Apache 2.0), Leptonica, libjpeg und libpng. Keine OCR-Telemetrie oder Bild-Uploads. Vollständige Hinweise im Repository.</p>${btn("Lizenztexte offline lesen", "licenses", "secondary")}<p>Originalgrafiken aus Pokémon HeartGold/SoulSilver: PokeAPI-Sprite-Spiegel und The Spriters Resource (Menü: redblueyellow; Orte: Latias Tamer). Pokémon © Nintendo / Creatures / GAME FREAK. Inoffizielles Fanprojekt; keine freie Lizenz für die Originalgrafiken.</p><h3>Gesundheit</h3><p>Kalorienformel: Mifflin–St. Jeor (1990), Schätzung mit individuell gewähltem Aktivitätsfaktor. Bewegungsvorlagen orientieren sich an allgemeinen NHS-Empfehlungen. Keine Diagnose, Überwachung, Notfallerkennung oder garantierte Gewichtsabnahme. Gesundheitseinträge werden nicht medizinisch bewertet.</p><h3>Bedienung</h3><p>Essen: Lebensmittel wählen, Gramm eingeben, speichern. Einträge antippen zum Bearbeiten. Verlauf: pro Datum ein Gewicht. Training: Sätze bearbeiten, abhaken, abschließen. Mehr: Gesundheitsjournal, Ziele und Sicherungen. Barcode braucht Internet; alles andere funktioniert offline.</p>`,
+      `<h3>Dein Alltag, ohne Abo.</h3><p>Version 0.6.1 · Offline-Tagebuch für Erwachsene. Keine Werbung, Telemetrie, Konten oder kostenpflichtigen KI-Dienste.</p><h3>Datenschutz</h3><p>Deine Daten liegen im privaten App-Speicher. Android-Cloud-Backup ist deaktiviert. Die App setzt die Gerätesperre voraus; sie bietet keine eigene Verschlüsselung oder PIN. Exportdateien sind unverschlüsselt. Deinstallation entfernt lokale Daten. Sichere regelmäßig.</p><h3>Health Connect</h3><p>Optional Schritte, Schlafdauer und Gewicht lesen. Eigene Gewichte nur nach Vorschau ausdrücklich teilen. Freigaben lassen sich in Android widerrufen. Lokale Importkopien kannst du unter Schritte & Erholung entfernen; bereits geteilte Werte verwaltest du in Health Connect.</p><h3>Barcode & Kamera</h3><p>Nur nach deiner Aktion wird ein Barcode an world.openfoodfacts.org gesendet (einschließlich technisch notwendiger IP-Adresse). Kamerabilder verlassen das Gerät nicht. Nährwerttabellen werden mit Tesseract lokal erkannt; übernommene Werte müssen geprüft werden. Kein automatisches Schätzen von Mahlzeitenfotos.</p><h3>Quellen & Lizenzen</h3><p>Produktdaten: Open Food Facts (opendatacommons.org/licenses/odbl/1-0/). Datenbank ODbL, einzelne Inhalte Database Contents License. Eigene Lebensmittel sind getrennt gekennzeichnet. Prüfe die Verpackung, insbesondere Portionsgrößen und Allergene. Die App beurteilt keine Allergensicherheit.</p><p>Offline-Lebensmittel: ${usdaFoods.length} ausgewählte Datensätze aus USDA FoodData Central, SR Legacy April 2018 (CC0). Deutsche Bezeichnungen, FDC-IDs und Herkunft sind hinterlegt. US-Durchschnittswerte; keine vollständige Datenbank und kein Ersatz für aktuelle Packungsangaben. Kohlenhydrate näherungsweise ohne Ballaststoffe, Vitamin E als Alpha-Tocopherol, Folat als DFE. Fehlende Werte bleiben unbekannt.</p><p>Barcode-Erkennung: ZXing / JourneyApps (Apache 2.0). AndroidX (Apache 2.0). Foto-OCR: Tesseract4Android / Tesseract und deutsches tessdata_fast-Modell (Apache 2.0), Leptonica, libjpeg und libpng. Keine OCR-Telemetrie oder Bild-Uploads. Vollständige Hinweise im Repository.</p>${btn("Lizenztexte offline lesen", "licenses", "secondary")}<p>Originalgrafiken aus Pokémon HeartGold/SoulSilver: PokeAPI-Sprite-Spiegel und The Spriters Resource (Menü: redblueyellow; Orte: Latias Tamer). Pokémon © Nintendo / Creatures / GAME FREAK. Inoffizielles Fanprojekt; keine freie Lizenz für die Originalgrafiken.</p><h3>Gesundheit</h3><p>Kalorienformel: Mifflin–St. Jeor (1990), Schätzung mit individuell gewähltem Aktivitätsfaktor. Bewegungsvorlagen orientieren sich an allgemeinen NHS-Empfehlungen. Keine Diagnose, Überwachung, Notfallerkennung oder garantierte Gewichtsabnahme. Gesundheitseinträge werden nicht medizinisch bewertet.</p><h3>Bedienung</h3><p>Essen: Lebensmittel wählen, Gramm eingeben, speichern. Einträge antippen zum Bearbeiten. Verlauf: pro Datum ein Gewicht. Training: Sätze bearbeiten, abhaken, abschließen. Mehr: Gesundheitsjournal, Ziele und Sicherungen. Barcode braucht Internet; alles andere funktioniert offline.</p>`,
     ),
 };
 document.addEventListener("click", (e) => {
@@ -1171,6 +1193,7 @@ document.addEventListener("submit", (e) => {
               reason: "Manuell angepasst",
             });
           s.profile = p;
+          if (s.personalPlan) Object.assign(s.personalPlan, {height:p.height,goal:p.goal});
           if (first && !s.weights.length)
             s.weights.push({ date: today(), value: p.start });
         });

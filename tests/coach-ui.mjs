@@ -131,7 +131,7 @@ await click("micros");
 assert.match(await page.locator("#sheet").innerText(), /50,0 mg/);
 assert.match(
   await page.locator("#sheet").innerText(),
-  /1\/3 Einträge mit Daten/,
+  /3\/3 Einträge mit Daten/,
 );
 await click("close");
 // Independent synthetic 21-day history verifies the visible confirmation boundary.

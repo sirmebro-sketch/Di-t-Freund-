@@ -1,3 +1,9 @@
+USDA FoodData Central · SR Legacy April 2018
+118 ausgewählte Lebensmittel, CC0 1.0 / Public Domain.
+Quelle: https://fdc.nal.usda.gov/
+Namensübersetzungen und Kohlenhydrat-Anpassung durch DiätFreund.
+Datensatz-IDs und unveränderte englische Beschreibungen: docs/USDA-DATA.json.
+
 DiätFreund – Drittanbieter-Hinweise
 
 

@@ -1,4 +1,5 @@
 import { validateTemplates } from "./meal-templates.js";
+import { validatePersonalPlan } from "./personal-plan.js";
 import { validateConnection } from "./health-sync.js";
 import { validateGame, migrateGame } from "./game.js";
 import { micros, parseMicros, recipeMicros } from "./micros.js";
@@ -137,6 +138,7 @@ function assert(ok) {
     );
 }
 export function validateState(s) {
+  if (s?.personalPlan != null) validatePersonalPlan(s.personalPlan);
   validateGame(s?.game);
   validateConnection(s?.healthConnect);
   assert(s && s.version === VERSION && ["light", "dark"].includes(s.theme));

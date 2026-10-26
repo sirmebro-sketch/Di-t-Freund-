@@ -60,3 +60,7 @@ Browser-/Unit-Tests ersetzen weder reale Android-Kamera-/SAF-Tests noch medizini
 50 Unit-Tests einschließlich Nährwert-OCR-Parser (kJ/kcal, zwei Spalten, Portionsumrechnung, fehlende Einheiten, Konflikte, unbekannte Werte). Bestehende sechs Browser-Skripte sowie `update06-ui.mjs` prüfen Gen-IV-Navigation, Foto-Bridge mit simuliertem Text, Bestätigung vor Übernahme, Barcode-Direktstart, Belohnung ohne Doppelvergabe, externe Health-Connect-Freigaben, Vordergrund-Rückkehr, Fehlererhalt und 360-Pixel-/Hell-/Dunkelansichten mit axe.
 
 Erster Android-Prüflauf für die neue native OCR und aggregierten Health-Abfragen: Build Debug/Release und beide Lint-Varianten erfolgreich (Actions 40304417355). Desktop-Tesseract mit demselben deutschen Modell an einer synthetischen Tabelle erprobt; ein falsch gelesenes Grammzeichen hat eine zusätzliche Parserprüfung ausgelöst. Native Android-Kamera, Touch-Ausschnitt und echter Samsung-Schrittimport sind weiterhin nicht am physischen Gerät abgenommen.
+
+## Ergänzung 0.6.1
+
+57 Unit-Tests insgesamt. `tests/catalogue-personal-ui.mjs` ergänzt die sieben vorhandenen Browser-Skripte um USDA-Erfassung, Mikronährstoffe, stabile Favoriten-IDs, gezielten Profilimport mit Vorschau und Abbruch, Schreibfehler und Datenerhalt. CI führt alle acht aus. Die Rezept-Erwartung verwendet für neu ausgewählte Haferflocken jetzt den USDA-Quellenwert 379 kcal/100 g; vorhandene Tagebuch-Snapshots bleiben unverändert.

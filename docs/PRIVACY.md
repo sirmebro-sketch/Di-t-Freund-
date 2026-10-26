@@ -22,3 +22,8 @@ Gewichtsexport erfolgt erst nach Vorschau und ausdrücklichem Senden. Apps mit e
 Tesseract-OCR verarbeitet den gewählten Fotoausschnitt vollständig lokal. Keine OCR-Analyse- oder Telemetrie-Dienste. Fotoauswahl über Android-Dateiauswahl benötigt keine allgemeine Galerie-/Speicherfreigabe. Temporäre Kameraaufnahme im privaten Cache; Löschung beim Beenden der Fotoaktivität. Bereits vorhandene Galerieoriginale werden nicht verändert oder gelöscht. Nach Prozessabbruch kann eine temporäre Aufnahme bis zum nächsten Fotovorgang im Cache bleiben. Weder Foto noch Rohtext werden im Tagebuch/Backup gespeichert; ausdrücklich übernommene und geprüfte Nährwerte werden als Lebensmittel gespeichert. Das Modell ist im APK enthalten, kein Download bei Nutzung.
 
 Beim ausdrücklich ausgelösten Aktualisieren können bereits in Android erteilte Lesefreigaben übernommen werden; danach ist „Beim Öffnen aktualisieren“ aktiv und in der Verbindungsansicht abschaltbar. Ein fehlerhafter Datentyp ändert seine bisherigen lokalen Kopien nicht. Schrittquellen und letzter Abgleichstatus liegen nur lokal.
+# Ergänzung 0.6.1
+
+USDA-Grundnahrungsmittel sind im APK enthalten. Suchen und Eintragen benötigen keinen zusätzlichen Netzwerkzugriff. Die Daten sind generisch und enthalten keine persönlichen Gesundheitsdaten.
+
+Die optionale persönliche Profildatei ergänzt nach Vorschau ausschließlich die bestätigten Einstellungen; sie ersetzt kein Tagebuch. Arbeitsweg, Bewegungsziele und Gesundheitsflags bleiben im lokalen Speicher und sind Bestandteil normaler Sicherungen. Solche Dateien enthalten private Angaben, sind unverschlüsselt und gehören nicht in öffentliche Repositories.

@@ -165,7 +165,7 @@ export function weeklyReview(s, date = today()) {
   };
 }
 export function readiness(s, date = today()) {
-  const c = s.coach,
+  const c = s.coach || s.personalPlan,
     check = s.checkins[date];
   if (c?.hypertension && !c.trainingCleared)
     return {

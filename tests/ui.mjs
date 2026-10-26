@@ -84,7 +84,8 @@ await fill("cookedWeight", 200);
 await submit();
 await fill("amount", 100);
 await submit();
-assert.equal((await read()).foods.at(-1).kcal, 186);
+// USDA FDC 173904: 379 kcal per 100 g oats; recipe yields 200 g.
+assert.equal((await read()).foods.at(-1).kcal, 189.5);
 await click("barcode");
 await page.route("https://world.openfoodfacts.org/**", (r) =>
   r.fulfill({

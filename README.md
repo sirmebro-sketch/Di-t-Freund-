@@ -11,7 +11,15 @@ Ein ruhiger, deutschsprachiger Android-Begleiter für Ernährung, Gewicht, Kraft
 
 Android 8.0 oder neuer, aktuelles Android System WebView. Das ist ein persönlicher Testbuild, keine Play-Store-Veröffentlichung. Seit 0.4.1 ist die feste Release-Signatur eingerichtet und erfolgreich geprüft. Der private Schlüssel wird über GitHub-Actions-Secrets eingebunden; ohne eingerichtete Secrets gibt es kein installierbares Release-Artifact. Einmalige Einrichtung und Umstieg von bisherigen Debug-APKs: [Signierung](docs/SIGNING.md). Vor diesem einmaligen Wechsel JSON sichern. Künftige gleich signierte Updates über die bestehende App installieren.
 
-## Neu in 0.6.0 · Dein Trainer-Tagebuch
+## Neu in 0.6.1 · Lebensmittel & persönlicher Plan
+
+- **118 USDA-Lebensmittel offline:** deutsch beschriftet, roh/gekocht getrennt, Energie/Makros und vorhandene Mikronährstoffe. Nachvollziehbare FDC-Quellen; keine API-Kosten. Markenprodukte weiterhin über Open Food Facts.
+- **Persönlicher Alltag:** normales Fahrrad und E-Bike, Gesamtstrecke am Arbeitstag, Schrittzielbereich und Muskelaufbau. Geplante Bewegung wird nicht als bereits geleistete Aktivität verrechnet.
+- **Private Profildatei:** Vorschau und gezielte Übernahme bestätigter Einstellungen; Tagebuch, Gewichte, Kalorienziel und Pokémon bleiben erhalten. Persönliche Daten gehören nicht in dieses Repository.
+
+Details: [Update 0.6.1](docs/UPDATE-0.6.1.md), [USDA-Herkunft](docs/USDA-DATA.json). Gleiche feste Signatur, versionCode 8.
+
+## Seit 0.6.0 · Dein Trainer-Tagebuch
 
 - **Gesamte App im Gen-IV-Stil:** Originalsprites, Menüicons und Umgebung aus HeartGold/SoulSilver, passende Touchflächen, Dialoge und Hell-/Dunkelmodus. Die Inhalte bleiben Kanto + Johto, insgesamt 251 Pokémon.
 - **Klarere Wege:** Heute · Essen · Training · Reise · Profil. Tages-Check-in an einem Ort; Ziele und Voraussetzungen im Profil, Messwerte separat. Seltenere Essen-Werkzeuge sind zusammengefasst.
@@ -71,7 +79,7 @@ Inoffizieller Pokémon-Fan-Spielteil mit vereinfachten Regeln, kein vollständig
 
 - **Heute:** Kalorienübersicht, Protein, Kohlenhydrate, Fett, Wasser und schnelle Mahlzeiteneingabe.
 - **Essen:** vier Mahlzeiten, freie Datumswahl, Portionsberechnung, Bearbeiten/Löschen, Vortag kopieren, Favoriten und zuletzt verwendete Lebensmittel zuerst.
-- **Lebensmittel:** kleine Offline-Grundauswahl mit ausdrücklich ungefähren Werten, eigene Packungsangaben, Barcode-Kamera sowie manuelle EAN-/UPC-Abfrage bei Open Food Facts. Neue Produktwerte müssen vor dem Speichern bestätigt werden. Gespeicherte Produkte sind offline verfügbar.
+- **Lebensmittel:** 118 deutsch beschriftete USDA-Datensätze, ergänzende gekennzeichnete Orientierungswerte, eigene Packungsangaben, Barcode-Kamera sowie manuelle EAN-/UPC-Abfrage bei Open Food Facts. Neue Produktwerte müssen vor dem Speichern bestätigt werden. Gespeicherte Produkte sind offline verfügbar.
 - **Rezepte:** Zutaten mit Mengen, tatsächliches Endgewicht nach Zubereitung, beliebige Grammportionen. Rezepte bleiben als wiederverwendbare Lebensmittel gespeichert.
 - **Verlauf:** Gewicht, 7-Kalendertage-Mittel, Zielverlauf und Wochenübersicht. Keine Behauptung, Fett- oder Muskelmasse messen zu können.
 - **Training:** allgemeine Ganzkörpervorlagen für Gym und Zuhause, eigene Übungen, editierbare Sätze/Last/Wiederholungen, 90-Sekunden-Pausentimer, Wiederaufnahme nach App-Neustart, Trainingshistorie und manuelle Aktivitäten. Nur tatsächlich abgehakte Sätze werden abgeschlossen.

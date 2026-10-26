@@ -1,6 +1,7 @@
 import { micros, microTotals, referenceFor } from "./micros.js";
 import { energyModel, weeklyReview, readiness, ageAt } from "./coach.js";
 import { today, number } from "./core.js";
+import { commuteNames, validatePersonalPlan } from "./personal-plan.js";
 export function setupCoachUI(ctx) {
   const {
     getState,
@@ -56,7 +57,8 @@ export function setupCoachUI(ctx) {
     );
   }
   function settings() {
-    const c = getState().coach || {};
+    const plan = getState().personalPlan || {};
+    const c = getState().coach || plan;
     form(
       "Auf dich abgestimmt",
       "coach-settings",
@@ -96,7 +98,7 @@ export function setupCoachUI(ctx) {
           ["3", "3 · mit Erholung dazwischen"],
         ],
         c.sessions || 2,
-      )}${num("Zeitfenster Zuhause · Minuten", "homeMinutes", c.homeMinutes || 30, 15, 60, 5)}${num("Zeitfenster Gym · Minuten", "gymMinutes", c.gymMinutes || 60, 30, 120, 5)}</div><p class="hint">Wähle deine derzeitige Aktivität, nicht dein Wunschpensum. Sport wird später nicht ein zweites Mal zu den Kalorien addiert.</p>${check("Bluthochdruck berücksichtigen", "hypertension", c.hypertension)}${check("Betablocker / Medikament beeinflusst meinen Puls", "betaBlocker", c.betaBlocker)}${check("Belastbarkeit und Wiedereinstieg sind ärztlich abgestimmt", "trainingCleared", c.trainingCleared)}${check("Besonderer Ernährungsbedarf: z. B. Nierenkrankheit, Schwangerschaft/Stillzeit, Essstörung oder medizinische Ernährungsvorgaben", "nutritionCare", c.nutritionCare)}${check("Rauchen bei Vitamin-C-Referenz berücksichtigen", "smoker", c.smoker)}<p class="footnote">Keine Medikamentendosierung, Diagnose oder automatische medizinische Überwachung. Die App kann deine Belastbarkeit nicht feststellen.</p>`,
+      )}${num("Zeitfenster Zuhause · Minuten", "homeMinutes", c.homeMinutes || 30, 15, 60, 5)}${num("Zeitfenster Gym · Minuten", "gymMinutes", c.gymMinutes || 60, 30, 120, 5)}</div><p class="hint">Wähle deine derzeitige Aktivität, nicht dein Wunschpensum. Sport wird später nicht ein zweites Mal zu den Kalorien addiert.</p><details class="below"><summary>Arbeitsweg & persönliche Ziele</summary><p>Arbeitsweg insgesamt pro Arbeitstag. Ziele sind keine Messwerte und erhöhen deine Kalorien nicht automatisch. Einen späteren Wechsel auf E-Bike erst aktivieren, wenn er tatsächlich stattfindet.</p>${check("Muskelaufbau als Ziel", "muscleBuild", plan.muscleBuild)}<div class="two-grid">${select("Aktueller Arbeitsweg", "commuteMode", Object.entries(commuteNames), plan.commuteMode || "none")}${num("Hin- und Rückweg insgesamt · km", "commuteKm", plan.commuteKm ?? 0, 0, 300, 0.1)}${select("Später geplanter Arbeitsweg", "nextCommuteMode", Object.entries(commuteNames), plan.nextCommuteMode || "none")}${num("Schrittziel · unteres Ende", "stepMin", plan.stepMin ?? 0, 0, 50000, 1)}${num("Schrittziel · oberes Ende", "stepMax", plan.stepMax ?? 0, 0, 50000, 1)}</div><p class="footnote">0–0 bedeutet: kein Schrittziel gesetzt. Gemessene Schritte stehen unter Health Connect.</p></details>${check("Bluthochdruck berücksichtigen", "hypertension", c.hypertension)}${check("Betablocker / Medikament beeinflusst meinen Puls", "betaBlocker", c.betaBlocker)}${check("Belastbarkeit und Wiedereinstieg sind ärztlich abgestimmt", "trainingCleared", c.trainingCleared)}${check("Besonderer Ernährungsbedarf: z. B. Nierenkrankheit, Schwangerschaft/Stillzeit, Essstörung oder medizinische Ernährungsvorgaben", "nutritionCare", c.nutritionCare)}${check("Rauchen bei Vitamin-C-Referenz berücksichtigen", "smoker", c.smoker)}<p class="footnote">Keine Medikamentendosierung, Diagnose oder automatische medizinische Überwachung. Die App kann deine Belastbarkeit nicht feststellen.</p>`,
       "Persönliche Angaben speichern",
     );
   }
@@ -145,7 +147,7 @@ export function setupCoachUI(ctx) {
         })
         .join(
           "",
-        )}<p class="footnote">Die kleine Offline-Grundauswahl hat keine verifizierten Mikronährstoffwerte. Barcode-Daten enthalten oft nur Makronährstoffe. Fehlende Werte kannst du anhand einer belastbaren Quelle im eigenen Lebensmittel ergänzen. Diese Übersicht ist keine vollständige Analyse aller essenziellen Nährstoffe.</p>`,
+        )}<p class="footnote">USDA-Lebensmittel enthalten die in der Quelle vorhandenen Mikronährstoffwerte. Ergänzende Orientierungswerte und Barcode-Daten können Lücken haben. Angezeigte Werte sind Lebensmittel-Durchschnittswerte, keine Messung deiner Versorgung. Fehlende Werte kannst du anhand einer belastbaren Quelle im eigenen Lebensmittel ergänzen. Diese Übersicht ist keine vollständige Analyse aller essenziellen Nährstoffe.</p>`,
     );
   }
   function targetProposal(initial = false) {
@@ -210,6 +212,15 @@ export function setupCoachUI(ctx) {
       if (!Number.isFinite(age) || age < 18 || age > 100)
         throw Error("Bitte ein gültiges Geburtsdatum für Erwachsene eingeben.");
       return commit((s) => {
+        const personal = validatePersonalPlan({
+          height: s.profile.height, goal: s.profile.goal, sex: d.sex,
+          hypertension: d.hypertension === "on", betaBlocker: d.betaBlocker === "on",
+          muscleBuild: d.muscleBuild === "on", commuteMode: d.commuteMode,
+          nextCommuteMode: d.nextCommuteMode,
+          commuteKm: number(d.commuteKm,0,300),
+          stepMin: number(d.stepMin,0,50000), stepMax: number(d.stepMax,0,50000),
+        });
+        s.personalPlan = personal;
         s.coach = {
           birthDate: d.birthDate,
           sex: d.sex,

@@ -1,10 +1,10 @@
-# Stand für die persönliche Nutzung · 0.6.0
+# Stand für die persönliche Nutzung · 0.6.1
 
 Die App ist eine funktionsfähige persönliche Android-Testversion. Der Kern ist für tägliche manuelle Erfassung ausgelegt, nicht als klinisch validierter oder vollständig automatischer Gesundheitscoach.
 
 | Bereich | Nutzbarer Stand | Grenze |
 |---|---|---|
-| Ernährung | Lokale Nährwertfoto-OCR mit Prüfung, Mahlzeitenvorlagen mit Mengen-Vorschau, Portionen, Favoriten, letzte Portion, Rezepte, eigene Lebensmittel, Barcode, Makros | Kleine Offline-Grundauswahl; Barcode braucht Internet und Etikettkontrolle; keine Kalorienschätzung von Tellerfotos |
+| Ernährung | Lokale Nährwertfoto-OCR mit Prüfung, Mahlzeitenvorlagen mit Mengen-Vorschau, Portionen, Favoriten, letzte Portion, Rezepte, eigene Lebensmittel, Barcode, Makros | 118 deutsch beschriftete USDA-Lebensmittel, ergänzende Orientierungswerte; Barcode braucht Internet und Etikettkontrolle; keine Kalorienschätzung von Tellerfotos |
 | Gewicht | Einträge, gleitender Trend, Zielverlauf | Keine Messung von Körperfett/Muskelmasse |
 | Personalisierung | Optionales Coach-Profil, Energie-Schätzung, 21-Tage-Auswertung, bestätigte Zielvorschläge | On-device Angaben erforderlich; keine Verbrauchsmessung, keine stille Kaloriensenkung |
 | Nährstoffe | 12 Vitamine/Mineralstoffe mit Abdeckung und passenden Referenzen | Viele Lebensmittel haben keine Werte; keine vollständige Bedarfs- oder Mangelanalyse |
