@@ -20,3 +20,11 @@
 9. Update mit stabiler Release-Signatur; Debug-Builds können einen Signaturwechsel verursachen (zuerst sichern).
 
 Browser-/Unit-Tests ersetzen weder reale Android-Kamera-/SAF-Tests noch medizinische Validierung. Nicht geprüfte Punkte als offen behandeln.
+
+## Durchgeführte Prüfung (26.10.2026)
+
+- 11 Berechnungs-/Validierungstests erfolgreich lokal und in GitHub Actions.
+- Browser-Abläufe erfolgreich lokal und in GitHub Actions: Einrichtung, Wasser, Lebensmittel anlegen/bearbeiten, Rezept, simulierte Barcode-Antwort, Gewicht, Trainingswiederaufnahme, Gesundheitsjournal, Designwechsel, Import-Abbruch/Fehlerschema, JSON-Download.
+- Ansichten mit 360/393 Pixeln Smartphonebreite und 1440 Pixeln Desktopbreite geprüft; kein horizontaler Seitenüberlauf. Dashboard und Training zusätzlich visuell inspiziert.
+- Android APK und Android Lint erfolgreich gebaut. Reale Android-Installation, Kamera und Dateidialoge weiterhin nicht auf einem Gerät getestet.
+- OFF-Antwort ist im UI-Test simuliert; das ist kein Beleg für die momentane Erreichbarkeit des externen Dienstes.
