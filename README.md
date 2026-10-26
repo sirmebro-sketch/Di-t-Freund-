@@ -9,9 +9,13 @@ Ein ruhiger, deutschsprachiger Android-Begleiter für Ernährung, Gewicht, Kraft
 3. ZIP entpacken, `app-debug.apk` auf dem Smartphone öffnen und die Installation für die verwendete Dateien-App erlauben.
 4. Profil und Ziele auf dem Gerät einrichten. Persönliche Angaben sind nicht im Repository hinterlegt.
 
-Android 8.0 oder neuer, aktuelles Android System WebView. Das ist ein persönlicher Testbuild, keine Play-Store-Veröffentlichung. Der erste Build muss erfolgreich abgeschlossen sein, bevor ein APK verfügbar ist. Debug-Zertifikate können zwischen CI-Läufen wechseln: vor einem Update Sicherung exportieren; bei Signaturkonflikt bisherige App erst nach Sicherung deinstallieren. Für dauerhaft nahtlose Updates ist später ein festes privates Release-Signaturzertifikat erforderlich.
+Android 8.0 oder neuer, aktuelles Android System WebView. Das ist ein persönlicher Testbuild, keine Play-Store-Veröffentlichung. Der erste Build muss erfolgreich abgeschlossen sein, bevor ein APK verfügbar ist. Ab 0.4.1 ist eine feste Release-Signatur vorbereitet. Der private Schlüssel wird über GitHub-Actions-Secrets eingebunden; ohne eingerichtete Secrets gibt es kein installierbares Release-Artifact. Einmalige Einrichtung und Umstieg von bisherigen Debug-APKs: [Signierung](docs/SIGNING.md). Vor diesem einmaligen Wechsel JSON sichern. Künftige gleich signierte Updates über die bestehende App installieren.
 
-## Neu in 0.4.0 · Forschung & Health Connect
+## Neu in 0.4.1 · Dauerhafte Signatur
+
+Fester Zertifikatsfingerabdruck, separater Signierjob nach allen Prüfungen, private Secrets statt Schlüssel im Quellcode und getrenntes Entwicklungspaket. [Einrichtung und Sicherung](docs/SIGNING.md).
+
+## Seit 0.4.0 · Forschung & Health Connect
 
 - **Langfristiger Fortschritt:** wiederholbare Forschungsreisen ohne Zeitlimit, Forschungsrang, Freundschaft je Begleiter und fünf freischaltbare Kulissen. Alles aus denselben höchstens drei täglichen Routinen; keine Zusatzpflichten, keine Strafe bei Pausen.
 - **Weitere Generationen vorbereitet:** eigenes Regionsregister und getrennte Karrieredaten. Kanto bleibt erhalten. Johto, Hoenn und Sinnoh werden als geplant angezeigt, sind aber noch nicht spielbar; keine angekündigten Veröffentlichungstermine.

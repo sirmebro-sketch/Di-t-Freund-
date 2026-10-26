@@ -12,3 +12,10 @@
 - Bridge nur für gebündelte App-Inhalte; niemals beliebige Web-Navigation oder Dateipfade zulassen.
 - Tatsächliche Testergebnisse klar von ausstehenden Gerätetests trennen. Keine APK-Verfügbarkeit behaupten, bevor ein Build erfolgreich ist.
 - Neue kostenpflichtige Dienste oder öffentliche Store-Veröffentlichung erfordern eine gesonderte Entscheidung des Eigentümers.
+
+## Dauerhafte Android-Signatur
+
+- Fester öffentlicher Zertifikatsfingerabdruck: `signing/certificate-sha256.txt`. Nicht ersetzen oder selbstständig einen neuen Schlüssel erzeugen.
+- Private Signierung ausschließlich über die beiden GitHub-Actions-Secrets `DIAETFREUND_KEYSTORE_BASE64` und `DIAETFREUND_KEYSTORE_PASSWORD` oder die private Sicherung des Eigentümers. Schlüssel niemals in Git, APK, öffentliche Logs oder CI-Artefakte übernehmen.
+- Hauptpaket `de.diaetfreund.app` bleibt stabil, `versionCode` bei jedem Update erhöhen. Debug-Paket `.dev` ist getrennt.
+- Ohne Secrets keine mit zufälligem Debug-Schlüssel signierte APK als Update ausgeben. Unsigned-Artifact ist kein installierbares Update. Siehe `docs/SIGNING.md`.

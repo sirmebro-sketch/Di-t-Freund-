@@ -27,17 +27,17 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: "8.11.1"
-      - run: gradle :app:assembleDebug :app:lintDebug --no-daemon
+      - run: gradle :app:assembleDebug :app:assembleRelease :app:lintDebug :app:lintRelease --no-daemon
       - uses: actions/upload-artifact@v4
         with:
-          name: DiaetFreund-Android-APK
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: DiaetFreund-Unsigned-Release
+          path: app/build/outputs/apk/release/app-release-unsigned.apk
           retention-days: 30
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: Android-Lint
-          path: app/build/reports/lint-results-debug.html
+          path: app/build/reports/lint-results-*.html
   interface:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
@@ -63,3 +63,73 @@ jobs:
         with:
           name: UI-Screenshots
           path: test-results/
+
+  sign-release:
+    needs: [android, interface]
+    # No signing credentials in pull-request builds, including same-repository PRs.
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Check private signing setup
+        id: signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.DIAETFREUND_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.DIAETFREUND_KEYSTORE_PASSWORD }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ] && [ -n "$KEYSTORE_PASSWORD" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Signing not configured. No installable release APK will be published. See docs/SIGNING.md."
+          fi
+      - uses: actions/download-artifact@v4
+        if: steps.signing.outputs.ready == 'true'
+        with:
+          name: DiaetFreund-Unsigned-Release
+          path: unsigned
+      - uses: actions/setup-java@v4
+        if: steps.signing.outputs.ready == 'true'
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: android-actions/setup-android@v3
+        if: steps.signing.outputs.ready == 'true'
+        with:
+          packages: 'build-tools;36.0.0'
+          log-accepted-android-sdk-licenses: false
+      - name: Sign and verify fixed certificate
+        if: steps.signing.outputs.ready == 'true'
+        env:
+          KEYSTORE_BASE64: ${{ secrets.DIAETFREUND_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.DIAETFREUND_KEYSTORE_PASSWORD }}
+        run: |
+          set -euo pipefail
+          umask 077
+          signing_dir="$(mktemp -d "$RUNNER_TEMP/diaetfreund-signing.XXXXXX")"
+          trap 'rm -rf "$signing_dir"' EXIT
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$signing_dir/release.p12"
+          unset KEYSTORE_BASE64
+          mkdir -p signed
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" sign             --ks "$signing_dir/release.p12" --ks-type PKCS12             --ks-key-alias diaetfreund-release             --ks-pass env:KEYSTORE_PASSWORD --key-pass env:KEYSTORE_PASSWORD             --out signed/DiaetFreund.apk unsigned/app-release-unsigned.apk
+          unset KEYSTORE_PASSWORD
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs signed/DiaetFreund.apk > "$signing_dir/verification.txt"
+          expected="$(tr -d '\r\n ' < signing/certificate-sha256.txt)"
+          actual="$(sed -n 's/^Signer #1 certificate SHA-256 digest: //p' "$signing_dir/verification.txt")"
+          test "$actual" = "$expected" || { echo 'Unexpected signing certificate. APK withheld.'; exit 1; }
+          printf 'Verified certificate SHA-256: %s\n' "$actual"
+          sha256sum signed/DiaetFreund.apk > signed/DiaetFreund.apk.sha256
+      - uses: actions/upload-artifact@v4
+        if: steps.signing.outputs.ready == 'true'
+        with:
+          name: DiaetFreund-Android-APK
+          path: |
+            signed/DiaetFreund.apk
+            signed/DiaetFreund.apk.sha256
+          if-no-files-found: error
+          retention-days: 30

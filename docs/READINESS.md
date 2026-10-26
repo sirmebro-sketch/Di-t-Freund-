@@ -1,4 +1,4 @@
-# Stand für die persönliche Nutzung · 0.4.0
+# Stand für die persönliche Nutzung · 0.4.1
 
 Die App ist eine funktionsfähige persönliche Android-Testversion. Der Kern ist für tägliche manuelle Erfassung ausgelegt, nicht als klinisch validierter oder vollständig automatischer Gesundheitscoach.
 
@@ -21,6 +21,6 @@ Die App ist eine funktionsfähige persönliche Android-Testversion. Der Kern ist
 - Health Connect mit Samsung Health: einzelne Freigaben erlauben/ablehnen, widerrufen, Daten einmal und wiederholt abgleichen, eigene Gewichte mit Vorschau teilen und auf Duplikate prüfen. Schrittzahlen gegen Samsung Health vergleichen; Verzögerungen sind möglich.
 - Große Systemschrift/TalkBack nach Bedarf; Ton an/aus und App-Wechsel prüfen.
 
-Noch keine reale Android-Geräteabnahme durch den Entwickler. Debug-Builds können verschiedene Signaturen haben: vor Update sichern; bei Signaturkonflikt nur nach erfolgreichem Export neu installieren und importieren. Ein fester privater Release-Signaturschlüssel bleibt Voraussetzung für dauerhaft komfortable Updates.
+Noch keine reale Android-Geräteabnahme durch den Entwickler. Debug-Builds können verschiedene Signaturen haben: vor Update sichern; bei Signaturkonflikt nur nach erfolgreichem Export neu installieren und importieren. Ab 0.4.1 ist ein fester privater Release-Schlüssel vorgesehen; der neue Workflow nutzt ihn erst nach Hinterlegen der Secrets. Einmaliger Umstieg und Einrichtung: [Signierung](SIGNING.md).
 
 Keine persönlichen Daten aus dem Chat werden in das öffentliche Repository geschrieben. Profil und freiwillige Coach-Angaben werden auf dem Smartphone gesetzt. Die vom Nutzer gewünschte kostenlose lokale Architektur bleibt erhalten.

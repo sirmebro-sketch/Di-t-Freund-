@@ -9,3 +9,13 @@ test-results/
 *.apk
 *.aab
 .env*
+
+# Never commit signing material, passwords or local setup files.
+*.p12
+*.pfx
+*.key
+*.pem
+*keystore*.txt
+*KEYSTORE*.txt
+signing-private/
+keystore.properties
