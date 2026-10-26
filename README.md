@@ -11,7 +11,15 @@ Ein ruhiger, deutschsprachiger Android-Begleiter für Ernährung, Gewicht, Kraft
 
 Android 8.0 oder neuer, aktuelles Android System WebView. Das ist ein persönlicher Testbuild, keine Play-Store-Veröffentlichung. Der erste Build muss erfolgreich abgeschlossen sein, bevor ein APK verfügbar ist. Debug-Zertifikate können zwischen CI-Läufen wechseln: vor einem Update Sicherung exportieren; bei Signaturkonflikt bisherige App erst nach Sicherung deinstallieren. Für dauerhaft nahtlose Updates ist später ein festes privates Release-Signaturzertifikat erforderlich.
 
-## Neu in 0.3.0 · Kanto
+## Neu in 0.4.0 · Forschung & Health Connect
+
+- **Langfristiger Fortschritt:** wiederholbare Forschungsreisen ohne Zeitlimit, Forschungsrang, Freundschaft je Begleiter und fünf freischaltbare Kulissen. Alles aus denselben höchstens drei täglichen Routinen; keine Zusatzpflichten, keine Strafe bei Pausen.
+- **Weitere Generationen vorbereitet:** eigenes Regionsregister und getrennte Karrieredaten. Kanto bleibt erhalten. Johto, Hoenn und Sinnoh werden als geplant angezeigt, sind aber noch nicht spielbar; keine angekündigten Veröffentlichungstermine.
+- **Samsung Health über Health Connect:** optional Schritte, Schlafdauer und Gewicht der letzten 30 Tage lesen. Einmalig oder beim Öffnen, ausschließlich nach Freigabe. Keine Hintergrundabfrage, keine neue Sensorzählung und kein automatisches Kalorienguthaben für Schritte.
+- **Gewichte teilen:** bis zu 30 eigene Einträge nach Vorschau und ausdrücklichem Senden an Health Connect. Lesefreigabe für die empfangende App separat erteilen. Importierte Gewichte werden nicht zurückgeschrieben, manuelle Gewichte bleiben vorrangig.
+- **Einrichtung und Grenzen:** [Health Connect](docs/HEALTH-CONNECT.md). Android 9+ für die Anbindung, Android 14+ mit integrierter Plattform; ältere unterstützte Geräte benötigen die Health-Connect-App. Reale Geräteabnahme steht aus.
+
+## Seit 0.3.0 · Kanto
 
 - **Alle 151 Pokémon:** deutsche Namen, Gen-I-Typen, lokale Originalsprites, durchsuchbarer Pokédex mit Typ-/Entdeckungsfilter und Entwicklungsdetails. Jede entdeckte Zwischenform bleibt registriert.
 - **23 Reiseziele:** von Alabastia über Vertania-Wald, Mondberg, M.S. Anne, Safari-Zone, Silph Co. und Kraftwerk bis zur Liga und Azuria-Höhle. Professor Eich, Bill, Mr. Fuji und weitere Personen begleiten die Stationen mit eigenen kurzen App-Texten.
@@ -46,7 +54,7 @@ Inoffizieller Pokémon-Fan-Spielteil mit vereinfachten Regeln, kein vollständig
 
 ## Bewusste Grenzen
 
-Kein automatischer Schrittzähler, Health Connect oder Wearable-Sync, keine Hintergrundbenachrichtigungen, kein Cloud-Sync, keine Foto-Kalorienerkennung, keine medizinische Auswertung. Barcode-Daten brauchen Internet; Kernfunktionen nicht. Kein eigener PIN-/Biometrieschutz, keine zusätzliche Datenbankverschlüsselung: Gerätesperre verwenden. Sicherungen enthalten Gesundheitsdaten **unverschlüsselt**. App-Deinstallation löscht lokale Daten.
+Kein eigener Sensor-Schrittzähler, kein direkter Wearable-Zugriff, keine Hintergrundbenachrichtigungen, kein Cloud-Sync, keine Foto-Kalorienerkennung, keine medizinische Auswertung. Barcode-Daten brauchen Internet; Kernfunktionen nicht. Kein eigener PIN-/Biometrieschutz, keine zusätzliche Datenbankverschlüsselung: Gerätesperre verwenden. Sicherungen enthalten Gesundheitsdaten **unverschlüsselt**. App-Deinstallation löscht lokale Daten.
 
 Das ist eine erste Implementierung und kein behauptet perfektes oder medizinisch validiertes Produkt. Android-Gerätetests für Kamera, Dateidialoge, Prozesswiederherstellung und Bedienhilfen sind vor einer öffentlichen Veröffentlichung erforderlich. Details: [Testplan](docs/TESTING.md), [Entscheidungen](docs/PRODUCT.md), [Datenschutz](docs/PRIVACY.md), [Quellen und Lizenzen](docs/SOURCES.md).
 
@@ -61,17 +69,17 @@ npm run serve
 # Browser: http://localhost:4173
 ```
 
-Android Studio: Projekt öffnen, Gradle 8.9 / Java 17 wählen, SDK 35 installieren. Alternativ mit installiertem Gradle 8.9:
+Android Studio: Projekt öffnen, Gradle 8.11.1 / Java 17 wählen, SDK 36 installieren. Alternativ mit installiertem Gradle 8.11.1:
 
 ```sh
 gradle :app:assembleDebug :app:lintDebug
 ```
 
-Der CI-Workflow installiert die Build-Werkzeuge und erstellt den APK. Ein Gradle Wrapper ist noch nicht eingecheckt; `gradle wrapper --gradle-version 8.9` erzeugt ihn in einer eingerichteten Entwicklungsumgebung.
+Der CI-Workflow installiert die Build-Werkzeuge und erstellt den APK. Ein Gradle Wrapper ist noch nicht eingecheckt; `gradle wrapper --gradle-version 8.11.1` erzeugt ihn in einer eingerichteten Entwicklungsumgebung.
 
 ## Architektur
 
-Java + AndroidX: sicherer WebViewAssetLoader, lokal gebündelte HTML/CSS/ES-Module, kontrollierte JavaScript-Bridge, Android Storage Access Framework für Exporte/Importe, ZXing für Kamera-Barcodes. Keine Webseite wird innerhalb der Bridge-WebView geöffnet. Nur der feste Open-Food-Facts-Produktendpunkt ist als externe Datenquelle erlaubt. CSP blockiert Fremdskripte und Frames.
+Java/Kotlin + AndroidX: sicherer WebViewAssetLoader, lokal gebündelte HTML/CSS/ES-Module, kontrollierte JavaScript-Bridge, Android Storage Access Framework für Exporte/Importe, ZXing für Kamera-Barcodes. Keine Webseite wird innerhalb der Bridge-WebView geöffnet. Nur der feste Open-Food-Facts-Produktendpunkt ist als externe Datenquelle erlaubt. CSP blockiert Fremdskripte und Frames.
 
 `core.js` enthält Berechnung und Schema-Validierung; `coach.js` die erklärbare Anpassungslogik, `micros.js` Referenzwerte und Datenabdeckung, `game.js` den unabhängig testbaren Spielkreislauf. `app.js` bündelt Ansichten und atomare Transaktionen. Fehlgeschlagene Speicherung übernimmt keinen neuen In-Memory-Zustand. Trainingsänderungen und Tagebucheinträge werden sofort persistiert. Android-Backup und Geräteübertragung sind deaktiviert. Im lokalen Desktop-Test ersetzt Browser-localStorage den Android-Dateispeicher.
 

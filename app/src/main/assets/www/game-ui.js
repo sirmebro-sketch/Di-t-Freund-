@@ -1,4 +1,13 @@
 import {
+  ensureCareer,
+  startExpedition,
+  friendship,
+  careerRank,
+  campThemes,
+  expeditionTypes,
+} from "./game-career.js";
+import { plannedRegions, regionPacks } from "./game-registry.js";
+import {
   dex,
   newGame,
   monster,
@@ -64,7 +73,7 @@ export function setupGameUI({
         .reverse();
     sheet(
       "Dein Abenteuer",
-      `<div class="game-world ${g.motion ? "" : "still"}"><div class="game-topline"><span>${esc(placeAt(points).name.toUpperCase())} · ${g.paused ? "PAUSE" : "UNTERWEGS"}</span><span>${g.badges.length}/8 ◈ ORDEN</span></div><div class="game-scene"><div class="game-cloud cloud-one"></div><div class="game-cloud cloud-two"></div><div class="scene-platform"></div>${sprite(m.id, "companion")}<span class="scene-caption">Jeder kleine Schritt zählt.</span></div><div class="game-status"><div><strong>${m.name}</strong><span>Lv. ${m.level} · ${m.type}</span></div><div class="track"><i style="width:${m.level === 100 ? 100 : (m.xp % 20) * 5}%"></i></div><small>${m.level === 100 ? "Maximales Level erreicht" : `${20 - (m.xp % 20)} EP bis zum nächsten Level`} · EP gelten fürs ganze Team</small></div></div><div class="toolbar game-links">${btn("Pokédex · " + g.discovered.length + "/151", "game-dex", "secondary")}${btn("Kanto-Karte", "game-map", "secondary")}${btn("Orden & Liga", "game-badges", "secondary")}</div><section class="journey-next"><span class="eyebrow">${esc(placeAt(points).person)}</span><p>${esc(placeAt(points).text)}</p>${nextChallenge(g) ? `<strong>Nächstes Ziel: ${esc(nextChallenge(g).trainer)} · ${Math.max(0, nextChallenge(g).points - points)} Punkte bis zur Freigabe</strong><small>Bei Freigabe im nächsten automatischen Kampf. Nach einer Niederlage erneut, ohne Verlust.</small>` : "<strong>Du bist Kanto-Champ. Entdecke die übrigen Pokémon!</strong>"}</section><section class="game-section"><div class="section-head"><h3>Deine heutigen Abenteuerpunkte</h3><strong>${earned.length}/3</strong></div>${quests(
+      `<div class="game-world ${g.motion ? "" : "still"}"><div class="game-topline"><span>${esc(placeAt(points).name.toUpperCase())} · ${g.paused ? "PAUSE" : "UNTERWEGS"}</span><span>${g.badges.length}/8 ◈ ORDEN</span></div><div class="game-scene theme-${g.career?.theme || "classic"}"><div class="game-cloud cloud-one"></div><div class="game-cloud cloud-two"></div><div class="scene-platform"></div>${sprite(m.id, "companion")}<span class="scene-caption">Jeder kleine Schritt zählt.</span></div><div class="game-status"><div><strong>${m.name}</strong><span>Lv. ${m.level} · ${m.type}</span></div><div class="track"><i style="width:${m.level === 100 ? 100 : (m.xp % 20) * 5}%"></i></div><small>${m.level === 100 ? "Maximales Level erreicht" : `${20 - (m.xp % 20)} EP bis zum nächsten Level`} · EP gelten fürs ganze Team</small></div></div><div class="toolbar game-links">${btn("Pokédex · " + g.discovered.length + "/151", "game-dex", "secondary")}${btn("Kanto-Karte", "game-map", "secondary")}${btn("Orden & Liga", "game-badges", "secondary")}${btn("Forschung & Freundschaft", "game-career", "secondary")}</div><section class="journey-next"><span class="eyebrow">${esc(placeAt(points).person)}</span><p>${esc(placeAt(points).text)}</p>${nextChallenge(g) ? `<strong>Nächstes Ziel: ${esc(nextChallenge(g).trainer)} · ${Math.max(0, nextChallenge(g).points - points)} Punkte bis zur Freigabe</strong><small>Bei Freigabe im nächsten automatischen Kampf. Nach einer Niederlage erneut, ohne Verlust.</small>` : "<strong>Du bist Kanto-Champ. Entdecke die übrigen Pokémon!</strong>"}</section><section class="game-section"><div class="section-head"><h3>Deine heutigen Abenteuerpunkte</h3><strong>${earned.length}/3</strong></div>${quests(
         s,
         today(),
       )
@@ -88,6 +97,29 @@ export function setupGameUI({
         )}</div></section><section class="game-section"><h3>Was auf deiner Reise passiert ist</h3>${latest.length ? latest.map((e) => `<article class="game-event">${e.species ? sprite(e.species) : '<span class="event-medal" aria-hidden="true">' + (e.kind === "battle" ? "⚔" : "◈") + "</span>"}<div><small>${esc(e.date)}</small><p>${esc(e.text)}</p>${e.kind === "battle" ? btn("Kampf ansehen", "game-battle", "text-button", `data-index="${g.events.indexOf(e)}"`) : e.species ? btn("Moment ansehen", "game-moment", "text-button", `data-index="${g.events.indexOf(e)}"`) : ""}</div></article>`).join("") : "<p>Dein erstes Kapitel beginnt mit einem kleinen Eintrag.</p>"}</section><div class="toolbar">${btn(g.sound ? "Ton an" : "Ton aus", "game-sound", "secondary", `aria-pressed="${g.sound}"`)}${btn(g.motion ? "Animationen an" : "Animationen aus", "game-motion", "secondary", `aria-pressed="${g.motion}"`)}${btn(g.paused ? "Abenteuer fortsetzen" : "Abenteuer pausieren", "game-pause", "secondary")}</div><details class="below"><summary>Spielregeln & Bild-/Tonquellen</summary><p>Pro 3 Punkten wird automatisch ein noch nicht entdecktes, freigeschaltetes Pokémon gefangen. Entwicklungen registrieren jede Zwischenform im Pokédex. Alle 151 Kanto-Pokémon sind erreichbar. Pro 6 Punkten findet ein Kampf statt; freigegebene Arenen und danach die Top Vier haben Vorrang.</p><p>Alle Begleiter erhalten 10 EP je täglicher Aufgabe; 20 EP bedeuten ein Level. Kein Punkteverlust bei Pausen oder Niederlagen. Acht Arenaorden werden einzeln durch Siege verdient. Alte Abenteuerorden bleiben als Erinnerungsbänder erhalten: ${g.legacyRibbons}.</p><p>Vereinfachte eigene Kampfregeln mit jeweils einem Signatur-Pokémon des Trainers. Stein-Entwicklungen erfolgen hier automatisch auf Level 24, Tausch-Entwicklungen auf Level 32. Evoli: Wunschentwicklung vor Level 24 wählen; alle drei Formen sind zusätzlich einzeln fangbar. Keine Originalspiel-Kopie, kein vollständiges Kampfsystem.</p><p>Sprites: Pokémon Database / PokeAPI, Schwarz/Weiß. Deutsche Namen und Gen-I-Daten: PokeAPI. Kurze Originaleffekte: Rot/Blau, The Sounds Resource. Pokémon © Nintendo / Creatures / GAME FREAK. Inoffizielles Fanprojekt.</p></details>`,
     );
     sound("open");
+  }
+  function careerView() {
+    const g = getState().game,
+      c = g.career || { ...ensureCareer(structuredClone(g)) },
+      rank = careerRank(c),
+      points = gamePoints(g),
+      buddy = monster(g.collection.find((m) => m.base === g.buddy)),
+      bond = c.bond[g.buddy] || 0;
+    sheet(
+      "Deine langfristige Forschungsreise",
+      `<div class="kanto-banner"><span class="eyebrow">FORSCHUNGSRANG ${rank.level}</span><h3>Es gibt noch mehr zu entdecken.</h3><p>${rank.next} weitere Routinepunkte bis zum nächsten Rang. Der Rang wächst auch nach dem vollständigen Pokédex und ohne neue Generation weiter.</p></div><section class="game-section"><h3>${esc(buddy.name)} & du</h3><div class="species-hero">${sprite(buddy.id)}<div><strong>${friendship(bond)}</strong><p>${bond} gemeinsame Routinepunkte</p></div></div><p>Der gewählte Begleiter sammelt Freundschaft mit deinen täglichen Aufgaben. Alle anderen behalten Erfahrung und Freundschaft. Wechsel ihn, wenn du einen neuen Freund näher kennenlernen möchtest.</p><p class="footnote">Gute Freunde ab 12, vertraut ab 30, unzertrennlich ab 60 Punkten. Keine zusätzlichen Aufgaben oder Schritte nötig.</p></section><section class="game-section"><h3>Forschungsreisen ohne Ablaufdatum</h3>${c.expedition ? `<p><strong>${expeditionTypes.find((t) => t[0] === c.expedition.kind)[1]}</strong> · ${Math.min(18, points - c.expedition.start)}/18 Routinepunkte</p><div class="track"><i style="width:${Math.min(100, ((points - c.expedition.start) / 18) * 100)}%"></i></div><p>Deine Reise bleibt bei Pausen offen. Danach kommt ein Eintrag ins Forschungsalbum.</p>` : `<p>Wähle eine Reise für einen thematischen Albumeintrag. 18 Routinepunkte schließen sie ab – bei drei Punkten täglich frühestens nach sechs Tagen, ohne Zeitlimit.</p><div class="two-grid">${expeditionTypes.map(([kind, label]) => btn(label, "game-expedition", "secondary", `data-kind="${kind}"`)).join("")}</div>`}<h3 class="below">Dein Forschungsalbum</h3>${
+        c.completed.length
+          ? c.completed
+              .slice(-8)
+              .reverse()
+              .map(
+                (e) =>
+                  `<p>✧ ${expeditionTypes.find((t) => t[0] === e.kind)[1]} · ${esc(e.date)}</p>`,
+              )
+              .join("")
+          : "<p>Dein erstes Erinnerungsblatt wartet auf dich.</p>"
+      }</section><section class="game-section"><h3>Dein Lager gestalten</h3><div class="toolbar">${campThemes.map(([id, name, need]) => btn(points >= need ? name : `${name} · ab ${need} Punkten`, "game-theme", "secondary", `data-theme="${id}" ${points < need ? "disabled" : ""} aria-pressed="${c.theme === id}"`)).join("")}</div></section><section class="game-section"><h3>Ein Pokédex, mehrere Regionen</h3><p>Kanto ist installiert. Team, nationale Pokédex-Nummern, Freundschaft und Forschung gehören zu deinem dauerhaften Spielstand. Neue Regionen sollen eigene Reise- und Ordenfortschritte erhalten; bestehende Erfolge werden nicht zurückgesetzt.</p>${plannedRegions.map((r) => `<p><strong>${r.name} · Generation ${r.generation}</strong> – vorbereitet als Erweiterungsziel, noch nicht spielbar.</p>`).join("")}<p class="footnote">Weitere Regionen brauchen ein App-Update mit neuen Inhalten. Es gibt keine automatische Generierung fehlender Pokémon und keinen angekündigten Veröffentlichungstermin.</p></section>${btn("Zurück zum Abenteuer", "game", "secondary")}`,
+    );
   }
   function dexView() {
     sheet(
@@ -169,7 +201,7 @@ export function setupGameUI({
     const open = gamePoints(g) >= p.points;
     sheet(
       p.name,
-      `<span class="eyebrow">${esc(p.person)}</span><p>${esc(p.text)}</p><p class="hint">${open ? "Dieses Reiseziel hast du erreicht." : `Noch ${p.points - gamePoints(g)} Punkte bis zu diesem Reiseziel.`} Seltene Pokémon können zusätzliche Orden oder den Champ voraussetzen.</p><h3>Passende Begegnungen</h3><div class="team-grid">${p.pool.map((id) => `<button class="team-mon" data-action="game-species" data-id="${id}">${sprite(id)}<strong>${esc(pokemon[id].name)}</strong><small>${g.discovered.includes(id) ? "Entdeckt" : "Noch offen"}</small></button>`).join("")}</div><div class="toolbar">${btn("Zurück zur Kanto-Karte", "game-map", "secondary")}${btn("Orden & Liga", "game-badges", "secondary")}</div>`,
+      `<span class="eyebrow">${esc(p.person)}</span><p>${esc(p.text)}</p><p class="hint">${open ? "Dieses Reiseziel hast du erreicht." : `Noch ${p.points - gamePoints(g)} Punkte bis zu diesem Reiseziel.`} Seltene Pokémon können zusätzliche Orden oder den Champ voraussetzen.</p><h3>Passende Begegnungen</h3><div class="team-grid">${p.pool.map((id) => `<button class="team-mon" data-action="game-species" data-id="${id}">${sprite(id)}<strong>${esc(pokemon[id].name)}</strong><small>${g.discovered.includes(id) ? "Entdeckt" : "Noch offen"}</small></button>`).join("")}</div><div class="toolbar">${btn("Zurück zur Kanto-Karte", "game-map", "secondary")}${btn("Orden & Liga", "game-badges", "secondary")}${btn("Forschung & Freundschaft", "game-career", "secondary")}</div>`,
     );
   }
   function badgeView() {
@@ -201,6 +233,23 @@ export function setupGameUI({
   const actions = {
     game: view,
     "game-dex": () => dexView(),
+    "game-career": careerView,
+    "game-expedition": (b) => {
+      if (
+        commit((s) =>
+          startExpedition(s.game, b.dataset.kind, gamePoints(s.game), today()),
+        )
+      )
+        careerView();
+    },
+    "game-theme": (b) => {
+      const theme = campThemes.find((t) => t[0] === b.dataset.theme);
+      if (!theme || gamePoints(getState().game) < theme[2]) return;
+      if (commit((s) => (ensureCareer(s.game).theme = theme[0]))) {
+        careerView();
+        render();
+      }
+    },
     "game-map": mapView,
     "game-badges": badgeView,
     "game-species": (b) => speciesView(Number(b.dataset.id)),

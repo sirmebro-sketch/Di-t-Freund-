@@ -2331,3 +2331,37 @@ small,
     flex-wrap: wrap;
   }
 }
+.steps-card {
+  margin: 18px 0;
+}
+.steps-card .big-number {
+  font-size: 25px;
+  display: block;
+}
+.steps-card small {
+  display: block;
+}
+.steps-card p {
+  font-size: 12px;
+}
+.game-scene.theme-sunrise {
+  background: linear-gradient(#f6c2a6 0 60%, #cdbb75 60% 65%, #e1cd8c 65%);
+}
+.game-scene.theme-coast {
+  background: linear-gradient(#b7e2eb 0 55%, #539fae 55% 70%, #e8d8a1 70%);
+}
+.game-scene.theme-coast:before {
+  background: #76b6b8;
+}
+.game-scene.theme-night {
+  background: linear-gradient(#253f61 0 60%, #587b72 60% 65%, #91ad8a 65%);
+}
+.game-scene.theme-night:before {
+  background: #446c64;
+}
+.game-scene.theme-autumn {
+  background: linear-gradient(#eacda3 0 60%, #9e7a42 60% 65%, #d3aa73 65%);
+}
+.game-scene.theme-autumn:before {
+  background: #a77d4e;
+}

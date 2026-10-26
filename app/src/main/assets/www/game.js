@@ -1,5 +1,12 @@
 // A local, simplified fan game. Health values never determine combat strength.
-import { pokemon } from "./kanto-data.js";
+import { nationalDex as pokemon, catalogSize } from "./game-registry.js";
+import {
+  ensureCareer,
+  emptyCareer,
+  progressCareer,
+  validateCareer,
+  expeditionTypes,
+} from "./game-career.js";
 import {
   gyms,
   league,
@@ -18,6 +25,7 @@ export const dex = Object.fromEntries(
 export const wild = Object.keys(pokemon).map(Number);
 export const newGame = (starter, date) => ({
   version: 2,
+  career: emptyCareer(),
   discovered: [starter],
   badges: [],
   leagueWins: [],
@@ -61,7 +69,11 @@ export function monster(m) {
   };
 }
 export function migrateGame(g) {
-  if (!g || g.version === 2) return g;
+  if (!g) return g;
+  if (g.version === 2) {
+    ensureCareer(g);
+    return g;
+  }
   if (g.version !== undefined) throw Error("Unbekannte Abenteuer-Version.");
   // Preserve existing partner, experience, catches, settings and events. Generic ribbons are not gym victories.
   g.version = 2;
@@ -71,6 +83,7 @@ export function migrateGame(g) {
   g.badges = [];
   g.leagueWins = [];
   g.legacyRibbons = Math.floor(g.wins / 3);
+  ensureCareer(g);
   return g;
 }
 export function recordDiscovery(g) {
@@ -231,6 +244,12 @@ export function syncGame(s, date) {
   });
   recordDiscovery(g);
   const after = gamePoints(g);
+  const expedition = progressCareer(g, fresh.length, after, date);
+  if (expedition)
+    event(
+      "research",
+      `${expeditionTypes.find((t) => t[0] === expedition)[1]} abgeschlossen! Dein Forschungsalbum wächst.`,
+    );
   const oldPlace = placeAt(before),
     newPlace = placeAt(after);
   if (oldPlace.id !== newPlace.id)
@@ -260,7 +279,7 @@ export function syncGame(s, date) {
     } else
       event(
         "explore",
-        g.discovered.length === 151
+        g.discovered.length === catalogSize()
           ? "Alle 151 Pokémon entdeckt! Kanto bleibt dein Zuhause."
           : "Dieses Gebiet ist gut erforscht. Auf deiner Reise warten neue Pokémon.",
       );
@@ -302,6 +321,7 @@ export function syncGame(s, date) {
 }
 export function validateGame(g) {
   if (g === null || g === undefined) return true;
+  validateCareer(g.career);
   const obj = (x) => x && typeof x === "object" && !Array.isArray(x),
     integer = (x, max) => Number.isInteger(x) && x >= 0 && x <= max,
     date = (x) => typeof x === "string" && /^\d{4}-\d{2}-\d{2}$/.test(x),
@@ -318,7 +338,7 @@ export function validateGame(g) {
     Object.keys(g.earned).length > 36500 ||
     !Array.isArray(g.collection) ||
     !g.collection.length ||
-    g.collection.length > 151 ||
+    g.collection.length > catalogSize() ||
     !Array.isArray(g.events) ||
     g.events.length > 80 ||
     !integer(g.battles, 20000) ||
@@ -354,7 +374,7 @@ export function validateGame(g) {
     if (
       g.version !== 2 ||
       !Array.isArray(g.discovered) ||
-      g.discovered.length > 151 ||
+      g.discovered.length > catalogSize() ||
       new Set(g.discovered).size !== g.discovered.length ||
       !g.discovered.every((id) => ids.includes(id)) ||
       !Array.isArray(g.badges) ||
@@ -381,6 +401,7 @@ export function validateGame(g) {
         "badge",
         "place",
         "league",
+        "research",
       ].includes(e.kind) ||
       typeof e.text !== "string" ||
       e.text.length > 500 ||

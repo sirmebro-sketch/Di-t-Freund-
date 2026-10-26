@@ -43,3 +43,11 @@ Die Nutzung im Fanprojekt begründet keine allgemeine Lizenz zur öffentlichen o
 ## Zugänglichkeit
 
 Beschriftete Auswahlbuttons, aria-pressed für aktive Auswahl, Text-Kampfberichte, Ton standardmäßig aus. Animationen abschaltbar; „reduzierte Bewegung“ des Systems hat Vorrang. Kein Blinkeffekt oder Bedienzeitlimit. Kleine Bildschirmbreiten, helle/dunkle Ansichten und automatisierte axe-Prüfungen sind Teil der Browser-Tests; reale TalkBack-Prüfung bleibt erforderlich.
+
+## Langfristige Karriere ab 0.4
+
+Forschung und Freundschaft werden aus denselben drei täglichen Routinen gespeist. Alle 60 neuen Routinepunkte steigt der Forschungsrang, auch nach Kanto-Abschluss. Ein ausgewählter Begleiter erhält Freundschaft: 12/30/60 Punkte bedeuten gute Freunde/vertraut/unzertrennlich. Andere behalten ihre Werte. Vier wiederholbare Forschungsreisen dauern jeweils 18 neue Routinepunkte, ohne Ablaufdatum, Strafpunkte oder Pflicht zur täglichen Nutzung. Das Album behält die letzten 100 abgeschlossenen Reisen. Fünf Kulissen werden nach 0/30/90/180/300 gesamten Routinepunkten freigeschaltet.
+
+Bestehende Spielstände bekommen eine leere Karriere; keine rückwirkend erfundene gemeinsame Zeit. Nationaldex-IDs, Regionsregister und eigene Karrieredaten bereiten spätere Inhaltspakete vor. Aktuell ist ausschließlich Kanto implementiert. Johto/Hoenn/Sinnoh sind Erweiterungsziele ohne Terminzusage. Eine spätere Region benötigt neue Inhalte, eigene Reise-/Ordensstände und getestete Migration; allein ein Datensatz macht noch keine fertige Region. Bestehende Sammlung, Orden und Freundschaft sollen erhalten bleiben. Kein Zurücksetzen auf null und keine zeitlich verpassbaren Saisonbelohnungen.
+
+Motivation ist ein Gestaltungsziel, keine Wirksamkeitsgarantie. Wiederholbare Forschung erweitert den kleinen Begleiter; sie ersetzt kein großes Rollenspiel mit endlos neuen Geschichten.

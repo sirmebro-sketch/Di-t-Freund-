@@ -1,3 +1,5 @@
+import { combinedWeights } from "./health-sync.js";
+import { setupHealthUI } from "./health-ui.js";
 import { syncGame } from "./game.js";
 import { setupGameUI } from "./game-ui.js";
 import {
@@ -195,13 +197,13 @@ function homeView() {
     left = p.kcal - t.kcal,
     water = state.water[date] || 0,
     progress = Math.min(100, (t.kcal / p.kcal) * 100),
-    w = [...state.weights].sort((a, b) => b.date.localeCompare(a.date))[0];
-  return `${gameUI.card()}${coachUI.card()}<div class="dashboard-grid"><section class="card energy"><div class="section-head"><h2>Dein Tag im Gleichgewicht</h2><span class="pill">${date === today() ? "Heute" : dateLabel(date)}</span></div><div class="energy-body"><div class="ring" style="--progress:${progress}%"><div><span class="ring-number">${fmt(Math.abs(left))}</span><span>kcal ${left >= 0 ? "übrig" : "über Ziel"}</span></div></div><div class="energy-copy"><span class="eyebrow">GUT VERSORGT DURCH DEN TAG</span><h3>${t.kcal === 0 ? "Was steht heute auf deinem Teller?" : left >= 0 ? "Du behältst den Überblick." : "Ein Tag ist nur ein Tag."}</h3><p>${t.kcal === 0 ? "Mit deiner ersten Mahlzeit beginnt dein Überblick." : "Es zählt, was du langfristig machst. Bleib freundlich zu dir."}</p><div class="energy-numbers"><div><strong>${fmt(t.kcal)}</strong><small>gegessen</small></div><div><strong>${fmt(p.kcal)}</strong><small>Tagesziel · kcal</small></div></div></div></div><div class="macros">${macro("Protein", t.protein, p.protein, "green")}${macro("Kohlenhydrate", t.carbs, null, "orange")}${macro("Fett", t.fat, null, "purple")}</div>${btn(icon("plus") + " Mahlzeit hinzufügen", "add-food", "primary wide")}</section><section class="card water-card"><div class="section-head"><div class="tile-icon blue">${icon("water")}</div><span class="pill">Trinken</span></div><h2>Ein Schluck für dich.</h2><div class="big-number">${fmt(water / 1000, 2)} <small>/ ${fmt(p.water / 1000, 1)} l</small></div><div class="water-drops" role="img" aria-label="Trinkfortschritt">${Array.from({ length: 8 }, (_, i) => `<span class="${i < (water / p.water) * 8 ? "filled" : ""}">${icon("water")}</span>`).join("")}</div><p>Dein selbst gesetztes Trinkziel.</p><div class="row">${btn("− 250", "water", "secondary", 'data-amount="-250" aria-label="250 Milliliter entfernen"')}${btn("+ 250 ml", "water", "primary", 'data-amount="250"')}</div></section><section class="card weight-card"><div class="section-head"><h2>Dein Weg</h2>${icon("chart")}</div><div class="big-number">${w ? fmt(w.value, 1) : "–"} <small>kg</small></div><p>${w ? "Letzter Eintrag · " + dateLabel(w.date) : "Dein erster Eintrag wartet auf dich."}</p>${miniChart(
-    state.weights
+    w = combinedWeights(state).sort((a, b) => b.date.localeCompare(a.date))[0];
+  return `<div class="dashboard-grid"><section class="card energy"><div class="section-head"><h2>Dein Tag im Gleichgewicht</h2><span class="pill">${date === today() ? "Heute" : dateLabel(date)}</span></div><div class="energy-body"><div class="ring" style="--progress:${progress}%"><div><span class="ring-number">${fmt(Math.abs(left))}</span><span>kcal ${left >= 0 ? "übrig" : "über Ziel"}</span></div></div><div class="energy-copy"><span class="eyebrow">GUT VERSORGT DURCH DEN TAG</span><h3>${t.kcal === 0 ? "Was steht heute auf deinem Teller?" : left >= 0 ? "Du behältst den Überblick." : "Ein Tag ist nur ein Tag."}</h3><p>${t.kcal === 0 ? "Mit deiner ersten Mahlzeit beginnt dein Überblick." : "Es zählt, was du langfristig machst. Bleib freundlich zu dir."}</p><div class="energy-numbers"><div><strong>${fmt(t.kcal)}</strong><small>gegessen</small></div><div><strong>${fmt(p.kcal)}</strong><small>Tagesziel · kcal</small></div></div></div></div><div class="macros">${macro("Protein", t.protein, p.protein, "green")}${macro("Kohlenhydrate", t.carbs, null, "orange")}${macro("Fett", t.fat, null, "purple")}</div>${btn(icon("plus") + " Mahlzeit hinzufügen", "add-food", "primary wide")}</section><section class="card water-card"><div class="section-head"><div class="tile-icon blue">${icon("water")}</div><span class="pill">Trinken</span></div><h2>Ein Schluck für dich.</h2><div class="big-number">${fmt(water / 1000, 2)} <small>/ ${fmt(p.water / 1000, 1)} l</small></div><div class="water-drops" role="img" aria-label="Trinkfortschritt">${Array.from({ length: 8 }, (_, i) => `<span class="${i < (water / p.water) * 8 ? "filled" : ""}">${icon("water")}</span>`).join("")}</div><p>Dein selbst gesetztes Trinkziel.</p><div class="row">${btn("− 250", "water", "secondary", 'data-amount="-250" aria-label="250 Milliliter entfernen"')}${btn("+ 250 ml", "water", "primary", 'data-amount="250"')}</div></section><section class="card weight-card"><div class="section-head"><h2>Dein Weg</h2>${icon("chart")}</div><div class="big-number">${w ? fmt(w.value, 1) : "–"} <small>kg</small></div><p>${w ? "Letzter Eintrag · " + dateLabel(w.date) : "Dein erster Eintrag wartet auf dich."}</p>${miniChart(
+    combinedWeights(state)
       .slice()
       .sort((a, b) => a.date.localeCompare(b.date))
       .slice(-30),
-  )}${btn("Gewicht eintragen", "weight", "text-button")}</section><section class="card momentum"><span class="eyebrow">DEIN NÄCHSTER KLEINER SCHRITT</span><h2>Stärker werden.<br>In deinem Tempo.</h2><p>Eine kurze Einheit ist ein guter Anfang. Auch Erholung gehört dazu.</p>${btn("Zum Training " + icon("arrow"), "go-train", "secondary")}</section></div><section class="section-head below"><h2>Deine Mahlzeiten</h2>${btn("Tagebuch öffnen →", "go-food", "text-button")}</section><div class="meal-grid">${meals
+  )}${btn("Gewicht eintragen", "weight", "text-button")}</section><section class="card momentum"><span class="eyebrow">DEIN NÄCHSTER KLEINER SCHRITT</span><h2>Stärker werden.<br>In deinem Tempo.</h2><p>Eine kurze Einheit ist ein guter Anfang. Auch Erholung gehört dazu.</p>${btn("Zum Training " + icon("arrow"), "go-train", "secondary")}</section></div>${healthUI.card(date)}${gameUI.card()}${coachUI.card()}<section class="section-head below"><h2>Deine Mahlzeiten</h2>${btn("Tagebuch öffnen →", "go-food", "text-button")}</section><div class="meal-grid">${meals
     .map((m, i) => {
       const e = dayEntries().filter((e) => e.meal === m);
       return `<button class="card meal-preview" data-action="add-food" data-meal="${m}"><span class="meal-symbol">${["☀", "◒", "☾", "✦"][i]}</span><div><h3>${m}</h3><p>${e.length ? fmt(totals(e).kcal) + " kcal · " + e.length + " Einträge" : "Etwas Gutes hinzufügen"}</p></div><span class="plus">+</span></button>`;
@@ -236,7 +238,7 @@ function miniChart(values) {
 }
 function chartView() {
   const p = state.profile,
-    ws = [...state.weights].sort((a, b) => a.date.localeCompare(b.date)),
+    ws = combinedWeights(state).sort((a, b) => a.date.localeCompare(b.date)),
     last = ws.at(-1),
     trend = weightTrend(ws),
     change = last ? p.start - last.value : 0,
@@ -253,7 +255,7 @@ function chartView() {
           .reverse()
           .map(
             (w) =>
-              `<button class="food-row" data-action="weight" data-date="${w.date}"><span>${dateLabel(w.date)}</span><strong>${fmt(w.value, 1)} kg <small>Bearbeiten</small></strong></button>`,
+              `<button class="food-row" data-action="weight" data-date="${w.date}"><span>${dateLabel(w.date)}</span><strong>${fmt(w.value, 1)} kg <small>${w.source ? "Health Connect · eigenen Wert setzen" : "Bearbeiten"}</small></strong></button>`,
           )
           .join("")
       : "<p>Noch keine Messungen.</p>"
@@ -291,7 +293,7 @@ function trainView() {
   }</section>`;
 }
 function moreView() {
-  return `${gameUI.card()}${coachUI.card()}<div class="two-grid"><section class="card"><div class="tile-icon purple">${icon("chart")}</div><h2>Wie geht es dir?</h2><p>Schlaf, Schritte, Bauchumfang, Blutdruck und Puls – als persönliches Tagebuch, ohne automatische Diagnose.</p>${btn("+ Gesundheitswerte", "health", "primary")}</section><section class="card"><div class="tile-icon">${icon("leaf")}</div><h2>Deine App. Deine Ziele.</h2><p>Passe Ziele und Darstellung an. Sichere deine Daten, bevor du das Gerät wechselst.</p><div class="toolbar">${btn("Profil & Ziele", "settings", "secondary")}${btn(state.theme === "light" ? "Dunkles Design" : "Helles Design", "theme", "secondary")}</div></section><section class="card"><h2>Deine Daten gehören dir.</h2><p>Kein Konto, keine Werbung, keine Analyse-Tracker. Die Sicherung enthält persönliche Gesundheitsdaten; bewahre sie geschützt auf.</p><div class="toolbar">${btn("Sicherung exportieren", "export", "primary")}${btn("Sicherung importieren", "import", "secondary")}${btn("CSV exportieren", "csv", "secondary")}</div></section><section class="card"><h2>Gut zu wissen</h2><p>Fortschritt braucht kein perfektes Tagebuch. Mahlzeiten sind keine Belohnung und Bewegung keine Strafe.</p>${btn("Datenschutz, Quellen & Hilfe", "about", "text-button")}${btn("Alle Daten löschen", "reset", "text-button danger")}</section></div><section class="card below"><h2>Dein Gesundheitsjournal</h2>${
+  return `${healthUI.card()}${gameUI.card()}${coachUI.card()}<div class="two-grid"><section class="card"><div class="tile-icon purple">${icon("chart")}</div><h2>Wie geht es dir?</h2><p>Schlaf, Schritte, Bauchumfang, Blutdruck und Puls – als persönliches Tagebuch, ohne automatische Diagnose.</p>${btn("+ Gesundheitswerte", "health", "primary")}</section><section class="card"><div class="tile-icon">${icon("leaf")}</div><h2>Deine App. Deine Ziele.</h2><p>Passe Ziele und Darstellung an. Sichere deine Daten, bevor du das Gerät wechselst.</p><div class="toolbar">${btn("Profil & Ziele", "settings", "secondary")}${btn(state.theme === "light" ? "Dunkles Design" : "Helles Design", "theme", "secondary")}</div></section><section class="card"><h2>Deine Daten gehören dir.</h2><p>Kein Konto, keine Werbung, keine Analyse-Tracker. Die Sicherung enthält persönliche Gesundheitsdaten; bewahre sie geschützt auf.</p><div class="toolbar">${btn("Sicherung exportieren", "export", "primary")}${btn("Sicherung importieren", "import", "secondary")}${btn("CSV exportieren", "csv", "secondary")}</div></section><section class="card"><h2>Gut zu wissen</h2><p>Fortschritt braucht kein perfektes Tagebuch. Mahlzeiten sind keine Belohnung und Bewegung keine Strafe.</p>${btn("Datenschutz, Quellen & Hilfe", "about", "text-button")}${btn("Alle Daten löschen", "reset", "text-button danger")}</section></div><section class="card below"><h2>Dein Gesundheitsjournal</h2>${
     state.health.length
       ? state.health
           .slice()
@@ -419,11 +421,12 @@ function customFood(f = null) {
 }
 function weightForm(d = today()) {
   editing = d;
-  const w = state.weights.find((w) => w.date === d);
+  const own = state.weights.find((w) => w.date === d);
+  const w = own || combinedWeights(state).find((w) => w.date === d);
   form(
     "Gewicht eintragen",
     "weight",
-    `${field("Datum", "date", d, "date", `required max="${today()}"`)}${num("Gewicht · kg", "value", w?.value, 35, 350, 0.1)}<p>Ein Wert pro Tag. Ein vorhandener Wert desselben Tages wird ersetzt. Möglichst unter ähnlichen Bedingungen messen.</p>${w ? btn("Messung löschen", "delete-weight", "text-button danger") : ""}`,
+    `${field("Datum", "date", d, "date", `required max="${today()}"`)}${num("Gewicht · kg", "value", w?.value, 35, 350, 0.1)}<p>Ein Wert pro Tag. Ein vorhandener Wert desselben Tages wird ersetzt. Möglichst unter ähnlichen Bedingungen messen.</p>${own ? btn("Messung löschen", "delete-weight", "text-button danger") : ""}`,
   );
 }
 function healthForm(h = null) {
@@ -643,9 +646,20 @@ const coachUI = setupCoachUI({
   close,
   notify,
 });
+const healthUI = setupHealthUI({
+  getState: () => state,
+  commit,
+  render,
+  sheet,
+  btn,
+  esc,
+  fmt,
+  notify,
+});
 const actions = {
   ...coachUI.actions,
   ...gameUI.actions,
+  ...healthUI.actions,
   favorite: (b) => {
     const food = foods().find((f) => f.id === b.dataset.id),
       key = foodKey(food);
@@ -994,7 +1008,7 @@ const actions = {
   about: () =>
     sheet(
       "Über DiätFreund",
-      `<h3>Dein Alltag, ohne Abo.</h3><p>Version 0.3.0 · Offline-Tagebuch für Erwachsene. Keine Werbung, Telemetrie, Konten oder kostenpflichtigen KI-Dienste.</p><h3>Datenschutz</h3><p>Deine Daten liegen im privaten App-Speicher. Android-Cloud-Backup ist deaktiviert. Die App setzt die Gerätesperre voraus; sie bietet keine eigene Verschlüsselung oder PIN. Exportdateien sind unverschlüsselt. Deinstallation entfernt lokale Daten. Sichere regelmäßig.</p><h3>Barcode & Kamera</h3><p>Nur nach deiner Aktion wird ein Barcode an world.openfoodfacts.org gesendet (einschließlich technisch notwendiger IP-Adresse). Kamerabilder verlassen das Gerät nicht. Kein automatisches Foto-Kalorienschätzen.</p><h3>Quellen & Lizenzen</h3><p>Produktdaten: Open Food Facts (opendatacommons.org/licenses/odbl/1-0/). Datenbank ODbL, einzelne Inhalte Database Contents License. Eigene Lebensmittel sind getrennt gekennzeichnet. Prüfe die Verpackung, insbesondere Portionsgrößen und Allergene. Die App beurteilt keine Allergensicherheit.</p><p>Barcode-Erkennung: ZXing / JourneyApps (Apache 2.0). AndroidX (Apache 2.0). Vollständige Hinweise im Repository.</p>${btn("Lizenztexte offline lesen", "licenses", "secondary")}<h3>Gesundheit</h3><p>Kalorienformel: Mifflin–St. Jeor (1990), Schätzung mit individuell gewähltem Aktivitätsfaktor. Bewegungsvorlagen orientieren sich an allgemeinen NHS-Empfehlungen. Keine Diagnose, Überwachung, Notfallerkennung oder garantierte Gewichtsabnahme. Gesundheitseinträge werden nicht medizinisch bewertet.</p><h3>Bedienung</h3><p>Essen: Lebensmittel wählen, Gramm eingeben, speichern. Einträge antippen zum Bearbeiten. Verlauf: pro Datum ein Gewicht. Training: Sätze bearbeiten, abhaken, abschließen. Mehr: Gesundheitsjournal, Ziele und Sicherungen. Barcode braucht Internet; alles andere funktioniert offline.</p>`,
+      `<h3>Dein Alltag, ohne Abo.</h3><p>Version 0.4.0 · Offline-Tagebuch für Erwachsene. Keine Werbung, Telemetrie, Konten oder kostenpflichtigen KI-Dienste.</p><h3>Datenschutz</h3><p>Deine Daten liegen im privaten App-Speicher. Android-Cloud-Backup ist deaktiviert. Die App setzt die Gerätesperre voraus; sie bietet keine eigene Verschlüsselung oder PIN. Exportdateien sind unverschlüsselt. Deinstallation entfernt lokale Daten. Sichere regelmäßig.</p><h3>Health Connect</h3><p>Optional Schritte, Schlafdauer und Gewicht lesen. Eigene Gewichte nur nach Vorschau ausdrücklich teilen. Freigaben lassen sich in Android widerrufen. Lokale Importkopien kannst du unter Schritte & Erholung entfernen; bereits geteilte Werte verwaltest du in Health Connect.</p><h3>Barcode & Kamera</h3><p>Nur nach deiner Aktion wird ein Barcode an world.openfoodfacts.org gesendet (einschließlich technisch notwendiger IP-Adresse). Kamerabilder verlassen das Gerät nicht. Kein automatisches Foto-Kalorienschätzen.</p><h3>Quellen & Lizenzen</h3><p>Produktdaten: Open Food Facts (opendatacommons.org/licenses/odbl/1-0/). Datenbank ODbL, einzelne Inhalte Database Contents License. Eigene Lebensmittel sind getrennt gekennzeichnet. Prüfe die Verpackung, insbesondere Portionsgrößen und Allergene. Die App beurteilt keine Allergensicherheit.</p><p>Barcode-Erkennung: ZXing / JourneyApps (Apache 2.0). AndroidX (Apache 2.0). Vollständige Hinweise im Repository.</p>${btn("Lizenztexte offline lesen", "licenses", "secondary")}<h3>Gesundheit</h3><p>Kalorienformel: Mifflin–St. Jeor (1990), Schätzung mit individuell gewähltem Aktivitätsfaktor. Bewegungsvorlagen orientieren sich an allgemeinen NHS-Empfehlungen. Keine Diagnose, Überwachung, Notfallerkennung oder garantierte Gewichtsabnahme. Gesundheitseinträge werden nicht medizinisch bewertet.</p><h3>Bedienung</h3><p>Essen: Lebensmittel wählen, Gramm eingeben, speichern. Einträge antippen zum Bearbeiten. Verlauf: pro Datum ein Gewicht. Training: Sätze bearbeiten, abhaken, abschließen. Mehr: Gesundheitsjournal, Ziele und Sicherungen. Barcode braucht Internet; alles andere funktioniert offline.</p>`,
     ),
 };
 document.addEventListener("click", (e) => {
@@ -1265,3 +1279,4 @@ window.onAppBack = () => {
   window.Android?.exitApp();
 };
 render();
+setTimeout(() => healthUI.sync(true), 800);

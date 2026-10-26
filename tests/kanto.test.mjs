@@ -82,7 +82,13 @@ test("old saves preserve party and experience; generic medals do not become unea
 test("all starters can complete eight gyms, Elite Four and all 151 without time pressure or purchases", () => {
   for (const starter of [1, 4, 7]) {
     const s = fixture(starter);
-    for (let i = 0; i < 250; i++) day(s, i);
+    const leagueMessages=[];
+    for (let i = 0; i < 250; i++) {
+      day(s, i);
+      leagueMessages.push(...s.game.events.filter(e=>e.kind==='league').map(e=>e.text));
+    }
+    assert.ok(leagueMessages.some(text=>text.includes('Kanto-Champ')));
+    assert.ok(leagueMessages.every(text=>text!=='research'));
     assert.equal(s.game.discovered.length, 151);
     assert.deepEqual(
       s.game.badges,

@@ -1,3 +1,4 @@
+import { validateConnection } from "./health-sync.js";
 import { validateGame, migrateGame } from "./game.js";
 import { micros, parseMicros, recipeMicros } from "./micros.js";
 export const VERSION = 2;
@@ -135,6 +136,7 @@ function assert(ok) {
 }
 export function validateState(s) {
   validateGame(s?.game);
+  validateConnection(s?.healthConnect);
   assert(s && s.version === VERSION && ["light", "dark"].includes(s.theme));
   assert(
     Array.isArray(s.favorites) &&

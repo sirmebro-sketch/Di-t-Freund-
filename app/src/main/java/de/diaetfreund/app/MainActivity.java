@@ -36,6 +36,7 @@ public final class MainActivity extends ComponentActivity {
     private static final String ORIGIN = "appassets.androidplatform.net";
     private static final int MAX_BYTES = 10 * 1024 * 1024;
     private WebView web;
+    private HealthConnectBridge healthBridge;
     private AtomicFile stateFile;
     private File pendingExport;
     private final ActivityResultLauncher<ScanOptions> scanner = registerForActivityResult(new ScanContract(), result -> {
@@ -62,6 +63,7 @@ public final class MainActivity extends ComponentActivity {
     @SuppressLint("SetJavaScriptEnabled")
     @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        healthBridge = new HealthConnectBridge(this, value -> callback("onHealthConnect", value));
         stateFile = new AtomicFile(new File(getFilesDir(), "diary-v1.json"));
         pendingExport = new File(getCacheDir(), "pending-export");
         FrameLayout root = new FrameLayout(this); web = new WebView(this); root.addView(web);
@@ -137,7 +139,11 @@ public final class MainActivity extends ComponentActivity {
             });
         }
         @JavascriptInterface public void importFile() { runOnUiThread(() -> importer.launch(new String[]{"application/json", "text/plain", "application/octet-stream"})); }
+        @JavascriptInterface public void healthConnect(String request) {
+            if (request == null || request.length() > 20000) return;
+            runOnUiThread(() -> healthBridge.handle(request));
+        }
         @JavascriptInterface public void exitApp() { runOnUiThread(() -> finish()); }
     }
-    @Override protected void onDestroy() { if(web != null) { web.removeJavascriptInterface("Android"); web.destroy(); web = null; } super.onDestroy(); }
+    @Override protected void onDestroy() { if(healthBridge != null) healthBridge.close(); if(web != null) { web.removeJavascriptInterface("Android"); web.destroy(); web = null; } super.onDestroy(); }
 }

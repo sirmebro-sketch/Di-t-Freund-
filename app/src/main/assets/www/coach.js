@@ -1,3 +1,4 @@
+import { combinedWeights } from "./health-sync.js";
 import { today, shiftDate, totals } from "./core.js";
 export function ageAt(birthDate, date = today()) {
   const b = new Date(birthDate + "T12:00:00"),
@@ -12,7 +13,7 @@ export function ageAt(birthDate, date = today()) {
 }
 export function currentWeight(s, date = today()) {
   return (
-    [...s.weights]
+    combinedWeights(s)
       .filter((w) => w.date <= date)
       .sort((a, b) => b.date.localeCompare(a.date))[0]?.value ??
     s.profile?.start
@@ -47,10 +48,10 @@ export function weeklyReview(s, date = today()) {
   const complete = allDays.filter(
     (d) => s.completeDays[d] === true && s.entries.some((e) => e.date === d),
   );
-  const first = s.weights.filter(
+  const first = combinedWeights(s).filter(
     (w) => w.date >= start && w.date <= shiftDate(start, 6),
   );
-  const last = s.weights.filter(
+  const last = combinedWeights(s).filter(
     (w) => w.date >= shiftDate(end, -6) && w.date <= end,
   );
   const change =

@@ -1,4 +1,4 @@
-# Stand für die persönliche Nutzung · 0.3.0
+# Stand für die persönliche Nutzung · 0.4.0
 
 Die App ist eine funktionsfähige persönliche Android-Testversion. Der Kern ist für tägliche manuelle Erfassung ausgelegt, nicht als klinisch validierter oder vollständig automatischer Gesundheitscoach.
 
@@ -9,8 +9,8 @@ Die App ist eine funktionsfähige persönliche Android-Testversion. Der Kern ist
 | Personalisierung | Optionales Coach-Profil, Energie-Schätzung, 21-Tage-Auswertung, bestätigte Zielvorschläge | On-device Angaben erforderlich; keine Verbrauchsmessung, keine stille Kaloriensenkung |
 | Nährstoffe | 12 Vitamine/Mineralstoffe mit Abdeckung und passenden Referenzen | Viele Lebensmittel haben keine Werte; keine vollständige Bedarfs- oder Mangelanalyse |
 | Training | Gym-/Zuhause-Vorlagen, eigene Übungen, Satzprotokoll, letzte Lasten, Erholungshinweise | Keine individuelle ärztliche Belastungsfreigabe; kein vollständiger automatisch periodisierter Trainingsplan |
-| Gesundheit | Manuelle Schritte, Schlaf, Blutdruck, Puls, Umfang und Notizen | Kein Health Connect, Wearable-Import, automatischer Schrittzähler oder medizinische Alarmierung |
-| Motivation | Alle 151 Kanto-Pokémon, Entwicklung, Reise, acht Arenaorden, Liga, Sammelfortschritt | Vereinfachtes Fan-Spiel, kein Originalspiel-Remake |
+| Gesundheit | Manuelle Schritte, Schlaf, Blutdruck, Puls, Umfang und Notizen | Optional Health Connect für Schritte/Schlaf/Gewicht, eigene Gewichte teilen; keine eigene Sensorzählung oder medizinische Alarmierung |
+| Motivation | Alle 151 Kanto-Pokémon, Entwicklung, Reise, acht Arenaorden, Liga, Sammelfortschritt, Forschung, Freundschaft und Kulissen | Vereinfachtes Fan-Spiel, kein Originalspiel-Remake |
 | Daten | Privater lokaler Speicher, geprüfter Import, JSON-/CSV-Export | Sicherungen unverschlüsselt, keine Cloud-Synchronisierung, keine automatische Sicherungsplanung |
 
 ## Vor verlässlichem täglichem Einsatz auf dem eigenen Gerät prüfen
@@ -18,6 +18,7 @@ Die App ist eine funktionsfähige persönliche Android-Testversion. Der Kern ist
 - Installieren und nach App-Neustart prüfen, ob ein Testeintrag erhalten bleibt.
 - Barcode-Kamera mit erteilter und abgelehnter Berechtigung ausprobieren.
 - Sicherung exportieren, aufbewahren und die Wiederherstellung mit Testdaten prüfen.
+- Health Connect mit Samsung Health: einzelne Freigaben erlauben/ablehnen, widerrufen, Daten einmal und wiederholt abgleichen, eigene Gewichte mit Vorschau teilen und auf Duplikate prüfen. Schrittzahlen gegen Samsung Health vergleichen; Verzögerungen sind möglich.
 - Große Systemschrift/TalkBack nach Bedarf; Ton an/aus und App-Wechsel prüfen.
 
 Noch keine reale Android-Geräteabnahme durch den Entwickler. Debug-Builds können verschiedene Signaturen haben: vor Update sichern; bei Signaturkonflikt nur nach erfolgreichem Export neu installieren und importieren. Ein fester privater Release-Signaturschlüssel bleibt Voraussetzung für dauerhaft komfortable Updates.
