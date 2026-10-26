@@ -111,3 +111,7 @@ Erster Android-Prüflauf für die neue native OCR und aggregierten Health-Abfrag
 ## Version 0.11.1 · Dunkles Design und Menüsymbole
 
 Bestehende 86 Unit-Tests / 15 Browserprogramme. Zusätzliche lokale Axe-/Sichtprüfung aller sechs Reiter und Dialoge für Tagesbilanz, Lebensmittelsuche, Gewicht, Audio, Team und Profil in Hell/Dunkel; 393 px und 320-px-Überlaufprüfung. SVG-Masken anhand des gepinnten Originalbogens regeneriert; außen liegende Matte/Kontur entfernt, innere weiße Details bleiben. Pixel-Diagramm und Symbole auf beiden Hintergründen visuell geprüft. Native Darstellung auf einem physischen Android-Gerät bleibt ergänzend offen.
+
+## Version 0.11.2 · OCR-Korrekturen
+
+90 Unit-Tests; vier neue Parser-Regressionen. `ocr-corrections-ui.mjs` als 16. CI-Browserprogramm: simulierte Android-Fotorückgabe, Aufzählungszeichen, g/9-Korrekturvorschläge getrennt von erkannten Werten, Bestätigung vor Übernahme, erneute Prüfung nach Änderungen, Spaltenwechsel, leere Ballaststoffe und gespeicherte Portion nach Reload. Axe-/Überlaufprüfung hell/dunkel bei 320/393 px. Keine Aussage über die Genauigkeit der nativen Kameraerkennung anhand des Browsermocks.

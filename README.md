@@ -11,6 +11,10 @@ Ein ruhiger, deutschsprachiger Android-Begleiter für Ernährung, Gewicht, Kraft
 
 Android 8.0 oder neuer, aktuelles Android System WebView. Das ist ein persönlicher Testbuild, keine Play-Store-Veröffentlichung. Seit 0.4.1 ist die feste Release-Signatur eingerichtet und erfolgreich geprüft. Der private Schlüssel wird über GitHub-Actions-Secrets eingebunden; ohne eingerichtete Secrets gibt es kein installierbares Release-Artifact. Einmalige Einrichtung und Umstieg von bisherigen Debug-APKs: [Signierung](docs/SIGNING.md). Vor diesem einmaligen Wechsel JSON sichern. Künftige gleich signierte Updates über die bestehende App installieren.
 
+## Neu in 0.11.2 · Nährwertfoto zuverlässiger auswerten
+
+Zucker/Fettarten mit vorangestellten Aufzählungszeichen werden erkannt. Bei möglicher Verwechslung von Grammzeichen und Ziffer 9 gibt es ausdrücklich zu bestätigende Vorschläge. Fehlende Einheiten verschieben keine Zahlenspalten mehr. [Details und Grenzen](docs/UPDATE-0.11.2.md). versionCode 19, feste Paketkennung und Signatur.
+
 ## Neu in 0.11.1 · Klareres Nacht-Design
 
 Höhere Kontraste für Hinweistexte, Eingabefelder, Fortschrittsbalken und Fokus. Ruhigerer Hintergrund, freigestellte HGSS-Menüsymbole ohne weiße Außenkontur und ein dazu passendes Pixel-Diagrammsymbol. [Details](docs/UPDATE-0.11.1.md). versionCode 18, gleiche Paketkennung und feste Signatur.

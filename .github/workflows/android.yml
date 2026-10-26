@@ -68,6 +68,7 @@ jobs:
           node tests/eggs-ui.mjs
           node tests/nutrient-parts-ui.mjs
           node tests/exercise-history-ui.mjs
+          node tests/ocr-corrections-ui.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

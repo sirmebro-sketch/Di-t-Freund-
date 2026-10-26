@@ -10,12 +10,21 @@ export function setupNutritionOCR({
 }) {
   let request = null,
     text = "",
-    draft = null;
+    draft = null,
+    reviewedText = "",
+    reviewedColumn = 0,
+    accepted = {};
   function view() {
     sheet(
       "Nährwerttabelle erfassen",
       `<p>Foto aufnehmen oder auswählen. Die Erkennung läuft auf deinem Gerät. Anschließend Werte und Bezugsmenge prüfen.</p><div class="toolbar">${btn("Tabelle fotografieren / Foto wählen", "ocr-scan", "primary")}</div><details ${text ? "open" : ""}><summary>Erkannten Text prüfen oder einfügen</summary><label>Nährwerttabelle<textarea id="ocr-text" rows="8" maxlength="20000" placeholder="pro 100 g\nEnergie 150 kcal\nFett 4,5 g\nKohlenhydrate 20 g\nEiweiß 7 g">${esc(text)}</textarea></label></details><div class="two-grid"><label>Zahlenspalte<select id="ocr-column"><option value="0">Erste Spalte</option><option value="1">Zweite Spalte</option><option value="2">Dritte Spalte</option></select></label><label>Diese Spalte gilt pro … g/ml<input id="ocr-basis" inputmode="decimal" placeholder="z. B. 100 oder Portionsgröße" value=""></label></div><p class="hint">Nur eine Spalte übernehmen. „Pro Portion 30 g“ bedeutet Bezugsmenge 30. Prozentwerte sind keine Grammangaben.</p>${btn("Werte auslesen", "ocr-parse", "secondary")}<div id="ocr-results"></div>`,
     );
+    for (const selector of ["#ocr-text", "#ocr-column", "#ocr-basis"]) {
+      document.querySelector(selector).addEventListener("input", () => {
+        const check = document.querySelector("#ocr-confirm");
+        if (check) check.checked = false;
+      });
+    }
   }
   function parse() {
     text = document.querySelector("#ocr-text").value;
@@ -26,6 +35,13 @@ export function setupNutritionOCR({
     const basis = document.querySelector("#ocr-basis");
     if (!basis.value && p.basis100 && p.maxColumns === 1) basis.value = "100";
     draft = p;
+    reviewedText = text;
+    reviewedColumn = Number(document.querySelector("#ocr-column").value);
+    accepted = {};
+    results();
+  }
+  function results() {
+    const p = draft;
     document.querySelector("#ocr-results").innerHTML =
       `<h3>Erkennungsvorschläge</h3><p>Angaben in der gewählten Spalte, noch nicht umgerechnet:</p>${Object.entries(
         {
@@ -39,11 +55,11 @@ export function setupNutritionOCR({
       )
         .map(
           ([key, label]) =>
-            `<div class="ocr-result"><strong>${label}</strong><span>${p.values[key] ?? "Nicht erkannt"}</span><small>${esc(p.evidence[key] || "Bitte im nächsten Schritt ergänzen.")}</small></div>`,
+            `<div class="ocr-result"><strong>${label}</strong><span>${p.values[key] ?? "Nicht erkannt"}</span><small>${esc(p.evidence[key] || "Bitte im nächsten Schritt ergänzen.")}</small>${p.suggestions[key] && accepted[key] === undefined ? `<div class="ocr-suggestion"><p>Vielleicht ${p.suggestions[key].value.toLocaleString("de-DE")} g? In „${esc(p.suggestions[key].raw)}“ könnte das letzte „9“ ein falsch erkanntes „g“ sein. Nur mit der Packung bestätigen.</p>${btn("Vorschlag einsetzen", "ocr-suggestion", "secondary", `data-key="${key}" aria-label="${esc(label)}: ${p.suggestions[key].value.toLocaleString("de-DE")} Gramm als Vorschlag einsetzen"`)}</div>` : ""}</div>`,
         )
         .join(
           "",
-        )}<p>${p.warnings.map(esc).join(" ")}</p><label class="checkbox"><input id="ocr-confirm" type="checkbox">Ich habe Zahlenspalte und Bezugsmenge mit der Packung verglichen.</label>${btn("Übernehmen & Lebensmittel prüfen", "ocr-use", "primary")}`;
+        )}<p>${p.warnings.map(esc).join(" ")}</p><label class="checkbox"><input id="ocr-confirm" type="checkbox">Ich habe alle Werte, Zahlenspalte und Bezugsmenge mit der Packung verglichen.</label>${btn("Übernehmen & Lebensmittel prüfen", "ocr-use", "primary")}`;
   }
   window.onNutritionScan = (raw) => {
     try {
@@ -66,6 +82,7 @@ export function setupNutritionOCR({
     request = null;
     draft = null;
     text = "";
+    accepted = {};
   };
   return {
     invalidate,
@@ -86,18 +103,32 @@ export function setupNutritionOCR({
         window.Android.scanNutrition(request);
       },
       "ocr-parse": parse,
+      "ocr-suggestion": (button) => {
+        if (!draft || document.querySelector("#ocr-text").value !== reviewedText ||
+            Number(document.querySelector("#ocr-column").value) !== reviewedColumn)
+          throw Error("Text oder Spalte geändert. Bitte zuerst Werte neu auslesen.");
+        const key = button.dataset.key, suggestion = draft.suggestions[key];
+        if (!suggestion || !Object.hasOwn(draft.values, key)) return;
+        accepted[key] = suggestion.value;
+        draft.values[key] = suggestion.value;
+        draft.evidence[key] = `Korrekturvorschlag eingesetzt: ${suggestion.raw} → ${suggestion.value.toLocaleString("de-DE")} g. Mit der Packung prüfen.`;
+        results(); // A changed value always requires a fresh review confirmation.
+      },
       "ocr-use": () => {
         if (!draft || !document.querySelector("#ocr-confirm")?.checked)
           throw Error(
             "Bitte zuerst die Angaben mit der Packung vergleichen und bestätigen.",
           );
-        // Reparse current input so editing text/column cannot apply a stale preview.
+        if (document.querySelector("#ocr-text").value !== reviewedText ||
+            Number(document.querySelector("#ocr-column").value) !== reviewedColumn)
+          throw Error("Text oder Spalte geändert. Bitte zuerst Werte neu auslesen.");
+        // Only deliberate, reviewed corrections supplement freshly parsed values.
         const p = parseNutritionLabel(
           document.querySelector("#ocr-text").value,
           Number(document.querySelector("#ocr-column").value),
         );
         const values = normalizeLabel(
-          p.values,
+          {...p.values, ...accepted},
           document.querySelector("#ocr-basis").value,
         );
         if (Object.values(values).every((v) => v === null))
