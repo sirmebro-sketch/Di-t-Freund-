@@ -119,7 +119,7 @@ assert.equal(
 await page.locator("#ocr-confirm").check();
 await click("ocr-use");
 assert.equal(await page.locator('[name="protein"]').inputValue(), "20");
-assert.equal(await page.locator('[name="fiber"]').inputValue(), "0");
+assert.equal(await page.locator('[name="fiber"]').inputValue(), "");
 await fill("name", "Foto-Testprodukt");
 await submit();
 await fill("amount", "75");

@@ -4,7 +4,7 @@
   "license": "CC0 1.0",
   "archive": "https://fdc.nal.usda.gov/fdc-datasets/FoodData_Central_sr_legacy_food_json_2018-04.zip",
   "archiveSha256": "0fe8ae486a2c8eb42cb96413f058deb51863a46c8fb8eeb4b1fb45006dd338ef",
-  "generatedSha256": "12846fbfec3e838e2e108735655072af92b5e6626daec21b7eee8991144dd38f",
+  "generatedSha256": "18afcbc5c11eef082b3c54fef0b404a987367542b55066c7c4efa50d09661529",
   "basis": "Per 100 g edible portion. Not per 100 ml.",
   "carbohydrates": "1005 minus 1079; approximation excluding fibre, not an EU laboratory measurement.",
   "folate": "1190 DFE, not folic acid or total folate.",

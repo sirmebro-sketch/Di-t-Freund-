@@ -120,7 +120,7 @@ for (const [k, v] of Object.entries({
   fiber: 1,
 }))
   await fill(k, v);
-await page.locator("#sheet summary").click();
+await page.locator("#sheet summary").filter({hasText:"Vitamine & Mineralstoffe"}).click();
 await fill("micro_vitaminC", 25);
 await submit();
 await fill("amount", 200);

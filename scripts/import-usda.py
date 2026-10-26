@@ -48,6 +48,11 @@ def convert(source, name, stable_id=None):
         # for audit; approximation excluding fibre is labelled in the UI.
         'carbs': round(max(0, total-fiber), 3),
         'fiber': fiber, 'usdaTotalCarbs': total,
+        'sugar': value(2000, 'g'),
+        'saturatedFat': value(1258, 'g'),
+        'monoFat': value(1292, 'g'),
+        'polyFat': value(1293, 'g'),
+        'transFat': value(1257, 'g'),
         'micros': {k: value(*spec) for k, spec in MICROS.items()},
     }
 

@@ -1,3 +1,4 @@
+import {recipeParts,parseParts,validateParts} from './nutrient-parts.js';
 import { validateTrainingExtras } from './training.js';
 import { validateAudio } from './atmosphere-settings.js';
 import { validateTemplates } from "./meal-templates.js";
@@ -70,6 +71,7 @@ export function recipeFood(name, ingredients, cookedWeight) {
     id: uid(),
     name,
     micros: recipeMicros(ingredients, weight),
+    ...recipeParts(ingredients,weight),
     fiberKnown: ingredients.every(e => e.fiberKnown !== false && !(e.fiberKnown === undefined && e.fiber === 0 && e.source?.includes("Open Food Facts"))),
     source: ingredients.some((i) => i.source.includes("ODbL"))
       ? "Rezept · mit Open Food Facts (ODbL)"
@@ -99,8 +101,10 @@ export function parseProduct(data, code) {
     fat: "fat_100g",
     fiber: "fiber_100g",
   };
-  if (n[keys.kcal] === undefined && n.energy_100g !== undefined)
-    n[keys.kcal] = Number(n.energy_100g) / 4.184;
+  if (n[keys.kcal] === undefined && n['energy-kj_100g'] !== undefined)
+    n[keys.kcal] = number(n['energy-kj_100g'],0,4184,'Energie') / 4.184;
+  else if (n[keys.kcal] === undefined && n.energy_100g !== undefined)
+    n[keys.kcal] = number(n.energy_100g,0,4184,'Energie') / (n.energy_unit==='kcal'?1:4.184);
   for (const k of ["kcal", "protein", "carbs", "fat"])
     if (n[keys[k]] === undefined || n[keys[k]] === null)
       throw Error(
@@ -116,10 +120,11 @@ export function parseProduct(data, code) {
     barcode: code,
     fiberKnown: n.fiber_100g !== undefined && n.fiber_100g !== null && n.fiber_100g !== "",
     micros: parseMicros(n),
+    ...parseParts(n),
     ...Object.fromEntries(
       nutrients.map((k) => [
         k,
-        number(n[keys[k]] ?? 0, 0, k === "kcal" ? 1000 : 100, k),
+        number(k === "fiber" && (n[keys[k]] === undefined || n[keys[k]] === null || n[keys[k]] === "") ? 0 : n[keys[k]], 0, k === "kcal" ? 1000 : 100, k),
       ]),
     ),
   };
@@ -217,6 +222,7 @@ export function validateState(s) {
     nutrients.forEach((k) =>
       assert(finite(f[k], 0, k === "kcal" ? 1000 : 100)),
     );
+    validateParts(f);
     if (f.fiberKnown !== undefined) assert(typeof f.fiberKnown === "boolean");
     if (f.micros !== undefined) {
       assert(
@@ -231,6 +237,7 @@ export function validateState(s) {
     if (f.barcode !== undefined) assert(/^\d{8,14}$/.test(f.barcode));
   }
   validateTemplates(s.mealTemplates, food);
+  for(const key of ["foods","entries","health","workouts"])assert(s[key].every(e=>e&&typeof e.id==="string"&&e.id.length>0)&&new Set(s[key].map(e=>e.id)).size===s[key].length);
   s.foods.forEach(food);
   s.entries.forEach((e) => {
     food(e);

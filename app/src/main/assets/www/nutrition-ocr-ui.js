@@ -1,3 +1,4 @@
+import {nutrientParts} from './nutrient-parts.js';
 import { parseNutritionLabel, normalizeLabel } from "./nutrition-ocr.js";
 export function setupNutritionOCR({
   sheet,
@@ -33,6 +34,7 @@ export function setupNutritionOCR({
           carbs: "Kohlenhydrate · g",
           fat: "Fett · g",
           fiber: "Ballaststoffe · g",
+          ...Object.fromEntries(nutrientParts.map(p=>[p.key,p.name+" · g"])),
         },
       )
         .map(
@@ -109,7 +111,7 @@ export function setupNutritionOCR({
           ...Object.fromEntries(
             Object.entries(values).map(([k, v]) => [
               k,
-              v ?? (k === "fiber" ? 0 : ""),
+              v ?? "",
             ]),
           ),
         });

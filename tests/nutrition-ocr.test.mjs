@@ -14,6 +14,7 @@ test("German label uses kcal rather than kJ; sugar and saturates never overwrite
     carbs: 60,
     fat: 7.5,
     fiber: 10,
+    sugar: 1, saturatedFat: 1.2, monoFat:null, polyFat:null, transFat:null,
   });
   assert.equal(p.basis100, true);
   assert.equal(p.maxColumns, 1);

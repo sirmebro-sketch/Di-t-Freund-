@@ -1,3 +1,4 @@
+import {nutrientParts} from './nutrient-parts.js';
 // Stored nutrient snapshots: editing a product later never rewrites a saved meal.
 const meals = ["Frühstück", "Mittagessen", "Abendessen", "Snacks"];
 const validDate = (d) =>
@@ -60,6 +61,8 @@ export function saveMeal(s, name, meal, date, id = crypto.randomUUID()) {
     "carbs",
     "fat",
     "fiber",
+    "fiberKnown",
+    ...nutrientParts.map(p=>p.key),
     "micros",
     "amount",
   ];

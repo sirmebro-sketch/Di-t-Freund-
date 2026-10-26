@@ -16,6 +16,6 @@ export function setupEggUI({getState,commit,render,sheet,btn,esc,fmt,today,notif
   if(!fresh.length&&h.issued<=(old?.issued||0))return;
   const el=document.querySelector('#reward');if(!el)return;
   el.innerHTML=`${fresh.length?`<img class="pokemon-sprite" src="${spriteUrl(fresh[0].species,fresh[0].shiny)}" alt="" width="80" height="80">`:egg()}<div><strong>${fresh.length?fresh.length+' Pokémon geschlüpft!':'Ein neues Pokémon-Ei!'}</strong><p>${fresh.length?fresh.map(e=>(e.shiny?'✨ Shiny ':'')+nationalDex[e.species].name).map(esc).join(', '):'Dein Erfolg wartet in der Brutstation.'}</p>${btn('Brutstation öffnen','egg-open','text-button')}</div>${btn('×','reward-dismiss','text-button','aria-label="Belohnung schließen"')}`;el.hidden=false;effect(fresh.length?'level':'capture');
-  const content=el.innerHTML;setTimeout(()=>{if(el.innerHTML===content){el.hidden=true;document.querySelectorAll('.inline-reward').forEach(e=>e.remove());}},8000);
+  clearTimeout(el.rewardTimer);const content=el.innerHTML;el.rewardTimer=setTimeout(()=>{if(el.innerHTML===content){el.hidden=true;document.querySelectorAll('.inline-reward').forEach(e=>e.remove());}},8000);
  }};
 }

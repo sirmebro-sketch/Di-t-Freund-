@@ -1,9 +1,11 @@
+import {nutrientParts} from './nutrient-parts.js';
 import {fiberIsKnown} from './nutrition-balance.js';
 import {combinedWeights} from './health-sync.js';
 import {micros} from './micros.js';
 export const trendMetrics=[
  {id:'weight',name:'Gewicht',unit:'kg',group:'Körper',digits:1},
  ...['kcal','protein','carbs','fat','fiber'].map((id,i)=>({id,name:['Energie','Protein','Kohlenhydrate','Fett','Ballaststoffe'][i],unit:i?'g':'kcal',group:'Ernährung',nutrition:true,digits:i?1:0})),
+ ...nutrientParts.map(p=>({id:p.key,name:p.name,unit:'g',group:'Ernährung',nutrition:true,digits:1})),
  {id:'water',name:'Trinkmenge',unit:'l',group:'Alltag',digits:2},
  {id:'steps',name:'Schritte',unit:'Schritte',group:'Alltag',digits:0},
  {id:'sleep',name:'Schlaf',unit:'h',group:'Alltag',digits:1},

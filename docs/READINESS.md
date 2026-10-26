@@ -1,10 +1,10 @@
-# Stand für die persönliche Nutzung · 0.9.0
+# Stand für die persönliche Nutzung · 0.10.0
 
 Die App ist eine funktionsfähige persönliche Android-Testversion. Der Kern ist für tägliche manuelle Erfassung ausgelegt, nicht als klinisch validierter oder vollständig automatischer Gesundheitscoach.
 
 | Bereich | Nutzbarer Stand | Grenze |
 |---|---|---|
-| Ernährung | Lokale Nährwertfoto-OCR mit Prüfung, Mahlzeitenvorlagen mit Mengen-Vorschau, Portionen, Favoriten, letzte Portion, Rezepte, eigene Lebensmittel, Barcode, Makros | 118 deutsch beschriftete USDA-Lebensmittel, ergänzende Orientierungswerte; Barcode braucht Internet und Etikettkontrolle; keine Kalorienschätzung von Tellerfotos |
+| Ernährung | Lokale Nährwertfoto-OCR mit Prüfung, Mahlzeitenvorlagen mit Mengen-Vorschau, Portionen, Favoriten, letzte Portion, Rezepte, eigene Lebensmittel, Barcode, Makros, Zucker und vier Fettsäuren-Kategorien | 118 deutsch beschriftete USDA-Lebensmittel, ergänzende Orientierungswerte; Barcode braucht Internet und Etikettkontrolle; keine Kalorienschätzung von Tellerfotos |
 | Gewicht | Einträge, gleitender Trend, Zielverlauf | Keine Messung von Körperfett/Muskelmasse |
 | Personalisierung | Optionales Coach-Profil, Energie-Schätzung, 21-Tage-Auswertung, bestätigte Zielvorschläge | On-device Angaben erforderlich; keine Verbrauchsmessung, keine stille Kaloriensenkung |
 | Nährstoffe | 12 Vitamine/Mineralstoffe mit Abdeckung und passenden Referenzen | Viele Lebensmittel haben keine Werte; keine vollständige Bedarfs- oder Mangelanalyse |
@@ -38,3 +38,5 @@ Version 0.8.0 ergänzt zentrale Bedienungstöne, native Berührungsvibration, La
 Version 0.8.1 ergänzt die Tagesbilanz mit Zielvergleich und Datenabdeckung. Der angezeigte Verbrauch ist ein Modellwert, kein gemessener Tagesverbrauch. Frühe Tagesvergleiche sind vorläufig; historische Tage verwenden die aktuellen Profileinstellungen. Details: [Tagesbilanz](UPDATE-0.8.1.md).
 
 Version 0.8.2 entfernt die Rahmenkante aus den gekachelten hellen/dunklen Platin-Hintergründen. Reine Darstellungskorrektur; gespeicherte Daten und Audioverhalten unverändert.
+
+Version 0.10.0 ergänzt optionale Zucker-/Fettsäurenwerte, gezielte Nährwertkorrekturen und einen Qualitätsdurchgang. Fehlende Werte bleiben unbekannt; Einzelheiten und Grenzen: [Änderungsbericht](UPDATE-0.10.0.md).

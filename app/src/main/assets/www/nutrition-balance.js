@@ -1,3 +1,4 @@
+import {partTotals} from './nutrient-parts.js';
 import {totals} from './core.js';
 import {energyModel,ageAt} from './coach.js';
 import {micros,microTotals,referenceFor} from './micros.js';
@@ -9,6 +10,6 @@ export function dailyNutrition(s,date){
  const targets={kcal:p.kcal,protein:p.protein,fat,carbs:carbs!==null&&carbs>=0?carbs:null,fiber:eligible?30:null};
  const fiberEntries=entries.filter(fiberIsKnown),fiber={known:fiberEntries.length,total:entries.length,value:fiberEntries.length?totals(fiberEntries).fiber:null};
  const mt=microTotals(entries),model=energyModel(s,date),complete=s.completeDays[date]===true&&entries.length>0;
- return {date,entries:entries.length,actual,targets,fiber,complete,model,remaining:p.kcal-actual.kcal,balance:entries.length&&model?actual.kcal-model.tdee:null,plannedBalance:model?p.kcal-model.tdee:null,
+ return {parts:partTotals(entries),date,entries:entries.length,actual,targets,fiber,complete,model,remaining:p.kcal-actual.kcal,balance:entries.length&&model?actual.kcal-model.tdee:null,plannedBalance:model?p.kcal-model.tdee:null,
   micros:micros.map(m=>({...m,...mt[m.key],reference:referenceFor(m,c,date),group:m.key.startsWith('vitamin')||m.key==='folate'?'Vitamine':'Mineralstoffe'}))};
 }

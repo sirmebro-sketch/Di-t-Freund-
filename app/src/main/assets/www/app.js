@@ -1,3 +1,5 @@
+import {nutrientParts,partWarnings} from './nutrient-parts.js';
+import {fiberIsKnown} from './nutrition-balance.js';
 import {setupEggUI} from './egg-ui.js';
 import {syncHatchery} from './egg-game.js';
 import {setupNutritionBalance} from './nutrition-balance-ui.js';
@@ -110,6 +112,7 @@ let tab = "home",
   date = today(),
   meal = "Frühstück",
   selectedFood = null,
+  nutrientEditTarget = null,
   editing = null,
   recipeItems = [],
   timerEnd = 0,
@@ -127,8 +130,8 @@ const notify = (s) => {
 };
 function commit(mutator, preserveCompletion = false) {
   const next = structuredClone(state);
-  mutator(next);
   try {
+    mutator(next);
     if (!preserveCompletion) invalidateCompletedDays(state, next);
     if (!preserveCompletion) syncGame(next, today());
     syncHatchery(next, today());
@@ -231,7 +234,7 @@ function foodView() {
   return `<div class="toolbar">${btn(icon("plus") + " Essen eintragen", "add-food", "primary")}${btn(icon("scan") + " Barcode", "barcode", "secondary")}${btn("Nährwerttabelle fotografieren", "ocr-open", "secondary")}${btn("Gespeicherte Mahlzeiten", "templates", "secondary")}<details class="food-tools"><summary>Weitere Möglichkeiten</summary><div class="toolbar">${btn("Vortag kopieren", "copy-day", "secondary")}${btn("Eigenes Rezept", "recipe", "secondary")}</div></details></div>${nutritionBalance.view()}<section class="day-complete"><div><strong>${state.completeDays[date] ? "✓ Tag als vollständig markiert" : "Alles für diesen Tag erfasst?"}</strong><small>Nur vollständige Tage fließen in die Verbrauchsschätzung ein.</small></div>${btn(state.completeDays[date] ? "Wieder öffnen" : "Tag abschließen", "complete-day", "secondary", `aria-pressed="${!!state.completeDays[date]}"`)}</section><div class="diary">${meals
     .map((m, i) => {
       const e = dayEntries().filter((e) => e.meal === m);
-      return `<section class="card"><div class="section-head"><h2><span class="meal-symbol small">${["☀", "◒", "☾", "✦"][i]}</span>${m}</h2><span>${fmt(totals(e).kcal)} kcal</span></div>${e.length ? e.map((e) => `<button class="food-row" data-action="edit-entry" data-id="${esc(e.id)}"><div><strong>${esc(e.name)}</strong><small>${fmt(e.amount)} ${e.name.includes("100 ml") ? "ml" : "g"} · ${fmt((e.protein * e.amount) / 100, 1)} g Protein</small></div><strong>${fmt((e.kcal * e.amount) / 100)}<small>kcal</small></strong></button>`).join("") : `<p class="empty-line">Noch nichts eingetragen. Was schmeckt dir heute?</p>`}${btn("+ Hinzufügen", "add-food", "text-button", `data-meal="${m}"`)}${e.length ? btn("Als Mahlzeit speichern", "template-save", "text-button", `data-meal="${m}"`) : ""}</section>`;
+      return `<section class="card"><div class="section-head"><h2><span class="meal-symbol small">${["☀", "◒", "☾", "✦"][i]}</span>${m}</h2><span>${fmt(totals(e).kcal)} kcal</span></div>${e.length ? e.map((e) => `<button class="food-row" data-action="edit-entry" data-id="${esc(e.id)}"><div><strong>${esc(e.name)}</strong><small>${fmt(e.amount)} ${e.name.includes("100 ml") ? "ml" : "g"} · ${fmt((e.protein * e.amount) / 100, 1)} g Protein</small></div><strong>${fmt((e.kcal * e.amount) / 100)}<small>kcal</small></strong></button>`).join("") : `<p class="empty-line">Noch nichts eingetragen. Was schmeckt dir heute?</p>`}<div class="meal-actions">${btn("+ Hinzufügen", "add-food", "text-button", `data-meal="${m}"`)}${e.length ? btn("Als Mahlzeit speichern", "template-save", "text-button", `data-meal="${m}"`) : ""}</div></section>`;
     })
     .join(
       "",
@@ -386,7 +389,7 @@ function portion(f, entry = null) {
   form(
     entry ? "Eintrag bearbeiten" : "Deine Portion",
     "portion",
-    `<h3>${esc(f.name)}</h3><p>${esc(f.source)}</p>${foodDetails(f) ? `<p class="footnote">${esc(foodDetails(f))}</p>` : ""}${num(f.name.includes("100 ml") ? "Menge · ml" : "Menge · g", "amount", entry?.amount || rememberedAmount(state, f), 1, 10000)}${select("Mahlzeit", "meal", meals, entry?.meal || meal)}<div class="portion-preview" id="portion-preview" aria-live="polite"></div>${entry ? btn("Eintrag löschen", "delete-entry", "text-button danger") : ""}`,
+    `<h3>${esc(f.name)}</h3><p>${esc(f.source)}</p>${foodDetails(f) ? `<p class="footnote">${esc(foodDetails(f))}</p>` : ""}${num(f.name.includes("100 ml") ? "Menge · ml" : "Menge · g", "amount", entry?.amount || rememberedAmount(state, f), 1, 10000)}${select("Mahlzeit", "meal", meals, entry?.meal || meal)}<div class="portion-preview" id="portion-preview" aria-live="polite"></div><div id="portion-nutrients"></div>${btn("Nährwerte ergänzen / korrigieren", "food-nutrients", "text-button")}${entry ? btn("Eintrag löschen", "delete-entry", "text-button danger") : ""}`,
     "Ins Tagebuch speichern",
   );
   updatePortionPreview();
@@ -400,16 +403,19 @@ function updatePortionPreview() {
     Number.isFinite(value) && value > 0
       ? `${fmt((selectedFood.kcal * value) / 100)} kcal · ${fmt((selectedFood.protein * value) / 100, 1)} g Protein für deine Portion`
       : "Bitte eine gültige Portionsgröße eingeben.";
+  const detail=$("#portion-nutrients");
+  if(detail)detail.innerHTML=Number.isFinite(value)&&value>0?`<details open><summary>Nährwerte deiner Portion</summary><dl class="portion-nutrient-list">${[['carbs','Kohlenhydrate'],['fat','Fett'],['fiber','Ballaststoffe']].map(([key,name])=>`<div><dt>${name}</dt><dd>${key==='fiber'&&!fiberIsKnown(selectedFood)?'Unbekannt':fmt(selectedFood[key]*value/100,1)+' g'}</dd></div>${nutrientParts.filter(p=>p.parent===key).map(p=>`<div class="nutrient-sub"><dt>${p.key==='sugar'?'davon Zucker':p.name}</dt><dd>${Number.isFinite(selectedFood[p.key])?fmt(selectedFood[p.key]*value/100,2)+' g':'Unbekannt'}</dd></div>`).join('')}`).join('')}</dl><p class="footnote">Unterwerte sind bereits in Kohlenhydraten und Fett enthalten. Zucker umfasst auch natürlich enthaltenen Zucker; zugesetzter oder freier Zucker wird daraus nicht abgeleitet.</p>${partWarnings(selectedFood).map(w=>`<p class="hint">${esc(w)}</p>`).join('')}</details>`:'';
 }
 function microFields(food) {
   return `<details><summary>Vitamine & Mineralstoffe ergänzen (optional)</summary><p>Nur bekannte Werte pro 100 g/ml eintragen. Leer = unbekannt, 0 = tatsächlich null. Folat als Folat-Äquivalent.</p><div class="two-grid">${micros.map((m) => num(`${m.name} · ${m.unit}`, `micro_${m.key}`, food?.micros?.[m.key] ?? "", 0, 1e7, "any", false)).join("")}</div></details>`;
 }
-function customFood(f = null) {
+function customFood(f = null, target = null) {
   selectedFood = f;
+  nutrientEditTarget = target;
   form(
     "Lebensmittel speichern",
     "custom-food",
-    `${field("Name", "name", f?.name || "", "text", 'required maxlength="100"')}<p>Nährwerte pro 100 g oder 100 ml laut Verpackung. Bei Getränken „(pro 100 ml)“ im Namen ergänzen.</p><div class="two-grid">${[
+    `${target?`<p class="hint">${target.kind==="entry"?"Die Korrektur gilt nur für diesen Tagebucheintrag.":"Die Korrektur gilt für künftige Portionen. Frühere Tagebucheinträge bleiben unverändert."}</p>`:""}${field("Name", "name", f?.name || "", "text", 'required maxlength="100"')}<p>Nährwerte pro 100 g oder 100 ml laut Verpackung. Bei Getränken „(pro 100 ml)“ im Namen ergänzen.</p><div class="two-grid">${[
       ["kcal", "Energie · kcal", 1000],
       ["protein", "Protein · g", 100],
       ["carbs", "Kohlenhydrate · g", 100],
@@ -417,12 +423,12 @@ function customFood(f = null) {
       ["fiber", "Ballaststoffe · g", 100],
     ]
       .map(([k, t, max]) =>
-        num(t, k, f?.[k] ?? (k === "fiber" ? 0 : ""), 0, max),
+        num(t, k, (k === "fiber" && f && !fiberIsKnown(f)) ? "" : (f?.[k] ?? ""), 0, max, "any", k !== "fiber"),
       )
       .join(
         "",
-      )}</div>${microFields(f)}<p class="hint">Bei Produktdaten aus Open Food Facts bitte alle Angaben mit der Verpackung abgleichen. Fehlende Ballaststoffe: 0, kein Nachweis ihrer Abwesenheit.</p>`,
-    "Speichern & Portion wählen",
+      )}</div><fieldset class="nutrient-fields"><legend>Kohlenhydrate im Detail</legend>${num('Davon Zucker · g','sugar',f?.sugar??'',0,100,'any',false)}</fieldset><details class="nutrient-fields" ${nutrientParts.some(p=>p.parent==='fat'&&Number.isFinite(f?.[p.key]))?'open':''}><summary>Fett im Detail · optional</summary><div class="two-grid">${nutrientParts.filter(p=>p.parent==='fat').map(p=>num(p.name+' · g',p.key,f?.[p.key]??'',0,100,'any',false)).join('')}</div></details><p class="hint">Ballaststoffe, Zucker und Fettsäuren: leer = unbekannt, 0 = tatsächlich null. Unterwerte sind in Kohlenhydraten bzw. Gesamtfett enthalten und werden nicht nochmals zu Kalorien addiert.</p>${microFields(f)}<p class="hint">Produktdaten und erkannte Werte mit der Verpackung abgleichen.</p>`,
+    target?.kind === "entry" ? "Eintrag korrigieren" : target?.kind === "food" ? "Lebensmittel aktualisieren" : "Speichern & Portion wählen",
   );
 }
 function weightForm(d = today()) {
@@ -575,6 +581,7 @@ function csvExport() {
       "Kohlenhydrate_g",
       "Fett_g",
       "Ballaststoffe_g",
+      ...nutrientParts.map(p=>p.key+"_g"),
     ],
   ];
   state.entries.forEach((e) =>
@@ -584,7 +591,8 @@ function csvExport() {
       e.name,
       e.amount,
       "g/ml",
-      ...nutrients.map((k) => ((e[k] * e.amount) / 100).toFixed(2)),
+      ...nutrients.map((k) => k==="fiber"&&!fiberIsKnown(e)?"":((e[k] * e.amount) / 100).toFixed(2)),
+      ...nutrientParts.map(p=>Number.isFinite(e[p.key])?((e[p.key]*e.amount)/100).toFixed(3):""),
     ]),
   );
   state.weights.forEach((w) =>
@@ -615,7 +623,7 @@ function csvExport() {
           w.date,
           s.exercise,
           s.kg,
-          "kg × " + s.reps + " Wdh.",
+          "kg × " + (s.mode === "time" ? s.seconds + " Sek." : s.reps + " Wdh."),
         ]),
       );
   });
@@ -805,6 +813,7 @@ const actions = {
     portion(e, e);
   },
   "custom-food": () => customFood(),
+  "food-nutrients": () => {if(selectedFood)customFood(selectedFood,editing?{kind:'entry',id:editing}:state.foods.some(f=>f.id===selectedFood.id)?{kind:'food',id:selectedFood.id}:null);},
   barcode,
   scan: () => Android.scanBarcode(),
   weight: (b) => weightForm(b.dataset.date || today()),
@@ -1098,7 +1107,7 @@ const actions = {
   about: () =>
     sheet(
       "Über FitDex",
-      `<h3>Dein Alltag, ohne Abo.</h3><p>Version 0.9.0 · Offline-Tagebuch für Erwachsene. Keine Werbung, Telemetrie, Konten oder kostenpflichtigen KI-Dienste.</p><h3>Datenschutz</h3><p>Deine Daten liegen im privaten App-Speicher. Android-Cloud-Backup ist deaktiviert. Die App setzt die Gerätesperre voraus; sie bietet keine eigene Verschlüsselung oder PIN. Exportdateien sind unverschlüsselt. Deinstallation entfernt lokale Daten. Sichere regelmäßig.</p><h3>Health Connect</h3><p>Optional Schritte, Schlafdauer und Gewicht lesen. Eigene Gewichte nur nach Vorschau ausdrücklich teilen. Freigaben lassen sich in Android widerrufen. Lokale Importkopien kannst du unter Schritte & Erholung entfernen; bereits geteilte Werte verwaltest du in Health Connect.</p><h3>Barcode & Kamera</h3><p>Nur nach deiner Aktion wird ein Barcode an world.openfoodfacts.org gesendet (einschließlich technisch notwendiger IP-Adresse). Kamerabilder verlassen das Gerät nicht. Nährwerttabellen werden mit Tesseract lokal erkannt; übernommene Werte müssen geprüft werden. Kein automatisches Schätzen von Mahlzeitenfotos.</p><h3>Quellen & Lizenzen</h3><p>Produktdaten: Open Food Facts (opendatacommons.org/licenses/odbl/1-0/). Datenbank ODbL, einzelne Inhalte Database Contents License. Eigene Lebensmittel sind getrennt gekennzeichnet. Prüfe die Verpackung, insbesondere Portionsgrößen und Allergene. Die App beurteilt keine Allergensicherheit.</p><p>Offline-Lebensmittel: ${usdaFoods.length} ausgewählte Datensätze aus USDA FoodData Central, SR Legacy April 2018 (CC0). Deutsche Bezeichnungen, FDC-IDs und Herkunft sind hinterlegt. US-Durchschnittswerte; keine vollständige Datenbank und kein Ersatz für aktuelle Packungsangaben. Kohlenhydrate näherungsweise ohne Ballaststoffe, Vitamin E als Alpha-Tocopherol, Folat als DFE. Fehlende Werte bleiben unbekannt.</p><p>Barcode-Erkennung: ZXing / JourneyApps (Apache 2.0). AndroidX (Apache 2.0). Foto-OCR: Tesseract4Android / Tesseract und deutsches tessdata_fast-Modell (Apache 2.0), Leptonica, libjpeg und libpng. Keine OCR-Telemetrie oder Bild-Uploads. Vollständige Hinweise im Repository.</p>${btn("Lizenztexte offline lesen", "licenses", "secondary")}<p>Zusätzliche Originalgrafiken aus Pokémon Platin: Kampfkulissen (Sunday_Domeko), Box-Hintergründe (Dragoon), The Spriters Resource. Vier kurze Originaleffekte aus Diamant/Perl (BellBlitzKing, The Sounds Resource). Hintergrundmusik: drei eigene prozedurale Kompositionen, keine Original-Soundtrackaufnahmen. Originalgrafiken aus Pokémon HeartGold/SoulSilver: PokeAPI-Sprite-Spiegel und The Spriters Resource (Menü: redblueyellow; Orte: Latias Tamer). Pokémon © Nintendo / Creatures / GAME FREAK. Inoffizielles Fanprojekt; keine freie Lizenz für die Originalgrafiken.</p><h3>Gesundheit</h3><p>Kalorienformel: Mifflin–St. Jeor (1990), Schätzung mit individuell gewähltem Aktivitätsfaktor. Bewegungsvorlagen orientieren sich an allgemeinen NHS-Empfehlungen. Keine Diagnose, Überwachung, Notfallerkennung oder garantierte Gewichtsabnahme. Gesundheitseinträge werden nicht medizinisch bewertet.</p><h3>Bedienung</h3><p>Essen: Lebensmittel wählen, Gramm eingeben, speichern. Einträge antippen zum Bearbeiten. Verlauf: pro Datum ein Gewicht. Training: Sätze bearbeiten, abhaken, abschließen. Mehr: Gesundheitsjournal, Ziele und Sicherungen. Barcode braucht Internet; alles andere funktioniert offline.</p>`,
+      `<h3>Dein Alltag, ohne Abo.</h3><p>Version 0.10.0 · Offline-Tagebuch für Erwachsene. Keine Werbung, Telemetrie, Konten oder kostenpflichtigen KI-Dienste.</p><h3>Datenschutz</h3><p>Deine Daten liegen im privaten App-Speicher. Android-Cloud-Backup ist deaktiviert. Die App setzt die Gerätesperre voraus; sie bietet keine eigene Verschlüsselung oder PIN. Exportdateien sind unverschlüsselt. Deinstallation entfernt lokale Daten. Sichere regelmäßig.</p><h3>Health Connect</h3><p>Optional Schritte, Schlafdauer und Gewicht lesen. Eigene Gewichte nur nach Vorschau ausdrücklich teilen. Freigaben lassen sich in Android widerrufen. Lokale Importkopien kannst du unter Schritte & Erholung entfernen; bereits geteilte Werte verwaltest du in Health Connect.</p><h3>Barcode & Kamera</h3><p>Nur nach deiner Aktion wird ein Barcode an world.openfoodfacts.org gesendet (einschließlich technisch notwendiger IP-Adresse). Kamerabilder verlassen das Gerät nicht. Nährwerttabellen werden mit Tesseract lokal erkannt; übernommene Werte müssen geprüft werden. Kein automatisches Schätzen von Mahlzeitenfotos.</p><h3>Quellen & Lizenzen</h3><p>Produktdaten: Open Food Facts (opendatacommons.org/licenses/odbl/1-0/). Datenbank ODbL, einzelne Inhalte Database Contents License. Eigene Lebensmittel sind getrennt gekennzeichnet. Prüfe die Verpackung, insbesondere Portionsgrößen und Allergene. Die App beurteilt keine Allergensicherheit.</p><p>Offline-Lebensmittel: ${usdaFoods.length} ausgewählte Datensätze aus USDA FoodData Central, SR Legacy April 2018 (CC0). Deutsche Bezeichnungen, FDC-IDs und Herkunft sind hinterlegt. US-Durchschnittswerte; keine vollständige Datenbank und kein Ersatz für aktuelle Packungsangaben. Kohlenhydrate näherungsweise ohne Ballaststoffe, Vitamin E als Alpha-Tocopherol, Folat als DFE. Fehlende Werte bleiben unbekannt.</p><p>Barcode-Erkennung: ZXing / JourneyApps (Apache 2.0). AndroidX (Apache 2.0). Foto-OCR: Tesseract4Android / Tesseract und deutsches tessdata_fast-Modell (Apache 2.0), Leptonica, libjpeg und libpng. Keine OCR-Telemetrie oder Bild-Uploads. Vollständige Hinweise im Repository.</p>${btn("Lizenztexte offline lesen", "licenses", "secondary")}<p>Zusätzliche Originalgrafiken aus Pokémon Platin: Kampfkulissen (Sunday_Domeko), Box-Hintergründe (Dragoon), The Spriters Resource. Vier kurze Originaleffekte aus Diamant/Perl (BellBlitzKing, The Sounds Resource). Hintergrundmusik: drei eigene prozedurale Kompositionen, keine Original-Soundtrackaufnahmen. Originalgrafiken aus Pokémon HeartGold/SoulSilver: PokeAPI-Sprite-Spiegel und The Spriters Resource (Menü: redblueyellow; Orte: Latias Tamer). Pokémon © Nintendo / Creatures / GAME FREAK. Inoffizielles Fanprojekt; keine freie Lizenz für die Originalgrafiken.</p><h3>Gesundheit</h3><p>Kalorienformel: Mifflin–St. Jeor (1990), Schätzung mit individuell gewähltem Aktivitätsfaktor. Bewegungsvorlagen orientieren sich an allgemeinen NHS-Empfehlungen. Keine Diagnose, Überwachung, Notfallerkennung oder garantierte Gewichtsabnahme. Gesundheitseinträge werden nicht medizinisch bewertet.</p><h3>Bedienung</h3><p>Essen: Lebensmittel wählen, Gramm eingeben, speichern. Einträge antippen zum Bearbeiten. Verlauf: pro Datum ein Gewicht. Training: Sätze bearbeiten, abhaken, abschließen. Mehr: Gesundheitsjournal, Ziele und Sicherungen. Barcode braucht Internet; alles andere funktioniert offline.</p>`,
     ),
 };
 document.addEventListener("click", (e) => {
@@ -1233,7 +1242,8 @@ document.addEventListener("submit", (e) => {
           id: uid(),
           name: d.name.trim(),
           source: selectedFood?.source || "Eigene Packungsangabe",
-          fiberKnown: true,
+          fiberKnown: d.fiber.trim() !== "",
+          ...Object.fromEntries(nutrientParts.map(p=>[p.key,d[p.key].trim()===""?null:number(d[p.key],0,100,p.name)])),
           micros: Object.fromEntries(
             micros.map((m) => [
               m.key,
@@ -1245,13 +1255,19 @@ document.addEventListener("submit", (e) => {
           ...Object.fromEntries(
             nutrients.map((k) => [
               k,
-              number(d[k], 0, k === "kcal" ? 1000 : 100, k),
+              number(k==="fiber"&&d[k].trim()===""?0:d[k], 0, k === "kcal" ? 1000 : 100, k),
             ]),
           ),
         };
         if (!food.name) throw Error("Bitte einen Namen eingeben.");
         if (selectedFood?.barcode) food.barcode = selectedFood.barcode;
-        if (commit((s) => s.foods.push(food))) portion(food);
+        if(nutrientEditTarget?.kind==='entry'){
+          const id=nutrientEditTarget.id;
+          if(commit(s=>{const entry=s.entries.find(e=>e.id===id);if(!entry)throw Error('Eintrag nicht mehr vorhanden.');Object.assign(entry,food,{id});})){close();render();}
+        }else if(nutrientEditTarget?.kind==='food'){
+          food.id=nutrientEditTarget.id;
+          if(commit(s=>{const index=s.foods.findIndex(f=>f.id===food.id);if(index<0)throw Error('Lebensmittel nicht mehr vorhanden.');s.foods[index]=food;}))portion(food);
+        }else if (commit((s) => s.foods.push(food))) portion(food);
         return;
       }
       case "weight": {

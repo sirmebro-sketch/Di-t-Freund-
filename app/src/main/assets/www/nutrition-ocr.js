@@ -1,5 +1,10 @@
 // Conservative label extraction. Suggestions only; never writes a food or diary entry.
 const labels = {
+  sugar: /^(?:(?:davon|of which)\s+)?(?:zucker|(?:total )?sugars?)\b/i,
+  saturatedFat: /^(?:(?:davon|of which)\s+)?(?:ges[äa]ttigte(?:\s+fetts[äa]uren)?|saturated(?:\s+fat)?)\b/i,
+  monoFat: /^(?:(?:davon|of which)\s+)?(?:einfach\s+unges[äa]ttigte(?:\s+fetts[äa]uren)?|monounsaturated(?:\s+fat)?)\b/i,
+  polyFat: /^(?:(?:davon|of which)\s+)?(?:mehrfach\s+unges[äa]ttigte(?:\s+fetts[äa]uren)?|polyunsaturated(?:\s+fat)?)\b/i,
+  transFat: /^(?:(?:davon|of which)\s+)?(?:trans[- ]?fetts[äa]uren|trans[- ]?fette?|trans\s+fat)\b/i,
   protein: /^(?:eiwei(?:ß|ss|b)|protein[es]?|proteine)(?=\s|:|$)/i,
   carbs: /^(?:kohlenhydrate|carbohydrates?|carbs)\b/i,
   fat: /^(?:fett|fat|total fat)\b/i,
@@ -26,9 +31,11 @@ export function parseNutritionLabel(text, column = 0) {
       carbs: null,
       fat: null,
       fiber: null,
+      sugar: null, saturatedFat: null, monoFat: null, polyFat: null, transFat: null,
     },
     evidence = {},
     warnings = [];
+  const uncertain = new Set();
   let maxColumns = 1;
   const combined = lines.map((line, i) =>
     /\d/.test(line)
@@ -38,19 +45,12 @@ export function parseNutritionLabel(text, column = 0) {
         (lines[i + 1] && /^\s*[<\d]/.test(lines[i + 1]) ? lines[i + 1] : ""),
   );
   for (const line of combined) {
-    const lower = line.toLocaleLowerCase("de");
-    if (
-      /^(davon|of which|gesattigt|gesättigt|saturat|zucker|sugar|salz|salt)/.test(
-        lower,
-      )
-    )
-      continue;
     let key = Object.keys(labels).find((k) => labels[k].test(line));
     const energy =
       /^(?:energie|energy|brennwert|kalorien|calories)\b/i.test(line) ||
       (/\bkcal\b/i.test(line) && /^[\d\s<]/.test(line));
     if (energy) key = "kcal";
-    if (!key) continue;
+    if (!key || uncertain.has(key)) continue;
     let matches;
     if (key === "kcal") {
       matches = [...line.matchAll(/([<]?\s*\d+(?:[.,]\d+)?)\s*kcal\b/gi)].map(
@@ -87,10 +87,12 @@ export function parseNutritionLabel(text, column = 0) {
       match.n < 0 ||
       match.n > (key === "kcal" ? 10000 : 1000)
     ) {
+      uncertain.add(key); values[key]=null;
       warnings.push(`${key}: bitte Wert auf der Packung prüfen.`);
       continue;
     }
     if (values[key] !== null && Math.abs(values[key] - match.n) > 0.01) {
+      uncertain.add(key);
       values[key] = null;
       evidence[key] = "Mehrere widersprüchliche Angaben";
       warnings.push(`${key}: mehrere Angaben gefunden.`);

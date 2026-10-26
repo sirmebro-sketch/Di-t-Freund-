@@ -11,7 +11,11 @@ Ein ruhiger, deutschsprachiger Android-Begleiter für Ernährung, Gewicht, Kraft
 
 Android 8.0 oder neuer, aktuelles Android System WebView. Das ist ein persönlicher Testbuild, keine Play-Store-Veröffentlichung. Seit 0.4.1 ist die feste Release-Signatur eingerichtet und erfolgreich geprüft. Der private Schlüssel wird über GitHub-Actions-Secrets eingebunden; ohne eingerichtete Secrets gibt es kein installierbares Release-Artifact. Einmalige Einrichtung und Umstieg von bisherigen Debug-APKs: [Signierung](docs/SIGNING.md). Vor diesem einmaligen Wechsel JSON sichern. Künftige gleich signierte Updates über die bestehende App installieren.
 
-## Neu in 0.9.0 · Eier, Schritte & Shinys
+## Neu in 0.10.0 · Zucker & Fettarten
+
+„Davon Zucker“, gesättigte, einfach und mehrfach ungesättigte Fettsäuren sowie Transfettsäuren: in Lebensmitteln, Foto-/Barcode-Übernahme, Portionen, Tagesbilanz und Trends. Verfügbare USDA-Werte ergänzt; fehlende Daten bleiben unbekannt. Nährwerte lassen sich gezielt für künftige Portionen oder einen einzelnen Tagebucheintrag korrigieren. Zusätzlich Fehler bei Vorlagen, OCR, Energieimport, schmalen Layouts, CSV und Belohnungsmeldungen behoben. [Details und Prüfungsumfang](docs/UPDATE-0.10.0.md). versionCode 16; gleiche Paketkennung und feste Signatur.
+
+## Seit 0.9.0 · Eier, Schritte & Shinys
 
 Drei Brutplätze, Eier aus Tages-/Wochen-/Monatserfolgen und Meilensteinen, echte Health-Connect-Schritte und 1.025 Nationaldex-Grundarten der Generationen 1–9 mit 2.050 offline verfügbaren Normal-/Shiny-Sprites. Shiny-Chance 1:64, spätestens jedes 32. vergebene Ei seit dem letzten Shiny-Ei garantiert shiny. Eigrafik aus HG/SS; späteren Arten stehen passende neuere bzw. Community-Sprites zur Verfügung. Reisen bleiben Kanto/Johto. Details und eigene Spielregeln: [Brutstation](docs/EGGS.md). versionCode 15, gleiche Paketkennung und feste Signatur.
 

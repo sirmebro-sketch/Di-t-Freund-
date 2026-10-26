@@ -115,8 +115,8 @@ export function setupTrainerUI({ getState, btn, esc, sheet }) {
     if (!el) return;
     el.innerHTML = `${sprite(moment?.species || m.id)}<div><strong>+${delta * 10} Team-EP</strong><p>${esc(moment?.text || `${m.name} freut sich über euren nächsten Schritt.`)}</p></div><button data-action="reward-dismiss" aria-label="Belohnung schließen">×</button>`;
     el.hidden = false;
-    clearTimeout(celebrate.timer);
-    celebrate.timer = setTimeout(() => {
+    clearTimeout(el.rewardTimer);
+    el.rewardTimer = setTimeout(() => {
       el.hidden = true;
       document.querySelectorAll(".inline-reward").forEach((e) => e.remove());
     }, 8000);
@@ -129,6 +129,7 @@ export function setupTrainerUI({ getState, btn, esc, sheet }) {
     actions: {
       "trainer-pass": passport,
       "reward-dismiss": () => {
+        clearTimeout(document.querySelector("#reward").rewardTimer);
         document.querySelector("#reward").hidden = true;
         document.querySelectorAll(".inline-reward").forEach((e) => e.remove());
       },
