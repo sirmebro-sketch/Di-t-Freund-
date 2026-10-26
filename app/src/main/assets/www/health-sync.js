@@ -1,5 +1,6 @@
 // Health Connect copies are separate from manual entries. Egg incubation uses successful step reads only.
 export const emptyConnection = () => ({
+  stepSource: "samsung",
   autoRead: false,
   readSteps: false,
   readSleep: false,
@@ -14,6 +15,7 @@ const validDate = (d) =>
   new Date(d + "T12:00:00Z").toISOString().slice(0, 10) === d;
 export function validateConnection(c) {
   if (c === undefined) return true;
+  for(const key of ["stepSource","lastStepSource"]) if(c[key]!==undefined && !["samsung","all"].includes(c[key])) throw Error("Ungültige Schrittquelle.");
   if(c.stepsSyncAt!==undefined && (typeof c.stepsSyncAt!=="string" || !Number.isFinite(Date.parse(c.stepsSyncAt)))) throw Error("Ungültiger Schritte-Abgleich.");
   const obj = (x) => x && typeof x === "object" && !Array.isArray(x);
   if (
@@ -71,6 +73,7 @@ export function validateConnection(c) {
 export function applyHealthSnapshot(state, payload) {
   if (
     payload?.kind !== "sync" ||
+    (payload.stepSource !== undefined && !["samsung","all"].includes(payload.stepSource)) ||
     !Array.isArray(payload.days) ||
     !Array.isArray(payload.weights) ||
     !Array.isArray(payload.read) ||
@@ -126,7 +129,7 @@ export function applyHealthSnapshot(state, payload) {
     .sort((a, b) => a.time.localeCompare(b.time))
     .slice(-5000);
   next.lastSync = payload.at;
-  if(payload.read.includes("steps")) next.stepsSyncAt = payload.at;
+  if(payload.read.includes("steps")) { next.stepsSyncAt = payload.at; next.lastStepSource = payload.stepSource || "all"; }
   validateConnection(next);
   state.healthConnect = next;
 }

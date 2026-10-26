@@ -9,6 +9,7 @@ import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.WeightRecord
+import androidx.health.connect.client.records.metadata.DataOrigin
 import androidx.health.connect.client.records.metadata.Metadata
 import androidx.health.connect.client.request.AggregateGroupByPeriodRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
@@ -73,7 +74,7 @@ class HealthConnectBridge(private val activity: ComponentActivity, private val c
             try {
                 val result=withContext(Dispatchers.IO){
                     when(action){
-                        "sync" -> readSnapshot(client,read,q.optBoolean("discover"))
+                        "sync" -> readSnapshot(client,read,q.optBoolean("discover"),q.optString("stepSource","samsung"))
                         "write" -> writeWeights(client,q.getJSONArray("weights"))
                         else -> JSONObject().put("kind","status").put("message","Health Connect ist verfügbar.")
                     }
@@ -85,7 +86,8 @@ class HealthConnectBridge(private val activity: ComponentActivity, private val c
             finally {busy=false}
         }
     }
-    private suspend fun readSnapshot(client: HealthConnectClient, selected: JSONObject, discover: Boolean): JSONObject {
+    private suspend fun readSnapshot(client: HealthConnectClient, selected: JSONObject, discover: Boolean, stepSource: String): JSONObject {
+        require(stepSource in setOf("samsung","all"))
         val granted=client.permissionController.getGrantedPermissions()
         val zone=ZoneId.systemDefault();val now=Instant.now();val end=LocalDate.now(zone);val start=end.minusDays(29)
         val successful=JSONArray();val warnings=JSONArray();val weights=JSONArray();val sources=mutableSetOf<String>()
@@ -105,7 +107,7 @@ class HealthConnectBridge(private val activity: ComponentActivity, private val c
         }
         val range=TimeRangeFilter.between(start.atStartOfDay(),now.atZone(zone).toLocalDateTime())
         if(steps)readType("steps") {
-            val result=client.aggregateGroupByPeriod(AggregateGroupByPeriodRequest(metrics=setOf(StepsRecord.COUNT_TOTAL),timeRangeFilter=range,timeRangeSlicer=Period.ofDays(1)))
+            val result=client.aggregateGroupByPeriod(AggregateGroupByPeriodRequest(metrics=setOf(StepsRecord.COUNT_TOTAL),timeRangeFilter=range,timeRangeSlicer=Period.ofDays(1),dataOriginFilter=if(stepSource=="samsung")setOf(DataOrigin("com.sec.android.app.shealth"))else emptySet()))
             result.forEach { bucket ->
                 bucket.result[StepsRecord.COUNT_TOTAL]?.let { count ->
                     require(count in 0..100000)
@@ -113,7 +115,7 @@ class HealthConnectBridge(private val activity: ComponentActivity, private val c
                     sources.addAll(bucket.result.dataOrigins.map { it.packageName })
                 }
             }
-            if(rows[end.toString()]!!.isNull("steps"))warnings.put("Health Connect liefert heute noch keine Schritte. In Samsung Health das Schreiben von Schritten erlauben und Samsung Health öffnen; in Health Connect unter Schritte die vorhandenen Einträge prüfen.")
+            if(rows[end.toString()]!!.isNull("steps"))warnings.put(if(stepSource=="samsung") "Samsung Health hat heute noch keine Schritte an Health Connect geliefert. Samsung Health öffnen und synchronisieren; es wird nicht auf den Handy-Gesamtwert ausgewichen." else "Health Connect liefert heute noch keine Schritte. In Samsung Health das Schreiben von Schritten erlauben und Samsung Health öffnen; in Health Connect unter Schritte die vorhandenen Einträge prüfen.")
         }
         if(sleep)readType("sleep") {
             val result=client.aggregateGroupByPeriod(AggregateGroupByPeriodRequest(metrics=setOf(SleepSessionRecord.SLEEP_DURATION_TOTAL),timeRangeFilter=range,timeRangeSlicer=Period.ofDays(1)))
@@ -136,7 +138,7 @@ class HealthConnectBridge(private val activity: ComponentActivity, private val c
             }while(token!=null)
         }
         if(successful.length()==0)return JSONObject().put("kind","error").put("message",if(warnings.length()>0)(0 until warnings.length()).joinToString(" "){warnings.getString(it)} else "Keine Lesefreigabe. Bitte Schritte auswählen und Zugriff erlauben.")
-        return JSONObject().put("kind","sync").put("from",start.toString()).put("to",end.toString()).put("at",now.toString()).put("read",successful).put("days",JSONArray(rows.values.toList())).put("weights",if((0 until successful.length()).any{successful.getString(it)=="weight"})weights else JSONArray()).put("warnings",warnings).put("stepSources",JSONArray(sources.toList())).put("discoveredPermissions",discover)
+        return JSONObject().put("kind","sync").put("from",start.toString()).put("to",end.toString()).put("at",now.toString()).put("read",successful).put("days",JSONArray(rows.values.toList())).put("weights",if((0 until successful.length()).any{successful.getString(it)=="weight"})weights else JSONArray()).put("warnings",warnings).put("stepSources",JSONArray(sources.toList())).put("stepSource",stepSource).put("discoveredPermissions",discover)
     }
     private suspend fun writeWeights(client:HealthConnectClient,input:JSONArray):JSONObject {
         if(writeWeight !in client.permissionController.getGrantedPermissions())throw SecurityException()

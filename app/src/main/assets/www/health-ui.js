@@ -19,6 +19,9 @@ export function setupHealthUI({
     requestId = null,
     message = "",
     sharePreview = null;
+  const sourceLabel = (source) => source === "samsung" ? "Samsung Health" : "Health Connect · Gesamtwert";
+  const originLabel = (origin) => origin === "com.sec.android.app.shealth" ? "Samsung Health"
+    : origin === "android" || origin.startsWith("com.android.healthconnect.phone.") ? "Handy-Schrittzähler (Health Connect)" : origin;
   const native = () => typeof window.Android?.healthConnect === "function";
   function call(action, data = {}) {
     if (!native()) {
@@ -50,7 +53,7 @@ export function setupHealthUI({
     };
     sheet(
       "Samsung Health & Health Connect",
-      `<p>Deine Schritte werden von Samsung Health oder einer anderen verbundenen App erfasst. FitDex übernimmt freigegebene Daten beim Öffnen oder auf Knopfdruck.</p><p class="hint">${esc(message || c.statusText || "Lesen und Schreiben sind getrennt. Standardmäßig ist nichts freigegeben.")}</p>${native() ? "" : '<p class="hint">Im Browser nicht verfügbar. Bitte die Android-App verwenden.</p>'}<div id="health-options">${[
+      `<p>Standardmäßig liest FitDex nur die von Samsung Health an Health Connect gelieferten Schritte. Optional kannst du den Gesamtwert aller von Health Connect berücksichtigten Quellen wählen.</p><p class="hint health-status">${esc(message || c.statusText || "Lesen und Schreiben sind getrennt. Standardmäßig ist nichts freigegeben.")}</p>${native() ? "" : '<p class="hint">Im Browser nicht verfügbar. Bitte die Android-App verwenden.</p>'}<label>Schrittquelle<select id="hc-stepSource"><option value="samsung" ${(c.stepSource || "samsung") === "samsung" ? "selected" : ""}>Nur Samsung Health</option><option value="all" ${c.stepSource === "all" ? "selected" : ""}>Health Connect · Gesamtwert</option></select></label><p class="footnote">Der Gesamtwert kann auch den Handy-Schrittzähler enthalten und von Samsung Health abweichen. Eine geänderte Auswahl mit „Auswahl speichern & Zugriff erlauben“ übernehmen.</p>${c.stepsSyncAt ? `<p class="footnote">Zuletzt geladene Schrittwerte: ${sourceLabel(c.lastStepSource || "all")} · ${esc(new Date(c.stepsSyncAt).toLocaleString("de-DE"))}. Ein neuer Abgleich ersetzt die Schritte der letzten 30 Tage; ältere Verlaufseinträge bleiben erhalten.</p>` : ""}<div id="health-options">${[
         ["readSteps", "Schritte lesen"],
         ["readSleep", "Schlafdauer lesen"],
         ["readWeight", "Gewicht lesen"],
@@ -68,7 +71,7 @@ export function setupHealthUI({
   function card(date = today()) {
     const c = getState().healthConnect,
       d = c?.days[date];
-    return `<section class="card steps-card"><div class="section-head"><h2>Schritte & Erholung</h2>${btn(c?.lastSync ? "Verbindung prüfen" : "Verbinden", "hc-open", "text-button")}</div><div class="two-grid"><div><small>Schritte · Health Connect</small><strong class="big-number">${d?.steps == null ? "–" : fmt(d.steps)}</strong></div><div><small>Schlafdauer · Health Connect</small><strong class="big-number">${d?.sleep == null ? "–" : fmt(d.sleep, 1) + " h"}</strong></div></div><p>${c?.lastSync ? "Stand: " + esc(new Date(c.lastSync).toLocaleString("de-DE")) : "Samsung Health verbinden, um vorhandene Daten zu übernehmen."}</p>${d?.steps == null ? `<p class="hint">${esc(message || c?.statusText || "Noch keine Schritte geliefert. Verbindung prüfen oder jetzt aktualisieren.")}</p>` : ""}${btn("Aktualisieren", "hc-sync", "secondary")}</section>`;
+    return `<section class="card steps-card"><div class="section-head"><h2>Schritte & Erholung</h2>${btn(c?.lastSync ? "Verbindung prüfen" : "Verbinden", "hc-open", "text-button")}</div><div class="two-grid"><div><small>Schritte · ${sourceLabel(c?.lastStepSource || (d?.steps == null ? c?.stepSource || "samsung" : "all"))}</small><strong class="big-number">${d?.steps == null ? "–" : fmt(d.steps)}</strong></div><div><small>Schlafdauer · Health Connect</small><strong class="big-number">${d?.sleep == null ? "–" : fmt(d.sleep, 1) + " h"}</strong></div></div><p>${c?.lastSync ? "Schritte-Stand: " + (c.stepsSyncAt ? esc(new Date(c.stepsSyncAt).toLocaleString("de-DE")) : "noch kein eigener Schritte-Abgleich") : "Samsung Health verbinden, um vorhandene Daten zu übernehmen."}</p>${d?.steps == null ? `<p class="hint">${esc(message || c?.statusText || "Noch keine Schritte geliefert. Verbindung prüfen oder jetzt aktualisieren.")}</p>` : ""}${btn("Aktualisieren", "hc-sync", "secondary")}</section>`;
   }
   function options() {
     const c = getState().healthConnect || emptyConnection();
@@ -77,7 +80,7 @@ export function setupHealthUI({
   function sync(auto = false) {
     const o = options();
     if (!Object.values(o).some(Boolean)) {
-      if (!auto) call("sync", { read: o, discover: true });
+      if (!auto) call("sync", { read: o, discover: true, stepSource: getState().healthConnect?.stepSource || "samsung" });
       return;
     }
     if (
@@ -88,7 +91,7 @@ export function setupHealthUI({
         document.visibilityState === "hidden")
     )
       return;
-    call("sync", { read: o });
+    call("sync", { read: o, stepSource: getState().healthConnect?.stepSource || "samsung" });
   }
   window.onHealthConnect = (raw) => {
     try {
@@ -102,11 +105,9 @@ export function setupHealthUI({
           : "Abgleich abgeschlossen.";
         if (p.stepSources?.length)
           message +=
-            " Schrittquelle: " +
+            " Quellen im Abgleich (bis zu 30 Tage): " +
             p.stepSources
-              .map((x) =>
-                x === "com.sec.android.app.shealth" ? "Samsung Health" : x,
-              )
+              .map(originLabel)
               .join(", ") +
             ".";
         if (
@@ -164,7 +165,10 @@ export function setupHealthUI({
   const actions = {
     "hc-open": settings,
     "hc-connect": () => {
+      if (busy) throw Error("Bitte den laufenden Abgleich abwarten, dann die Schrittquelle speichern.");
       const next = { ...(getState().healthConnect || emptyConnection()) };
+      next.stepSource = document.querySelector("#hc-stepSource").value;
+      if (!["samsung", "all"].includes(next.stepSource)) throw Error("Ungültige Schrittquelle.");
       for (const k of ["readSteps", "readSleep", "readWeight", "autoRead"])
         next[k] = !!document.querySelector("#hc-" + k)?.checked;
       if (commit((s) => (s.healthConnect = next), true))

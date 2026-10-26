@@ -115,3 +115,7 @@ Bestehende 86 Unit-Tests / 15 Browserprogramme. Zusätzliche lokale Axe-/Sichtpr
 ## Version 0.11.2 · OCR-Korrekturen
 
 90 Unit-Tests; vier neue Parser-Regressionen. `ocr-corrections-ui.mjs` als 16. CI-Browserprogramm: simulierte Android-Fotorückgabe, Aufzählungszeichen, g/9-Korrekturvorschläge getrennt von erkannten Werten, Bestätigung vor Übernahme, erneute Prüfung nach Änderungen, Spaltenwechsel, leere Ballaststoffe und gespeicherte Portion nach Reload. Axe-/Überlaufprüfung hell/dunkel bei 320/393 px. Keine Aussage über die Genauigkeit der nativen Kameraerkennung anhand des Browsermocks.
+
+## Version 0.11.3 · Schrittquellen
+
+93 Unit-Tests / 17 Browserprogramme. `step-source.test.mjs` prüft Quellenvalidierung, alte Gesamtwertdaten, erfolgreiche/fehlgeschlagene Teilimporte, atomare Ablehnung, Quellenwechsel ohne Brutbonus/-verlust, normalen anschließenden Zuwachs und verzögerte erste Daten. `step-source-ui.mjs` prüft gespeicherte Auswahl, Samsung-Standard, klare Beschriftung alter Daten, freundliche Handyquelle, langen Quellentext ohne Überlauf, leere Samsung-Antwort ohne Rückfall und 320/393 px Hell/Dunkel mit Axe. Bestehende Health-/Ei-Flows bleiben Regression. Native Quellenfilter werden durch Android-Build/Lint geprüft; echte Samsung-Daten erfordern ergänzend den Gerätetest.

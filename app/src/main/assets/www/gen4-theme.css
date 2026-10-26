@@ -892,3 +892,5 @@ select {
 .ocr-suggestion { grid-column: 1 / -1; padding: 10px; background: var(--soft); border-left: 3px solid var(--accent); border-radius: 4px; }
 .ocr-suggestion p { font-size: 13px; margin: 0 0 8px; }
 .ocr-suggestion button { font-size: 13px; }
+
+.health-status { overflow-wrap: anywhere; min-width: 0; }

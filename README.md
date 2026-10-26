@@ -11,6 +11,10 @@ Ein ruhiger, deutschsprachiger Android-Begleiter für Ernährung, Gewicht, Kraft
 
 Android 8.0 oder neuer, aktuelles Android System WebView. Das ist ein persönlicher Testbuild, keine Play-Store-Veröffentlichung. Seit 0.4.1 ist die feste Release-Signatur eingerichtet und erfolgreich geprüft. Der private Schlüssel wird über GitHub-Actions-Secrets eingebunden; ohne eingerichtete Secrets gibt es kein installierbares Release-Artifact. Einmalige Einrichtung und Umstieg von bisherigen Debug-APKs: [Signierung](docs/SIGNING.md). Vor diesem einmaligen Wechsel JSON sichern. Künftige gleich signierte Updates über die bestehende App installieren.
 
+## Neu in 0.11.3 · Samsung als eindeutige Schrittquelle
+
+Standardmäßig nur Samsung-Health-Schritte, optional ausdrücklich der Health-Connect-Gesamtwert. Quelle und Schritt-Abgleichzeit sichtbar; Handyquelle verständlich benannt und lange Namen umgebrochen. Quellenwechsel bringt keine zusätzlichen Brut-Schritte. [Details](docs/UPDATE-0.11.3.md). versionCode 20, gleiche Paketkennung und feste Signatur.
+
 ## Neu in 0.11.2 · Nährwertfoto zuverlässiger auswerten
 
 Zucker/Fettarten mit vorangestellten Aufzählungszeichen werden erkannt. Bei möglicher Verwechslung von Grammzeichen und Ziffer 9 gibt es ausdrücklich zu bestätigende Vorschläge. Fehlende Einheiten verschieben keine Zahlenspalten mehr. [Details und Grenzen](docs/UPDATE-0.11.2.md). versionCode 19, feste Paketkennung und Signatur.
