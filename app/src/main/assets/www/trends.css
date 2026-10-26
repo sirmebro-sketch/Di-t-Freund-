@@ -12,4 +12,4 @@
 .trend-table summary{cursor:pointer;min-height:44px;padding:12px 0;font-weight:700}.table-scroll{overflow-x:auto}.trend-table table{width:100%;border-collapse:collapse;font-size:12px}.trend-table td,.trend-table th{padding:8px 4px;text-align:left;border-bottom:1px solid var(--border)}.trend-table caption{text-align:left;padding:8px 0}.trend-table button{min-height:44px;padding:6px}
 @media(max-width:370px){.trend-stats{gap:5px}.trend-stats>div{padding:8px 5px}.trend-stats strong{font-size:17px}.trend-console{padding:14px}}
 
-.ds-trends { width:24px;height:24px;border:2px solid #295b86;border-radius:3px;background:linear-gradient(#238c89,#238c89) 3px 10px / 4px 9px no-repeat,linear-gradient(#e5a52f,#e5a52f) 9px 6px / 4px 13px no-repeat,linear-gradient(#d95c4b,#d95c4b) 15px 2px / 4px 17px no-repeat,#fff8d9;box-shadow:1px 1px 0 #ffffff; }
+.ds-trends { background: url("menu-trends.svg") center / 24px 24px no-repeat; border: 0; border-radius: 0; box-shadow: none; }

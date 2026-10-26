@@ -1,4 +1,4 @@
-# Stand für die persönliche Nutzung · 0.11.0
+# Stand für die persönliche Nutzung · 0.11.1
 
 Die App ist eine funktionsfähige persönliche Android-Testversion. Der Kern ist für tägliche manuelle Erfassung ausgelegt, nicht als klinisch validierter oder vollständig automatischer Gesundheitscoach.
 

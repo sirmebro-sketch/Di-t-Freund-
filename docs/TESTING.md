@@ -107,3 +107,7 @@ Erster Android-Prüflauf für die neue native OCR und aggregierten Health-Abfrag
 ## Version 0.11.0 · Übungsverlauf
 
 55 App-Module syntaxgeprüft, 86 Unit-Tests. Vier neue Domänentests trennen Varianten/Modi, filtern zukünftige und nicht absolvierte Sätze, aggregieren mehrere Einheiten pro Tag, erhalten echte Nullwerte und prüfen unveränderte Historie, neue Blockkennungen, Kapazitätsgrenzen sowie Schutz laufender Einheiten. `exercise-history-ui.mjs` ergänzt den 15. Browserablauf: Diagramm/Tabelle/Zeiträume, hell/dunkel und 320/393/1280 px mit axe, bewusstes Kopieren, eigene Zeitübungen, fehlgeschlagener Abschluss, Wiederholung und Reload sowie Datumswechsel nach Mahlzeitenvorlagen. Native Hardware bleibt simuliert.
+
+## Version 0.11.1 · Dunkles Design und Menüsymbole
+
+Bestehende 86 Unit-Tests / 15 Browserprogramme. Zusätzliche lokale Axe-/Sichtprüfung aller sechs Reiter und Dialoge für Tagesbilanz, Lebensmittelsuche, Gewicht, Audio, Team und Profil in Hell/Dunkel; 393 px und 320-px-Überlaufprüfung. SVG-Masken anhand des gepinnten Originalbogens regeneriert; außen liegende Matte/Kontur entfernt, innere weiße Details bleiben. Pixel-Diagramm und Symbole auf beiden Hintergründen visuell geprüft. Native Darstellung auf einem physischen Android-Gerät bleibt ergänzend offen.

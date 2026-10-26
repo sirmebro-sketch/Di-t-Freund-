@@ -2364,3 +2364,6 @@ small,
 .game-scene.theme-autumn:before {
   background: #a77d4e;
 }
+
+/* Generic input layout must not expose programmatic file-picker controls. */
+input[hidden] { display: none; }

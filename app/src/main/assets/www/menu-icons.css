@@ -1,0 +1,7 @@
+/* Generated SVG masks: python3 scripts/build-menu-masks.py. Original sheet unchanged. */
+.ds-home{background-position:-72px -6px;-webkit-mask-image:url("menu-mask-home.svg");mask-image:url("menu-mask-home.svg")}
+.ds-food{background-position:-136px -6px;-webkit-mask-image:url("menu-mask-food.svg");mask-image:url("menu-mask-food.svg")}
+.ds-train{background-position:-200px -6px;-webkit-mask-image:url("menu-mask-train.svg");mask-image:url("menu-mask-train.svg")}
+.ds-journey{background-position:-104px -6px;-webkit-mask-image:url("menu-mask-journey.svg");mask-image:url("menu-mask-journey.svg")}
+.ds-profile{background-position:-40px -6px;-webkit-mask-image:url("menu-mask-profile.svg");mask-image:url("menu-mask-profile.svg")}
+.ds-icon{transform:scale(1.2);-webkit-mask-size:24px 24px;mask-size:24px 24px;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}

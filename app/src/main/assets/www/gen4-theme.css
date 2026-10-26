@@ -18,21 +18,34 @@
   --action-ink: #fff;
 }
 :root[data-theme="dark"] {
-  --bg: #101f35;
-  --surface: #1b3049;
-  --ink: #f4f6fc;
-  --muted: #bfd0df;
+  --bg: #0b1727;
+  --surface: #16283c;
+  --ink: #f5f8ff;
+  --muted: #c9d9e8;
   --accent: #a3d8ff;
-  --soft: #29425d;
-  --border: #58748e;
+  --soft: #253c53;
+  --border: #829bb1;
   --blue: #b0daff;
-  --shadow: 0 3px 0 #091322;
-  --panel-top: #2a415a;
-  --frame: #7396b5;
-  --nav: #192e48;
+  --orange: #f4bb78;
+  --purple: #c2adf2;
+  --shadow: 0 3px 0 #07111e;
+  --panel-top: #304a63;
+  --frame: #91adc4;
+  --nav: #122438;
   --action: #f6b493;
   --action-ink: #202d3c;
 }
+/* Explicit states: readable hints, errors, field edges and progress in night mode. */
+:root[data-theme="dark"] :is(input, textarea, select) { background: #122438; }
+:root[data-theme="dark"] ::placeholder { color: #b4c8db; opacity: 1; }
+:root[data-theme="dark"] .error { color: #ffb4ab; }
+:root[data-theme="dark"] .tile-icon.blue { background: var(--soft); color: var(--blue); }
+:root[data-theme="dark"] .tile-icon.purple { background: var(--soft); color: var(--purple); }
+:root[data-theme="dark"] .track i { background: #66d5ab; border-color: #66d5ab; box-shadow: none; }
+:root[data-theme="dark"] .secondary { box-shadow: inset 0 1px 0 #ffffff1f, 0 2px 0 #07111e; }
+:root[data-theme="dark"] .bottom-nav { box-shadow: 0 -3px 0 #07111e; }
+:root[data-theme="dark"] :focus-visible { outline-color: #ffce67; }
+
 body {
   background:
     repeating-linear-gradient(0deg, transparent 0 3px, #5b81a409 3px 4px),
