@@ -1,4 +1,6 @@
-export const VERSION = 1;
+import { validateGame } from "./game.js";
+import { micros, parseMicros, recipeMicros } from "./micros.js";
+export const VERSION = 2;
 export const meals = ["Frühstück", "Mittagessen", "Abendessen", "Snacks"];
 export const nutrients = ["kcal", "protein", "carbs", "fat", "fiber"];
 export const uid = () => globalThis.crypto.randomUUID();
@@ -28,6 +30,12 @@ export const emptyState = () => ({
   workouts: [],
   activeWorkout: null,
   theme: "light",
+  coach: null,
+  game: null,
+  favorites: [],
+  completeDays: {},
+  checkins: {},
+  targetHistory: [],
 });
 export function totals(entries) {
   return entries.reduce(
@@ -55,6 +63,7 @@ export function recipeFood(name, ingredients, cookedWeight) {
   return {
     id: uid(),
     name,
+    micros: recipeMicros(ingredients, weight),
     source: ingredients.some((i) => i.source.includes("ODbL"))
       ? "Rezept · mit Open Food Facts (ODbL)"
       : "Eigenes Rezept",
@@ -98,6 +107,7 @@ export function parseProduct(data, code) {
     ),
     source: "Open Food Facts · ODbL",
     barcode: code,
+    micros: parseMicros(n),
     ...Object.fromEntries(
       nutrients.map((k) => [
         k,
@@ -124,7 +134,58 @@ function assert(ok) {
     );
 }
 export function validateState(s) {
+  validateGame(s?.game);
   assert(s && s.version === VERSION && ["light", "dark"].includes(s.theme));
+  assert(
+    Array.isArray(s.favorites) &&
+      s.favorites.length <= 5000 &&
+      s.favorites.every((x) => text(x, 100)),
+  );
+  for (const map of [s.completeDays, s.checkins])
+    assert(map && typeof map === "object" && !Array.isArray(map));
+  Object.entries(s.completeDays).forEach(([d, v]) =>
+    assert(date(d) && typeof v === "boolean"),
+  );
+  Object.entries(s.checkins).forEach(([d, c]) =>
+    assert(
+      date(d) &&
+        c &&
+        finite(c.hunger, 1, 5) &&
+        finite(c.fatigue, 1, 5) &&
+        typeof c.pain === "boolean",
+    ),
+  );
+  assert(Array.isArray(s.targetHistory) && s.targetHistory.length <= 5000);
+  s.targetHistory.forEach((h) =>
+    assert(
+      date(h.date) &&
+        finite(h.from, 1500, 6000) &&
+        finite(h.to, 1500, 6000) &&
+        text(h.reason, 300),
+    ),
+  );
+  const c = s.coach;
+  if (c !== null) {
+    assert(
+      c &&
+        date(c.birthDate) &&
+        ["male", "female", "unspecified"].includes(c.sex) &&
+        finite(c.activity, 1.2, 1.8) &&
+        ["gym", "home", "both"].includes(c.location) &&
+        finite(c.homeMinutes, 15, 60) &&
+        finite(c.gymMinutes, 30, 120) &&
+        Number.isInteger(c.sessions) &&
+        finite(c.sessions, 2, 3),
+    );
+    for (const k of [
+      "hypertension",
+      "betaBlocker",
+      "nutritionCare",
+      "trainingCleared",
+      "smoker",
+    ])
+      assert(typeof c[k] === "boolean");
+  }
   const p = s.profile;
   assert(
     p === null ||
@@ -144,6 +205,16 @@ export function validateState(s) {
     nutrients.forEach((k) =>
       assert(finite(f[k], 0, k === "kcal" ? 1000 : 100)),
     );
+    if (f.micros !== undefined) {
+      assert(
+        f.micros && typeof f.micros === "object" && !Array.isArray(f.micros),
+      );
+      for (const [k, v] of Object.entries(f.micros))
+        assert(
+          micros.some((m) => m.key === k) && (v === null || finite(v, 0, 1e7)),
+        );
+    }
+    if (f.foodId !== undefined) assert(text(f.foodId, 100));
     if (f.barcode !== undefined) assert(/^\d{8,14}$/.test(f.barcode));
   }
   s.foods.forEach(food);
@@ -191,6 +262,7 @@ export function validateState(s) {
           typeof e.done === "boolean",
       ),
     );
+    if (w.effort !== undefined) assert(finite(w.effort, 1, 10));
     if (active) assert(finite(w.started, 0, 9e15));
     else assert(finite(w.minutes, 0, 1440));
   }
@@ -201,7 +273,17 @@ export function validateState(s) {
 export function parseBackup(raw) {
   if (raw.length > 10 * 1024 * 1024)
     throw Error("Sicherung ist zu groß (max. 10 MB).");
-  return validateState(JSON.parse(raw));
+  const parsed = JSON.parse(raw);
+  if (parsed?.version === 1) {
+    parsed.version = VERSION;
+    parsed.coach = null;
+    parsed.favorites = [];
+    parsed.completeDays = {};
+    parsed.checkins = {};
+    parsed.targetHistory = [];
+  }
+  if (parsed && parsed.game === undefined) parsed.game = null;
+  return validateState(parsed);
 }
 // Approximate generic examples, not a branded or scraped food database. Packaging takes precedence.
 export const staples = [
@@ -279,3 +361,20 @@ export const cues = {
   "Bird Dog":
     "Vierfüßlerstand. Arm und gegenüberliegendes Bein langsam strecken.",
 };
+
+// A completed day must be confirmed again after any food edit, copy or deletion.
+export function invalidateCompletedDays(previous, next) {
+  const group = (entries) => {
+    const map = new Map();
+    for (const e of entries) {
+      if (!map.has(e.date)) map.set(e.date, []);
+      map.get(e.date).push(e);
+    }
+    return map;
+  };
+  const old = group(previous.entries),
+    updated = group(next.entries);
+  for (const day of new Set([...old.keys(), ...updated.keys()]))
+    if (JSON.stringify(old.get(day)) !== JSON.stringify(updated.get(day)))
+      next.completeDays[day] = false;
+}

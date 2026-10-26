@@ -1,6 +1,6 @@
 # Quellen und Drittanbieter
 
-Recherchiert am 26.10.2026. Keine fremden App-Grafiken oder Datenbanken kopiert.
+Recherchiert am 26.10.2026. Keine fremden Fitness-App-Grafiken oder Lebensmitteldatenbanken kopiert. Pokémon-Originalassets auf ausdrücklichen Nutzerwunsch: siehe GAME.md.
 
 ## Funktionsvergleich
 
@@ -26,3 +26,11 @@ Recherchiert am 26.10.2026. Keine fremden App-Grafiken oder Datenbanken kopiert.
 - Apache 2.0 Volltext: https://www.apache.org/licenses/LICENSE-2.0 ; zusätzlich in `docs/APACHE-2.0.txt`.
 
 Eigene App-Grafiken (Vektoren, CSS, Diagramme) sind Bestandteil dieses Projekts. Für den eigenen Projektcode wurde noch keine öffentliche Weiterverwendungslizenz festgelegt; Drittanbieter behalten ihre jeweiligen Lizenzen. Vor öffentlichem Release vollständigen transitiven Lizenzbericht erzeugen und in der App zugänglich machen.
+
+## Personalisierung und Mikronährstoffe (0.2)
+
+- DGE/ÖGE-Referenzwerte: https://www.dge.de/wissenschaft/referenzwerte/ . Berücksichtigt werden Vitamin C, D, E, B12, Folat, Calcium, Magnesium, Kalium, Jod, Selen, Eisen und Zink. Die einzelnen Pfade und Erläuterungen stehen in `micros.js`. Jod 150 µg und Vitamin E 8 mg berücksichtigen die aktualisierten Referenzen. Vitamin D 20 µg gilt bei fehlender körpereigener Bildung; kein automatisch abgeleiteter Supplementbedarf.
+- DGE Protein: https://www.dge.de/wissenschaft/referenzwerte/protein/ ; https://www.dge.de/gesunde-ernaehrung/faq/sporternaehrung/ . Die App nennt 1,2–1,6 g/kg begrenztes Referenzgewicht als Gesprächsgrundlage für das Krafttrainingsziel, nicht als allgemeine DGE-Pflichtmenge. BMI 25 begrenzt dabei das Rechengewicht; individuelle medizinische Vorgaben gehen vor.
+- American Heart Association: https://www.heart.org/en/health-topics/consumer-healthcare/medication-information/how-do-beta-blocker-drugs-affect-exercise — Betablocker verändern den Pulsanstieg; übliche Pulsziele nicht unverändert übernehmen.
+- NICE NG246: https://www.nice.org.uk/guidance/ng246 — individueller, langfristiger Umgang mit Ernährung, Bewegung und Gewichtsmanagement.
+- Spielgrafik/-ton ausdrücklich auf Nutzerwunsch: [GAME.md](GAME.md), vollständige Quellenmanifestdatei [GAME-ASSETS.json](GAME-ASSETS.json).

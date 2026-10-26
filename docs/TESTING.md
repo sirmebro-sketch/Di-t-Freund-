@@ -23,8 +23,16 @@ Browser-/Unit-Tests ersetzen weder reale Android-Kamera-/SAF-Tests noch medizini
 
 ## Durchgeführte Prüfung (26.10.2026)
 
-- 11 Berechnungs-/Validierungstests erfolgreich lokal und in GitHub Actions.
+- Version 0.2: 28 Berechnungs-/Validierungstests lokal erfolgreich; Version 0.1 zuvor 11 auch in GitHub Actions.
 - Browser-Abläufe erfolgreich lokal und in GitHub Actions: Einrichtung, Wasser, Lebensmittel anlegen/bearbeiten, Rezept, simulierte Barcode-Antwort, Gewicht, Trainingswiederaufnahme, Gesundheitsjournal, Designwechsel, Import-Abbruch/Fehlerschema, JSON-Download.
 - Ansichten mit 360/393 Pixeln Smartphonebreite und 1440 Pixeln Desktopbreite geprüft; kein horizontaler Seitenüberlauf. Dashboard und Training zusätzlich visuell inspiziert.
-- Android APK und Android Lint erfolgreich gebaut. Reale Android-Installation, Kamera und Dateidialoge weiterhin nicht auf einem Gerät getestet.
+- Version 0.1: Android APK und Android Lint erfolgreich gebaut. Version 0.2 wird über denselben Workflow mit erweitertem Testumfang geprüft. Reale Android-Installation, Kamera und Dateidialoge weiterhin nicht auf einem Gerät getestet.
 - OFF-Antwort ist im UI-Test simuliert; das ist kein Beleg für die momentane Erreichbarkeit des externen Dienstes.
+
+## Zusätzliche Prüfung Version 0.2
+
+- `tests/coach-ui.mjs`: Coach-Einrichtung, Modellhinweise, Abbruch/Bestätigung von Zielvorschlägen, Erschöpfungsreaktion, Favoriten, gemerkte Portion, Wiederöffnung vollständiger Tage, unbekannte und teilweise bekannte Mikronährstoffwerte, Dunkelmodus.
+- `tests/game-ui.mjs`: Starterwahl, drei Tagesaufgaben, automatischer Fang, gespeicherte Ton-/Animationsoptionen, neun Entwicklungslinien nach synthetischem Monatsverlauf, Entwicklung, Kampfbericht ohne Mehrfachbelohnung, vollständig geladene Offline-Sprites und erfolgreiche Decodierung aller sechs Originaleffekte.
+- axe-core WCAG2 A/AA: ausgewählte Hauptansichten, Coach-Einrichtung, Nährstoffdialog, Starterwahl, Abenteuer, volles Team und Kampfbericht ohne automatisch erkannte Verstöße. Helles/dunkles Design und 360-Pixel-Dialogbreite geprüft. Systemeinstellung „reduzierte Bewegung“ stoppt die Sprite-Animation. Das ist keine vollständige WCAG- oder TalkBack-Zertifizierung.
+- Unit-Tests: Spielbelohnungen idempotent und unabhängig von Kalorienmenge, Pausen ohne Verlust, deterministische Kämpfe ohne Replay-Belohnung, ungültige Backups abgelehnt.
+- Die UI-Testfixtures sind synthetisch. Android-Ton, Bild-Daten-URLs, echtes TalkBack und große Systemschrift bleiben Gerätetests.

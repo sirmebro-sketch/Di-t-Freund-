@@ -1,11 +1,11 @@
 {
   "name": "diaetfreund",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test tests/core.test.mjs",
-    "check": "node --check app/src/main/assets/www/app.js && node --check app/src/main/assets/www/core.js",
+    "test": "node --test tests/*.test.mjs",
+    "check": "node --check app/src/main/assets/www/app.js && node --check app/src/main/assets/www/core.js && node --check app/src/main/assets/www/coach.js && node --check app/src/main/assets/www/coach-ui.js && node --check app/src/main/assets/www/micros.js && node --check app/src/main/assets/www/game.js && node --check app/src/main/assets/www/game-ui.js",
     "serve": "python3 -m http.server 4173 --directory app/src/main/assets/www"
   }
 }

@@ -92,7 +92,7 @@ test("estimate validates adults and formula input", () => {
 test("backup roundtrip and unsupported/corrupted schemas", () => {
   assert.deepEqual(parseBackup(JSON.stringify(valid())), valid());
   for (const patch of [
-    { version: 2 },
+    { version: 99 },
     { foods: {} },
     { water: [] },
     { theme: "x" },

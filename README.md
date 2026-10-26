@@ -11,14 +11,25 @@ Ein ruhiger, deutschsprachiger Android-Begleiter für Ernährung, Gewicht, Kraft
 
 Android 8.0 oder neuer, aktuelles Android System WebView. Das ist ein persönlicher Testbuild, keine Play-Store-Veröffentlichung. Der erste Build muss erfolgreich abgeschlossen sein, bevor ein APK verfügbar ist. Debug-Zertifikate können zwischen CI-Läufen wechseln: vor einem Update Sicherung exportieren; bei Signaturkonflikt bisherige App erst nach Sicherung deinstallieren. Für dauerhaft nahtlose Updates ist später ein festes privates Release-Signaturzertifikat erforderlich.
 
+## Neu in 0.2.0
+
+- **Pokémon-Abenteuer:** Starter wählen, automatisch Team-EP erhalten, Pokémon fangen, entwickeln und kurze Kämpfe bestreiten. 9 Entwicklungslinien / 22 mögliche Formen, wechselbarer Begleiter, Orden und Kampfberichte. Originalsprites und sechs kurze Originaleffekte aus Rot/Blau lokal gebündelt. Ton standardmäßig aus; Animationen abschaltbar. Kein Abo, Server oder Download beim Spielen.
+- **Gesunde Spielregeln:** Ernährungseintrag, Check-in und Bewegung **oder** bewusste Erholung zählen jeweils einmal täglich. Keine Punkte für weniger Kalorien, Gewichtsverlust, zusätzliches Training oder mehr Trinken. Pausen und Niederlagen nehmen nichts weg.
+- **Persönlicher Kompass:** lokale Angaben zu Alter, Alltag, Trainingsort/-zeit und freiwilligen Einschränkungen. Energieformel aktualisiert sich mit dem Gewicht; ein 21-Tage-Rückblick erklärt mögliche Anpassungen. Kalorienziele ändern sich ausschließlich nach ausdrücklicher Übernahme.
+- **Einfacher erfassen:** Favoriten, gemerkte Portionen und Direktbuchung; Kennzeichnung vollständiger Esstage. Änderungen öffnen den Tag wieder.
+- **12 Mikronährstoffe:** bekannte Werte und Datenabdeckung, passende DGE/ÖGE-Referenzen; unbekannte Werte bleiben unbekannt. Eigene Angaben ergänzbar. Keine Mangel- oder Supplementdiagnose.
+- **Gym & Zuhause:** alternative Routinen und Zeitfenster, letzte Satzwerte als editierbare Erinnerung, Tagesbefinden und Erholungshinweise; keine Standard-Pulszonen bei angegebenen Betablockern.
+
+Inoffizieller Pokémon-Fan-Spielteil mit vereinfachten Regeln, kein vollständiges Pokémon-Spiel. Quellen und Rechtehinweise: [Spielassets](docs/GAME.md).
+
 ## Enthalten
 
 - **Heute:** Kalorienübersicht, Protein, Kohlenhydrate, Fett, Wasser und schnelle Mahlzeiteneingabe.
-- **Essen:** vier Mahlzeiten, freie Datumswahl, Portionsberechnung, Bearbeiten/Löschen, Vortag kopieren, zuletzt verwendete Lebensmittel zuerst.
+- **Essen:** vier Mahlzeiten, freie Datumswahl, Portionsberechnung, Bearbeiten/Löschen, Vortag kopieren, Favoriten und zuletzt verwendete Lebensmittel zuerst.
 - **Lebensmittel:** kleine Offline-Grundauswahl mit ausdrücklich ungefähren Werten, eigene Packungsangaben, Barcode-Kamera sowie manuelle EAN-/UPC-Abfrage bei Open Food Facts. Neue Produktwerte müssen vor dem Speichern bestätigt werden. Gespeicherte Produkte sind offline verfügbar.
 - **Rezepte:** Zutaten mit Mengen, tatsächliches Endgewicht nach Zubereitung, beliebige Grammportionen. Rezepte bleiben als wiederverwendbare Lebensmittel gespeichert.
 - **Verlauf:** Gewicht, 7-Kalendertage-Mittel, Zielverlauf und Wochenübersicht. Keine Behauptung, Fett- oder Muskelmasse messen zu können.
-- **Training:** zwei allgemeine Ganzkörpervorlagen, eigene Übungen, editierbare Sätze/Last/Wiederholungen, 90-Sekunden-Pausentimer, Wiederaufnahme nach App-Neustart, Trainingshistorie und manuelle Aktivitäten. Nur tatsächlich abgehakte Sätze werden abgeschlossen.
+- **Training:** allgemeine Ganzkörpervorlagen für Gym und Zuhause, eigene Übungen, editierbare Sätze/Last/Wiederholungen, 90-Sekunden-Pausentimer, Wiederaufnahme nach App-Neustart, Trainingshistorie und manuelle Aktivitäten. Nur tatsächlich abgehakte Sätze werden abgeschlossen.
 - **Gesundheit:** freiwilliges Journal für Schlaf, Schritte, Bauchumfang, Blutdruck, Puls und Notizen. Keine Diagnosen oder Alarmüberwachung.
 - **Daten:** atomare Speicherung im privaten Android-App-Verzeichnis, JSON-Sicherung/Wiederherstellung mit Schema-Prüfung, CSV-Export, komplette lokale Löschung. Helles und dunkles Design.
 
@@ -51,7 +62,7 @@ Der CI-Workflow installiert die Build-Werkzeuge und erstellt den APK. Ein Gradle
 
 Java + AndroidX: sicherer WebViewAssetLoader, lokal gebündelte HTML/CSS/ES-Module, kontrollierte JavaScript-Bridge, Android Storage Access Framework für Exporte/Importe, ZXing für Kamera-Barcodes. Keine Webseite wird innerhalb der Bridge-WebView geöffnet. Nur der feste Open-Food-Facts-Produktendpunkt ist als externe Datenquelle erlaubt. CSP blockiert Fremdskripte und Frames.
 
-`core.js` enthält unabhängig testbare Berechnung und Schema-Validierung; `app.js` Ansichten und Transaktionen. Fehlgeschlagene Speicherung übernimmt keinen neuen In-Memory-Zustand. Trainingsänderungen und Tagebucheinträge werden sofort persistiert. Android-Backup und Geräteübertragung sind deaktiviert. Im lokalen Desktop-Test ersetzt Browser-localStorage den Android-Dateispeicher.
+`core.js` enthält Berechnung und Schema-Validierung; `coach.js` die erklärbare Anpassungslogik, `micros.js` Referenzwerte und Datenabdeckung, `game.js` den unabhängig testbaren Spielkreislauf. `app.js` bündelt Ansichten und atomare Transaktionen. Fehlgeschlagene Speicherung übernimmt keinen neuen In-Memory-Zustand. Trainingsänderungen und Tagebucheinträge werden sofort persistiert. Android-Backup und Geräteübertragung sind deaktiviert. Im lokalen Desktop-Test ersetzt Browser-localStorage den Android-Dateispeicher.
 
 ## Kosten
 

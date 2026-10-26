@@ -1,0 +1,154 @@
+[
+  {
+    "id": "1",
+    "url": "https://img.pokemondb.net/sprites/black-white/normal/bulbasaur.png",
+    "sha256": "4bee59803887e211365e5993702a29a0d24c156efc5a0e4be38b6fd96d87dc54"
+  },
+  {
+    "id": "2",
+    "url": "https://img.pokemondb.net/sprites/black-white/normal/ivysaur.png",
+    "sha256": "97d0fa5fd2f0e6e7f735660f1518521b8450ac61353f19790dbdaf24afe9ba00"
+  },
+  {
+    "id": "3",
+    "url": "https://img.pokemondb.net/sprites/black-white/normal/venusaur.png",
+    "sha256": "4e05a6c47f26aabed552d286db09e5d86dd3b8e3ab54659d4ee387e546c4ea36"
+  },
+  {
+    "id": "4",
+    "url": "https://img.pokemondb.net/sprites/black-white/normal/charmander.png",
+    "sha256": "91506d2b72a9da5cd6e0d85a2ef32008f154729ce50f1d9155cb1bbc91f7b426"
+  },
+  {
+    "id": "5",
+    "url": "https://img.pokemondb.net/sprites/black-white/normal/charmeleon.png",
+    "sha256": "6d2c8142130b266daafe2cd362ddd7a5160050a95765e76bdda41e47171a8282"
+  },
+  {
+    "id": "6",
+    "url": "https://img.pokemondb.net/sprites/black-white/normal/charizard.png",
+    "sha256": "1cf76598cf4d82758890288b9df1476927a1cb276e4f080024efac2203cdfd0b"
+  },
+  {
+    "id": "7",
+    "url": "https://img.pokemondb.net/sprites/black-white/normal/squirtle.png",
+    "sha256": "a31e1dc4f8cf9a12b797571828630b0ac4f93abf39c6282f2c98ffc43e1d10bc"
+  },
+  {
+    "id": "8",
+    "url": "https://img.pokemondb.net/sprites/black-white/normal/wartortle.png",
+    "sha256": "5848dd82508834d7488c06dd91c1f2bf8817137654963ab79fc6f1b3957c2461"
+  },
+  {
+    "id": "9",
+    "url": "https://img.pokemondb.net/sprites/black-white/normal/blastoise.png",
+    "sha256": "f34644d29faa975c91386b9a5677a286deff6773eb0bf8c0ad75f93d7504ebeb"
+  },
+  {
+    "id": "10",
+    "url": "https://img.pokemondb.net/sprites/black-white/normal/caterpie.png",
+    "sha256": "6f90fb5a858cc35967e4933e84d9ed62a58668047556aedd08c14b2214af8de1"
+  },
+  {
+    "id": "11",
+    "url": "https://img.pokemondb.net/sprites/black-white/normal/metapod.png",
+    "sha256": "acc57418eeec1d0481071854c4f95991b3fe036211e82055353be408deba228a"
+  },
+  {
+    "id": "12",
+    "url": "https://img.pokemondb.net/sprites/black-white/normal/butterfree.png",
+    "sha256": "ffdf3df0a40caef46a715d59dc81e3529143f5c1a2f2d95067dd029575ed9fe8"
+  },
+  {
+    "id": "16",
+    "url": "https://img.pokemondb.net/sprites/black-white/normal/pidgey.png",
+    "sha256": "c33a174e46f0783af1eac879c453ad2786d72967727333f77e6d0f8b4c595628"
+  },
+  {
+    "id": "17",
+    "url": "https://img.pokemondb.net/sprites/black-white/normal/pidgeotto.png",
+    "sha256": "c303ca1d92d7a4322d95be346485e2f4f718044721216140e0081514db4cdaab"
+  },
+  {
+    "id": "18",
+    "url": "https://img.pokemondb.net/sprites/black-white/normal/pidgeot.png",
+    "sha256": "f4375fafb4bbc2681c3785732c709321892eca9cf80e834994e2a91f6220979c"
+  },
+  {
+    "id": "25",
+    "url": "https://img.pokemondb.net/sprites/black-white/normal/pikachu.png",
+    "sha256": "3f6604e0857960c19e504916472a8a3ebc9518ed9b35aa4b2232295075acddb7"
+  },
+  {
+    "id": "26",
+    "url": "https://img.pokemondb.net/sprites/black-white/normal/raichu.png",
+    "sha256": "0309ce0d83371a45c57d2009ce64ad4c6cf31eecece46f2ff67f190844f4c3c0"
+  },
+  {
+    "id": "129",
+    "url": "https://img.pokemondb.net/sprites/black-white/normal/magikarp.png",
+    "sha256": "7f8e601859c69b41b8f2a7b546ed6779573deed7e908ebd5d3b88f85d9a28065"
+  },
+  {
+    "id": "130",
+    "url": "https://img.pokemondb.net/sprites/black-white/normal/gyarados.png",
+    "sha256": "9130028beab25fb29a10828971e3a3e206743211af8e7dbbe6b19f8fd243f155"
+  },
+  {
+    "id": "133",
+    "url": "https://img.pokemondb.net/sprites/black-white/normal/eevee.png",
+    "sha256": "1d124b51187df081be6bb650b7ace599024ec82beb878b15aa469b600993ad5c"
+  },
+  {
+    "id": "134",
+    "url": "https://img.pokemondb.net/sprites/black-white/normal/vaporeon.png",
+    "sha256": "245d00c7a34ebd1834c18abbb9d2a250370734692e23c1948a5b0794dc83f54e"
+  },
+  {
+    "id": "143",
+    "url": "https://img.pokemondb.net/sprites/black-white/normal/snorlax.png",
+    "sha256": "57e899e87f230eb5da6ee071113b274d07dd99ed7047bd7f6a3e5fcfe0c90b3d"
+  },
+  {
+    "id": "menu",
+    "url": "https://sounds.spriters-resource.com/media/assets/408/410769.zip?updated=1755537434",
+    "file": "SFX_PRESS_AB.wav",
+    "seconds": 0.288,
+    "sha256": "1ba14d57ab768561c471b67b0b037c1764adb593e684a99852f80855481ca167"
+  },
+  {
+    "id": "open",
+    "url": "https://sounds.spriters-resource.com/media/assets/408/410769.zip?updated=1755537434",
+    "file": "SFX_START_MENU.wav",
+    "seconds": 0.312,
+    "sha256": "9700f2eae2b549f68c50fd49be6b763d1bb92c679a880d48fd45bf60cea14da0"
+  },
+  {
+    "id": "capture",
+    "url": "https://sounds.spriters-resource.com/media/assets/408/410769.zip?updated=1755537434",
+    "file": "SFX_BALL_TOSS.wav",
+    "seconds": 0.528,
+    "sha256": "7e67952acb8a4b4a3fe1ee97dd1fc9ba0b935f94030da1ebbe6c804d32da30bf"
+  },
+  {
+    "id": "hit",
+    "url": "https://sounds.spriters-resource.com/media/assets/408/410769.zip?updated=1755537434",
+    "file": "SFX_FAINT_THUD.wav",
+    "seconds": 0.768,
+    "sha256": "3cec94798c1efb7afacc2777552095a93d6123ef9923585511572994845d219b"
+  },
+  {
+    "id": "level",
+    "url": "https://sounds.spriters-resource.com/media/assets/408/410769.zip?updated=1755537434",
+    "file": "SFX_LEVEL_UP.wav",
+    "seconds": 2.28,
+    "sha256": "41307ab802b9ddcad22ba60c38a6606bbf848f370eeee4aae2c169c2a51f7953"
+  },
+  {
+    "id": "caught",
+    "url": "https://sounds.spriters-resource.com/media/assets/408/410769.zip?updated=1755537434",
+    "file": "SFX_CAUGHT_MON.wav",
+    "seconds": 2.616,
+    "sha256": "e0eaed9b6271787d0d923d1ad9f16bde2d1eaa4ed47a0f5c620308f6f90c0bda"
+  }
+]

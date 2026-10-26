@@ -1,3 +1,5 @@
+import { syncGame } from "./game.js";
+import { setupGameUI } from "./game-ui.js";
 import {
   meals,
   nutrients,
@@ -13,10 +15,20 @@ import {
   parseProduct,
   parseBackup,
   validateState,
+  invalidateCompletedDays,
   staples,
   routines,
   cues,
 } from "./core.js";
+import { micros } from "./micros.js";
+import { setupCoachUI } from "./coach-ui.js";
+import {
+  trainingRoutines,
+  previousSets,
+  rememberedAmount,
+  foodKey,
+  readiness,
+} from "./coach.js";
 const $ = (s) => document.querySelector(s),
   esc = (s) =>
     String(s ?? "").replace(
@@ -97,16 +109,20 @@ const notify = (s) => {
   clearTimeout(notify.t);
   notify.t = setTimeout(() => t.classList.remove("visible"), 4200);
 };
-function commit(mutator) {
+function commit(mutator, preserveCompletion = false) {
   const next = structuredClone(state);
   mutator(next);
   try {
+    if (!preserveCompletion) invalidateCompletedDays(state, next);
+    if (!preserveCompletion) syncGame(next, today());
     validateState(next);
     const raw = JSON.stringify(next);
     if (window.Android) {
       if (!Android.writeState(raw)) throw Error("Speicher voll");
     } else localStorage.setItem("diaetfreund-v1", raw);
+    const previous = state;
     state = next;
+    if (!preserveCompletion) gameUI.celebrate(previous, next);
     return true;
   } catch (e) {
     notify("Nicht gespeichert: " + e.message);
@@ -119,7 +135,8 @@ function close() {
 }
 function sheet(title, html) {
   const d = $("#sheet");
-  d.innerHTML = `<div class="sheet-head"><h2>${esc(title)}</h2>${btn("×", "close", "icon-button", 'aria-label="Schließen"')}</div>${html}`;
+  d.innerHTML = `<div class="sheet-head"><h2 id="sheet-title">${esc(title)}</h2>${btn("×", "close", "icon-button", 'aria-label="Schließen"')}</div>${html}`;
+  d.setAttribute("aria-labelledby", "sheet-title");
   if (!d.open) d.showModal();
   d.scrollTop = 0;
 }
@@ -179,7 +196,7 @@ function homeView() {
     water = state.water[date] || 0,
     progress = Math.min(100, (t.kcal / p.kcal) * 100),
     w = [...state.weights].sort((a, b) => b.date.localeCompare(a.date))[0];
-  return `<div class="dashboard-grid"><section class="card energy"><div class="section-head"><h2>Dein Tag im Gleichgewicht</h2><span class="pill">${date === today() ? "Heute" : dateLabel(date)}</span></div><div class="energy-body"><div class="ring" style="--progress:${progress}%"><div><span class="ring-number">${fmt(Math.abs(left))}</span><span>kcal ${left >= 0 ? "übrig" : "über Ziel"}</span></div></div><div class="energy-copy"><span class="eyebrow">GUT VERSORGT DURCH DEN TAG</span><h3>${t.kcal === 0 ? "Was steht heute auf deinem Teller?" : left >= 0 ? "Du behältst den Überblick." : "Ein Tag ist nur ein Tag."}</h3><p>${t.kcal === 0 ? "Mit deiner ersten Mahlzeit beginnt dein Überblick." : "Es zählt, was du langfristig machst. Bleib freundlich zu dir."}</p><div class="energy-numbers"><div><strong>${fmt(t.kcal)}</strong><small>gegessen</small></div><div><strong>${fmt(p.kcal)}</strong><small>Tagesziel · kcal</small></div></div></div></div><div class="macros">${macro("Protein", t.protein, p.protein, "green")}${macro("Kohlenhydrate", t.carbs, null, "orange")}${macro("Fett", t.fat, null, "purple")}</div>${btn(icon("plus") + " Mahlzeit hinzufügen", "add-food", "primary wide")}</section><section class="card water-card"><div class="section-head"><div class="tile-icon blue">${icon("water")}</div><span class="pill">Trinken</span></div><h2>Ein Schluck für dich.</h2><div class="big-number">${fmt(water / 1000, 2)} <small>/ ${fmt(p.water / 1000, 1)} l</small></div><div class="water-drops" aria-label="Trinkfortschritt">${Array.from({ length: 8 }, (_, i) => `<span class="${i < (water / p.water) * 8 ? "filled" : ""}">${icon("water")}</span>`).join("")}</div><p>Dein selbst gesetztes Trinkziel.</p><div class="row">${btn("− 250", "water", "secondary", 'data-amount="-250" aria-label="250 Milliliter entfernen"')}${btn("+ 250 ml", "water", "primary", 'data-amount="250"')}</div></section><section class="card weight-card"><div class="section-head"><h2>Dein Weg</h2>${icon("chart")}</div><div class="big-number">${w ? fmt(w.value, 1) : "–"} <small>kg</small></div><p>${w ? "Letzter Eintrag · " + dateLabel(w.date) : "Dein erster Eintrag wartet auf dich."}</p>${miniChart(
+  return `${gameUI.card()}${coachUI.card()}<div class="dashboard-grid"><section class="card energy"><div class="section-head"><h2>Dein Tag im Gleichgewicht</h2><span class="pill">${date === today() ? "Heute" : dateLabel(date)}</span></div><div class="energy-body"><div class="ring" style="--progress:${progress}%"><div><span class="ring-number">${fmt(Math.abs(left))}</span><span>kcal ${left >= 0 ? "übrig" : "über Ziel"}</span></div></div><div class="energy-copy"><span class="eyebrow">GUT VERSORGT DURCH DEN TAG</span><h3>${t.kcal === 0 ? "Was steht heute auf deinem Teller?" : left >= 0 ? "Du behältst den Überblick." : "Ein Tag ist nur ein Tag."}</h3><p>${t.kcal === 0 ? "Mit deiner ersten Mahlzeit beginnt dein Überblick." : "Es zählt, was du langfristig machst. Bleib freundlich zu dir."}</p><div class="energy-numbers"><div><strong>${fmt(t.kcal)}</strong><small>gegessen</small></div><div><strong>${fmt(p.kcal)}</strong><small>Tagesziel · kcal</small></div></div></div></div><div class="macros">${macro("Protein", t.protein, p.protein, "green")}${macro("Kohlenhydrate", t.carbs, null, "orange")}${macro("Fett", t.fat, null, "purple")}</div>${btn(icon("plus") + " Mahlzeit hinzufügen", "add-food", "primary wide")}</section><section class="card water-card"><div class="section-head"><div class="tile-icon blue">${icon("water")}</div><span class="pill">Trinken</span></div><h2>Ein Schluck für dich.</h2><div class="big-number">${fmt(water / 1000, 2)} <small>/ ${fmt(p.water / 1000, 1)} l</small></div><div class="water-drops" role="img" aria-label="Trinkfortschritt">${Array.from({ length: 8 }, (_, i) => `<span class="${i < (water / p.water) * 8 ? "filled" : ""}">${icon("water")}</span>`).join("")}</div><p>Dein selbst gesetztes Trinkziel.</p><div class="row">${btn("− 250", "water", "secondary", 'data-amount="-250" aria-label="250 Milliliter entfernen"')}${btn("+ 250 ml", "water", "primary", 'data-amount="250"')}</div></section><section class="card weight-card"><div class="section-head"><h2>Dein Weg</h2>${icon("chart")}</div><div class="big-number">${w ? fmt(w.value, 1) : "–"} <small>kg</small></div><p>${w ? "Letzter Eintrag · " + dateLabel(w.date) : "Dein erster Eintrag wartet auf dich."}</p>${miniChart(
     state.weights
       .slice()
       .sort((a, b) => a.date.localeCompare(b.date))
@@ -196,7 +213,7 @@ function macro(name, value, target, color) {
 }
 function foodView() {
   const t = totals(dayEntries());
-  return `<div class="summary-strip"><div><small>Energie</small><strong>${fmt(t.kcal)} <span>/ ${state.profile.kcal} kcal</span></strong></div><div><small>Protein</small><strong>${fmt(t.protein)} <span>g</span></strong></div><div><small>Ballaststoffe</small><strong>${fmt(t.fiber)} <span>g*</span></strong></div></div><div class="toolbar">${btn(icon("plus") + " Essen eintragen", "add-food", "primary")}${btn(icon("scan") + " Barcode", "barcode", "secondary")}${btn("Vortag kopieren", "copy-day", "secondary")}${btn("Eigenes Rezept", "recipe", "secondary")}</div><div class="diary">${meals
+  return `<div class="summary-strip"><div><small>Energie</small><strong>${fmt(t.kcal)} <span>/ ${state.profile.kcal} kcal</span></strong></div><div><small>Protein</small><strong>${fmt(t.protein)} <span>g</span></strong></div><div><small>Ballaststoffe</small><strong>${fmt(t.fiber)} <span>g*</span></strong></div></div><div class="toolbar">${btn(icon("plus") + " Essen eintragen", "add-food", "primary")}${btn(icon("scan") + " Barcode", "barcode", "secondary")}${btn("Vortag kopieren", "copy-day", "secondary")}${btn("Eigenes Rezept", "recipe", "secondary")}${btn("Vitamine & Mineralstoffe", "micros", "secondary")}</div><section class="day-complete"><div><strong>${state.completeDays[date] ? "✓ Tag als vollständig markiert" : "Alles für diesen Tag erfasst?"}</strong><small>Nur vollständige Tage fließen in die Verbrauchsschätzung ein.</small></div>${btn(state.completeDays[date] ? "Wieder öffnen" : "Tag abschließen", "complete-day", "secondary", `aria-pressed="${!!state.completeDays[date]}"`)}</section><div class="diary">${meals
     .map((m, i) => {
       const e = dayEntries().filter((e) => e.meal === m);
       return `<section class="card"><div class="section-head"><h2><span class="meal-symbol small">${["☀", "◒", "☾", "✦"][i]}</span>${m}</h2><span>${fmt(totals(e).kcal)} kcal</span></div>${e.length ? e.map((e) => `<button class="food-row" data-action="edit-entry" data-id="${esc(e.id)}"><div><strong>${esc(e.name)}</strong><small>${fmt(e.amount)} ${e.name.includes("100 ml") ? "ml" : "g"} · ${fmt((e.protein * e.amount) / 100, 1)} g Protein</small></div><strong>${fmt((e.kcal * e.amount) / 100)}<small>kcal</small></strong></button>`).join("") : `<p class="empty-line">Noch nichts eingetragen. Was schmeckt dir heute?</p>`}${btn("+ Hinzufügen", "add-food", "text-button", `data-meal="${m}"`)}</section>`;
@@ -251,7 +268,16 @@ function trainView() {
         w.date <= today() &&
         w.sets.some((set) => set.done),
     ).length;
-  return `<div class="training-banner"><div><span class="eyebrow">DEINE WOCHE</span><h2>${count} / ${state.profile.sessions} Einheiten</h2><p>Regelmäßigkeit vor Rekorden. Zwischen Krafttagen Zeit zur Erholung lassen.</p></div><span class="training-mark">${icon("train")}</span></div>${active ? `<section class="card below"><div class="section-head"><div><span class="eyebrow">TRAINING LÄUFT · AUTOMATISCH GESICHERT</span><h2>${esc(active.name)}</h2></div><span id="rest" class="pill">Pause bereit</span></div><p>Wähle die Last so, dass noch 2–3 saubere Wiederholungen möglich wären. 0 kg = ohne Zusatzgewicht. Gleichmäßig atmen.</p>${active.sets.map((s, i) => `<div class="set-row ${s.done ? "done" : ""}"><div><strong>${esc(s.exercise)}</strong><small>${esc(cues[s.exercise] || "Kontrolliert und ohne Schmerzen bewegen.")}</small></div><label>kg<input aria-label="${esc(s.exercise)} Gewicht Satz ${i + 1}" data-set="${i}" data-key="kg" type="number" min="0" max="500" step="0.5" value="${s.kg}"></label><label>Wdh.<input aria-label="${esc(s.exercise)} Wiederholungen Satz ${i + 1}" data-set="${i}" data-key="reps" type="number" min="1" max="100" value="${s.reps}"></label>${btn(s.done ? "✓" : "○", "toggle-set", "set-check", `data-index="${i}" aria-label="Satz ${i + 1} ${s.done ? "zurücksetzen" : "abhaken"}" aria-pressed="${s.done}"`)}</div>`).join("")}<div class="toolbar">${btn("+ Eigene Übung", "custom-exercise", "secondary")}${btn("90 s Pause", "rest", "secondary")}${btn("Training abschließen", "finish-workout", "primary")}${btn("Verwerfen", "discard-workout", "text-button")}</div></section>` : `<div class="two-grid below">${routines.map((r, i) => `<section class="card routine"><div class="tile-icon">${icon("train")}</div><h2>${r.name}</h2><p>${r.subtitle}</p><ul>${r.exercises.map((e) => `<li>${e}</li>`).join("")}</ul><p>Vorschlag: je 2 Sätze · 8 Wiederholungen.<br>5–10 Minuten locker aufwärmen.</p>${btn("Einheit starten →", "start-workout", "primary wide", `data-index="${i}"`)}</section>`).join("")}</div>`}<p class="footnote">Allgemeine Einstiegsvorlagen, kein individueller Therapieplan. Bei Vorerkrankungen oder längerem Wiedereinstieg Belastung ärztlich abstimmen. Bei Schmerzen, Schwindel oder Atemnot abbrechen.</p><section class="card below"><div class="section-head"><h2>Trainingsjournal</h2>${btn("+ Aktivität", "activity", "secondary")}</div>${
+  return `<section class="training-readiness"><strong>${esc(readiness(state).title)}</strong><p>${esc(readiness(state).message)}</p>${btn("Tages-Check-in", "checkin", "text-button")}</section><div class="training-banner"><div><span class="eyebrow">DEINE WOCHE</span><h2>${count} / ${state.profile.sessions} Einheiten</h2><p>Regelmäßigkeit vor Rekorden. Zwischen Krafttagen Zeit zur Erholung lassen.</p></div><span class="training-mark">${icon("train")}</span></div>${
+    active
+      ? `<section class="card below"><div class="section-head"><div><span class="eyebrow">TRAINING LÄUFT · AUTOMATISCH GESICHERT</span><h2>${esc(active.name)}</h2></div><span id="rest" class="pill">Pause bereit</span></div><p>Wähle die Last so, dass noch 2–3 saubere Wiederholungen möglich wären. 0 kg = ohne Zusatzgewicht. Gleichmäßig atmen.</p>${active.sets.map((s, i) => `<div class="set-row ${s.done ? "done" : ""}"><div><strong>${esc(s.exercise)}</strong><small>${esc(cues[s.exercise] || "Kontrolliert und ohne Schmerzen bewegen.")}</small></div><label>kg<input aria-label="${esc(s.exercise)} Gewicht Satz ${i + 1}" data-set="${i}" data-key="kg" type="number" min="0" max="500" step="0.5" value="${s.kg}"></label><label>Wdh.<input aria-label="${esc(s.exercise)} Wiederholungen Satz ${i + 1}" data-set="${i}" data-key="reps" type="number" min="1" max="100" value="${s.reps}"></label>${btn(s.done ? "✓" : "○", "toggle-set", "set-check", `data-index="${i}" aria-label="Satz ${i + 1} ${s.done ? "zurücksetzen" : "abhaken"}" aria-pressed="${s.done}"`)}</div>`).join("")}<div class="toolbar">${btn("+ Eigene Übung", "custom-exercise", "secondary")}${btn("90 s Pause", "rest", "secondary")}${btn("Training abschließen", "finish-workout", "primary")}${btn("Verwerfen", "discard-workout", "text-button")}</div></section>`
+      : `<div class="two-grid below">${trainingRoutines(state, routines)
+          .map(
+            (r, i) =>
+              `<section class="card routine"><div class="tile-icon">${icon("train")}</div><h2>${r.name}</h2><p>${r.subtitle}</p><ul>${r.exercises.map((e) => `<li>${e}</li>`).join("")}</ul><p>Je 2 Sätze · Einstieg mit 8 Wiederholungen.<br>Vorherige Lasten werden als editierbare Erinnerung übernommen, niemals automatisch gesteigert. 5–10 Minuten locker aufwärmen.</p>${btn("Einheit starten →", "start-workout", "primary wide", `data-index="${i}"`)}</section>`,
+          )
+          .join("")}</div>`
+  }<p class="footnote">Allgemeine Einstiegsvorlagen, kein individueller Therapieplan. Bei Vorerkrankungen oder längerem Wiedereinstieg Belastung ärztlich abstimmen. Bei Schmerzen, Schwindel oder Atemnot abbrechen.</p><section class="card below"><div class="section-head"><h2>Trainingsjournal</h2>${btn("+ Aktivität", "activity", "secondary")}</div>${
     state.workouts.length
       ? state.workouts
           .slice()
@@ -265,7 +291,7 @@ function trainView() {
   }</section>`;
 }
 function moreView() {
-  return `<div class="two-grid"><section class="card"><div class="tile-icon purple">${icon("chart")}</div><h2>Wie geht es dir?</h2><p>Schlaf, Schritte, Bauchumfang, Blutdruck und Puls – als persönliches Tagebuch, ohne automatische Diagnose.</p>${btn("+ Gesundheitswerte", "health", "primary")}</section><section class="card"><div class="tile-icon">${icon("leaf")}</div><h2>Deine App. Deine Ziele.</h2><p>Passe Ziele und Darstellung an. Sichere deine Daten, bevor du das Gerät wechselst.</p><div class="toolbar">${btn("Profil & Ziele", "settings", "secondary")}${btn(state.theme === "light" ? "Dunkles Design" : "Helles Design", "theme", "secondary")}</div></section><section class="card"><h2>Deine Daten gehören dir.</h2><p>Kein Konto, keine Werbung, keine Analyse-Tracker. Die Sicherung enthält persönliche Gesundheitsdaten; bewahre sie geschützt auf.</p><div class="toolbar">${btn("Sicherung exportieren", "export", "primary")}${btn("Sicherung importieren", "import", "secondary")}${btn("CSV exportieren", "csv", "secondary")}</div></section><section class="card"><h2>Gut zu wissen</h2><p>Fortschritt braucht kein perfektes Tagebuch. Mahlzeiten sind keine Belohnung und Bewegung keine Strafe.</p>${btn("Datenschutz, Quellen & Hilfe", "about", "text-button")}${btn("Alle Daten löschen", "reset", "text-button danger")}</section></div><section class="card below"><h2>Dein Gesundheitsjournal</h2>${
+  return `${gameUI.card()}${coachUI.card()}<div class="two-grid"><section class="card"><div class="tile-icon purple">${icon("chart")}</div><h2>Wie geht es dir?</h2><p>Schlaf, Schritte, Bauchumfang, Blutdruck und Puls – als persönliches Tagebuch, ohne automatische Diagnose.</p>${btn("+ Gesundheitswerte", "health", "primary")}</section><section class="card"><div class="tile-icon">${icon("leaf")}</div><h2>Deine App. Deine Ziele.</h2><p>Passe Ziele und Darstellung an. Sichere deine Daten, bevor du das Gerät wechselst.</p><div class="toolbar">${btn("Profil & Ziele", "settings", "secondary")}${btn(state.theme === "light" ? "Dunkles Design" : "Helles Design", "theme", "secondary")}</div></section><section class="card"><h2>Deine Daten gehören dir.</h2><p>Kein Konto, keine Werbung, keine Analyse-Tracker. Die Sicherung enthält persönliche Gesundheitsdaten; bewahre sie geschützt auf.</p><div class="toolbar">${btn("Sicherung exportieren", "export", "primary")}${btn("Sicherung importieren", "import", "secondary")}${btn("CSV exportieren", "csv", "secondary")}</div></section><section class="card"><h2>Gut zu wissen</h2><p>Fortschritt braucht kein perfektes Tagebuch. Mahlzeiten sind keine Belohnung und Bewegung keine Strafe.</p>${btn("Datenschutz, Quellen & Hilfe", "about", "text-button")}${btn("Alle Daten löschen", "reset", "text-button danger")}</section></div><section class="card below"><h2>Dein Gesundheitsjournal</h2>${
     state.health.length
       ? state.health
           .slice()
@@ -326,16 +352,23 @@ function foodPicker() {
   foodResults("");
 }
 function foodResults(q) {
-  const recent = new Set(state.entries.slice(-20).map((e) => e.name));
+  const recent = new Set(state.entries.slice(-20).map(foodKey));
   const list = foods()
     .filter((f) => f.name.toLowerCase().includes(q.toLowerCase()))
-    .sort((a, b) => Number(recent.has(b.name)) - Number(recent.has(a.name)));
+    .sort(
+      (a, b) =>
+        Number(state.favorites.includes(foodKey(b))) * 2 +
+        Number(recent.has(foodKey(b))) -
+        Number(state.favorites.includes(foodKey(a))) * 2 -
+        Number(recent.has(foodKey(a))),
+    );
   $("#food-results").innerHTML =
     list
-      .map(
-        (f) =>
-          `<button class="food-row" data-action="pick-food" data-id="${esc(f.id)}"><div><strong>${esc(f.name)}</strong><small>${esc(f.source)}${recent.has(f.name) ? " · Kürzlich verwendet" : ""}</small></div><strong>${fmt(f.kcal)}<small>kcal / 100</small></strong></button>`,
-      )
+      .map((f) => {
+        const amount = rememberedAmount(state, f),
+          fav = state.favorites.includes(foodKey(f));
+        return `<div class="food-result"><button class="food-row" data-action="pick-food" data-id="${esc(f.id)}"><div><strong>${esc(f.name)}</strong><small>${esc(f.source)}${recent.has(foodKey(f)) ? " · Kürzlich verwendet" : ""}</small></div><strong>${fmt(f.kcal)}<small>kcal / 100</small></strong></button><div class="food-shortcuts">${btn(fav ? "★" : "☆", "favorite", "icon-button", `data-id="${esc(f.id)}" aria-label="${fav ? "Favorit entfernen" : "Als Favorit speichern"}: ${esc(f.name)}" aria-pressed="${fav}"`)}${btn(`+ ${fmt(amount)} ${f.name.includes("100 ml") ? "ml" : "g"} direkt`, "quick-food", "secondary", `data-id="${esc(f.id)}"`)}</div></div>`;
+      })
       .join("") ||
     "<p>Kein Treffer. Lege das Lebensmittel selbst an oder nutze den Barcode.</p>";
 }
@@ -345,9 +378,23 @@ function portion(f, entry = null) {
   form(
     entry ? "Eintrag bearbeiten" : "Deine Portion",
     "portion",
-    `<h3>${esc(f.name)}</h3><p>${esc(f.source)}</p>${num(f.name.includes("100 ml") ? "Menge · ml" : "Menge · g", "amount", entry?.amount || 100, 1, 10000)}${select("Mahlzeit", "meal", meals, entry?.meal || meal)}<div class="portion-preview">${fmt(f.kcal)} kcal · ${fmt(f.protein, 1)} g Protein je 100 ${f.name.includes("100 ml") ? "ml" : "g"}</div>${entry ? btn("Eintrag löschen", "delete-entry", "text-button danger") : ""}`,
+    `<h3>${esc(f.name)}</h3><p>${esc(f.source)}</p>${num(f.name.includes("100 ml") ? "Menge · ml" : "Menge · g", "amount", entry?.amount || rememberedAmount(state, f), 1, 10000)}${select("Mahlzeit", "meal", meals, entry?.meal || meal)}<div class="portion-preview" id="portion-preview" aria-live="polite"></div>${entry ? btn("Eintrag löschen", "delete-entry", "text-button danger") : ""}`,
     "Ins Tagebuch speichern",
   );
+  updatePortionPreview();
+}
+function updatePortionPreview() {
+  const input = $('#sheet [name="amount"]'),
+    preview = $("#portion-preview");
+  if (!input || !preview || !selectedFood) return;
+  const value = Number(input.value);
+  preview.textContent =
+    Number.isFinite(value) && value > 0
+      ? `${fmt((selectedFood.kcal * value) / 100)} kcal · ${fmt((selectedFood.protein * value) / 100, 1)} g Protein für deine Portion`
+      : "Bitte eine gültige Portionsgröße eingeben.";
+}
+function microFields(food) {
+  return `<details><summary>Vitamine & Mineralstoffe ergänzen (optional)</summary><p>Nur bekannte Werte pro 100 g/ml eintragen. Leer = unbekannt, 0 = tatsächlich null. Folat als Folat-Äquivalent.</p><div class="two-grid">${micros.map((m) => num(`${m.name} · ${m.unit}`, `micro_${m.key}`, food?.micros?.[m.key] ?? "", 0, 1e7, "any", false)).join("")}</div></details>`;
 }
 function customFood(f = null) {
   selectedFood = f;
@@ -366,7 +413,7 @@ function customFood(f = null) {
       )
       .join(
         "",
-      )}</div><p class="hint">Bei Produktdaten aus Open Food Facts bitte alle Angaben mit der Verpackung abgleichen. Fehlende Ballaststoffe: 0, kein Nachweis ihrer Abwesenheit.</p>`,
+      )}</div>${microFields(f)}<p class="hint">Bei Produktdaten aus Open Food Facts bitte alle Angaben mit der Verpackung abgleichen. Fehlende Ballaststoffe: 0, kein Nachweis ihrer Abwesenheit.</p>`,
     "Speichern & Portion wählen",
   );
 }
@@ -570,7 +617,70 @@ function confirmAction(title, message, action) {
     `<p>${message}</p>${btn("Abbrechen", "close", "secondary")}${btn("Bestätigen", action, "primary")}`,
   );
 }
+const gameUI = setupGameUI({
+  getState: () => state,
+  commit,
+  render,
+  sheet,
+  btn,
+  esc,
+  notify,
+  close,
+});
+const coachUI = setupCoachUI({
+  getState: () => state,
+  getDate: () => date,
+  form,
+  sheet,
+  btn,
+  field,
+  num,
+  select,
+  esc,
+  fmt,
+  commit,
+  render,
+  close,
+  notify,
+});
 const actions = {
+  ...coachUI.actions,
+  ...gameUI.actions,
+  favorite: (b) => {
+    const food = foods().find((f) => f.id === b.dataset.id),
+      key = foodKey(food);
+    if (
+      commit(
+        (s) =>
+          (s.favorites = s.favorites.includes(key)
+            ? s.favorites.filter((k) => k !== key)
+            : [...s.favorites, key]),
+      )
+    )
+      foodResults($("#food-search")?.value || "");
+  },
+  "quick-food": (b) => {
+    const food = foods().find((f) => f.id === b.dataset.id),
+      amount = rememberedAmount(state, food);
+    meal = $("#sheet [name=meal]")?.value || meal;
+    if (
+      commit((s) => {
+        s.entries.push({
+          ...food,
+          foodId: foodKey(food),
+          id: uid(),
+          amount,
+          date,
+          meal,
+        });
+        s.completeDays[date] = false;
+      })
+    ) {
+      close();
+      render();
+      notify("Portion übernommen. Zum Ändern im Tagebuch antippen.");
+    }
+  },
   close,
   onboard: () => profileForm(true),
   settings: () => profileForm(),
@@ -721,7 +831,8 @@ const actions = {
   },
   "start-workout": (b) => {
     if (state.activeWorkout) return;
-    const r = routines[Number(b.dataset.index)];
+    const r = trainingRoutines(state, routines)[Number(b.dataset.index)];
+    const previous = previousSets(state, r.name);
     if (
       commit(
         (s) =>
@@ -732,10 +843,14 @@ const actions = {
             started: Date.now(),
             note: "",
             sets: r.exercises.flatMap((exercise) =>
-              Array.from({ length: 2 }, () => ({
+              Array.from({ length: 2 }, (_, index) => ({
                 exercise,
-                kg: 0,
-                reps: 8,
+                kg:
+                  previous.filter((x) => x.exercise === exercise)[index]?.kg ||
+                  0,
+                reps:
+                  previous.filter((x) => x.exercise === exercise)[index]
+                    ?.reps || 8,
                 done: false,
               })),
             ),
@@ -772,7 +887,7 @@ const actions = {
     form(
       "Gut gemacht. Einheit abschließen",
       "finish",
-      `${num("Dauer · Minuten", "minutes", Math.min(1440, Math.max(1, Math.round((Date.now() - w.started) / 60000))), 1, 1440, 1)}<label>Notiz<textarea name="note" maxlength="1000" placeholder="Wie lief es heute?"></textarea></label><p>Nur abgehakte Sätze werden ins Journal übernommen.</p>`,
+      `${num("Dauer · Minuten", "minutes", Math.min(1440, Math.max(1, Math.round((Date.now() - w.started) / 60000))), 1, 1440, 1)}${num("Anstrengung (optional) · 1 leicht bis 10 maximal", "effort", "", 1, 10, 1, false)}<label>Notiz<textarea name="note" maxlength="1000" placeholder="Wie lief es heute?"></textarea></label><p>Nur abgehakte Sätze werden ins Journal übernommen.</p>`,
       "Training speichern",
     );
   },
@@ -802,7 +917,7 @@ const actions = {
     const w = state.workouts.find((w) => w.id === editing);
     sheet(
       w.name,
-      `<p>${dateLabel(w.date)} · ${w.minutes} Minuten</p>${w.sets.map((s) => `<div class="food-row"><strong>${esc(s.exercise)}</strong><span>${s.kg} kg × ${s.reps}</span></div>`).join("")}<p>${esc(w.note)}</p>${btn("Aktivität löschen", "delete-workout", "text-button danger")}`,
+      `<p>${dateLabel(w.date)} · ${w.minutes} Minuten${w.effort ? " · Anstrengung " + w.effort + "/10" : ""}</p>${w.sets.map((s) => `<div class="food-row"><strong>${esc(s.exercise)}</strong><span>${s.kg} kg × ${s.reps}</span></div>`).join("")}<p>${esc(w.note)}</p>${btn("Aktivität löschen", "delete-workout", "text-button danger")}`,
     );
   },
   "delete-workout": () =>
@@ -846,7 +961,7 @@ const actions = {
   "confirm-import": () => {
     if (
       window.pendingImport &&
-      commit((s) => Object.assign(s, window.pendingImport))
+      commit((s) => Object.assign(s, window.pendingImport), true)
     ) {
       delete window.pendingImport;
       timerEnd = 0;
@@ -879,7 +994,7 @@ const actions = {
   about: () =>
     sheet(
       "Über DiätFreund",
-      `<h3>Dein Alltag, ohne Abo.</h3><p>Version 0.1.0 · Offline-Tagebuch für Erwachsene. Keine Werbung, Telemetrie, Konten oder kostenpflichtigen KI-Dienste.</p><h3>Datenschutz</h3><p>Deine Daten liegen im privaten App-Speicher. Android-Cloud-Backup ist deaktiviert. Die App setzt die Gerätesperre voraus; sie bietet keine eigene Verschlüsselung oder PIN. Exportdateien sind unverschlüsselt. Deinstallation entfernt lokale Daten. Sichere regelmäßig.</p><h3>Barcode & Kamera</h3><p>Nur nach deiner Aktion wird ein Barcode an world.openfoodfacts.org gesendet (einschließlich technisch notwendiger IP-Adresse). Kamerabilder verlassen das Gerät nicht. Kein automatisches Foto-Kalorienschätzen.</p><h3>Quellen & Lizenzen</h3><p>Produktdaten: Open Food Facts (opendatacommons.org/licenses/odbl/1-0/). Datenbank ODbL, einzelne Inhalte Database Contents License. Eigene Lebensmittel sind getrennt gekennzeichnet. Prüfe die Verpackung, insbesondere Portionsgrößen und Allergene. Die App beurteilt keine Allergensicherheit.</p><p>Barcode-Erkennung: ZXing / JourneyApps (Apache 2.0). AndroidX (Apache 2.0). Vollständige Hinweise im Repository.</p>${btn("Lizenztexte offline lesen", "licenses", "secondary")}<h3>Gesundheit</h3><p>Kalorienformel: Mifflin–St. Jeor (1990), Schätzung mit individuell gewähltem Aktivitätsfaktor. Bewegungsvorlagen orientieren sich an allgemeinen NHS-Empfehlungen. Keine Diagnose, Überwachung, Notfallerkennung oder garantierte Gewichtsabnahme. Gesundheitseinträge werden nicht medizinisch bewertet.</p><h3>Bedienung</h3><p>Essen: Lebensmittel wählen, Gramm eingeben, speichern. Einträge antippen zum Bearbeiten. Verlauf: pro Datum ein Gewicht. Training: Sätze bearbeiten, abhaken, abschließen. Mehr: Gesundheitsjournal, Ziele und Sicherungen. Barcode braucht Internet; alles andere funktioniert offline.</p>`,
+      `<h3>Dein Alltag, ohne Abo.</h3><p>Version 0.2.0 · Offline-Tagebuch für Erwachsene. Keine Werbung, Telemetrie, Konten oder kostenpflichtigen KI-Dienste.</p><h3>Datenschutz</h3><p>Deine Daten liegen im privaten App-Speicher. Android-Cloud-Backup ist deaktiviert. Die App setzt die Gerätesperre voraus; sie bietet keine eigene Verschlüsselung oder PIN. Exportdateien sind unverschlüsselt. Deinstallation entfernt lokale Daten. Sichere regelmäßig.</p><h3>Barcode & Kamera</h3><p>Nur nach deiner Aktion wird ein Barcode an world.openfoodfacts.org gesendet (einschließlich technisch notwendiger IP-Adresse). Kamerabilder verlassen das Gerät nicht. Kein automatisches Foto-Kalorienschätzen.</p><h3>Quellen & Lizenzen</h3><p>Produktdaten: Open Food Facts (opendatacommons.org/licenses/odbl/1-0/). Datenbank ODbL, einzelne Inhalte Database Contents License. Eigene Lebensmittel sind getrennt gekennzeichnet. Prüfe die Verpackung, insbesondere Portionsgrößen und Allergene. Die App beurteilt keine Allergensicherheit.</p><p>Barcode-Erkennung: ZXing / JourneyApps (Apache 2.0). AndroidX (Apache 2.0). Vollständige Hinweise im Repository.</p>${btn("Lizenztexte offline lesen", "licenses", "secondary")}<h3>Gesundheit</h3><p>Kalorienformel: Mifflin–St. Jeor (1990), Schätzung mit individuell gewähltem Aktivitätsfaktor. Bewegungsvorlagen orientieren sich an allgemeinen NHS-Empfehlungen. Keine Diagnose, Überwachung, Notfallerkennung oder garantierte Gewichtsabnahme. Gesundheitseinträge werden nicht medizinisch bewertet.</p><h3>Bedienung</h3><p>Essen: Lebensmittel wählen, Gramm eingeben, speichern. Einträge antippen zum Bearbeiten. Verlauf: pro Datum ein Gewicht. Training: Sätze bearbeiten, abhaken, abschließen. Mehr: Gesundheitsjournal, Ziele und Sicherungen. Barcode braucht Internet; alles andere funktioniert offline.</p>`,
     ),
 };
 document.addEventListener("click", (e) => {
@@ -900,6 +1015,7 @@ document.addEventListener("click", (e) => {
 });
 document.addEventListener("input", (e) => {
   if (e.target.id === "food-search") foodResults(e.target.value);
+  if (e.target.name === "amount") updatePortionPreview();
 });
 document.addEventListener("change", (e) => {
   if (e.target.id === "day") {
@@ -936,6 +1052,15 @@ document.addEventListener("submit", (e) => {
   const d = Object.fromEntries(new FormData(f));
   try {
     let ok = false;
+    const coachResult = coachUI.submit(f.dataset.form, d);
+    if (coachResult !== null) {
+      if (coachResult) {
+        close();
+        render();
+        notify("Gespeichert. Dein Kompass ist aktualisiert.");
+      }
+      return;
+    }
     switch (f.dataset.form) {
       case "profile": {
         const p = {
@@ -958,6 +1083,13 @@ document.addEventListener("submit", (e) => {
           );
         ok = commit((s) => {
           const first = !s.profile;
+          if (s.profile && s.profile.kcal !== p.kcal)
+            s.targetHistory.push({
+              date: today(),
+              from: s.profile.kcal,
+              to: p.kcal,
+              reason: "Manuell angepasst",
+            });
           s.profile = p;
           if (first && !s.weights.length)
             s.weights.push({ date: today(), value: p.start });
@@ -967,6 +1099,7 @@ document.addEventListener("submit", (e) => {
       case "portion": {
         const entry = {
           ...selectedFood,
+          foodId: foodKey(selectedFood),
           id: editing || uid(),
           date,
           meal: d.meal,
@@ -975,6 +1108,7 @@ document.addEventListener("submit", (e) => {
         ok = commit((s) => {
           s.entries = s.entries.filter((e) => e.id !== entry.id);
           s.entries.push(entry);
+          s.completeDays[date] = false;
         });
         break;
       }
@@ -983,6 +1117,14 @@ document.addEventListener("submit", (e) => {
           id: uid(),
           name: d.name.trim(),
           source: selectedFood?.source || "Eigene Packungsangabe",
+          micros: Object.fromEntries(
+            micros.map((m) => [
+              m.key,
+              d[`micro_${m.key}`] === ""
+                ? null
+                : number(d[`micro_${m.key}`], 0, 1e7, m.name),
+            ]),
+          ),
           ...Object.fromEntries(
             nutrients.map((k) => [
               k,
@@ -1066,6 +1208,7 @@ document.addEventListener("submit", (e) => {
             date: w.date,
             sets: w.sets.filter((x) => x.done),
             minutes: number(d.minutes, 1, 1440),
+            ...(d.effort ? { effort: number(d.effort, 1, 10) } : {}),
             note: d.note.trim(),
           });
           s.activeWorkout = null;
@@ -1086,7 +1229,7 @@ document.addEventListener("submit", (e) => {
         break;
       case "reset":
         if (d.confirm !== "LÖSCHEN") throw Error("Bitte LÖSCHEN eingeben.");
-        ok = commit((s) => Object.assign(s, emptyState()));
+        ok = commit((s) => Object.assign(s, emptyState()), true);
         break;
     }
     if (ok) {

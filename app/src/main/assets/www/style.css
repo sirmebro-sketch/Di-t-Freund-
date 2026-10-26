@@ -9,7 +9,7 @@
   --bg: #f6f7f2;
   --surface: #fff;
   --ink: #233a32;
-  --muted: #64776e;
+  --muted: #52685c;
   --accent: #286a50;
   --soft: #eaf1e8;
   --border: #e4e9e1;
@@ -1513,4 +1513,599 @@ details > p {
   overflow-wrap: anywhere;
   font-size: 11px;
   line-height: 1.6;
+}
+/* The personal compass is a distinct, quiet decision area, separate from logs. */
+.compass {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  background: linear-gradient(120deg, var(--soft), var(--surface));
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 24px 28px;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.compass > div {
+  min-width: 0;
+  flex: 1;
+}
+.compass h2 {
+  font-size: 23px;
+  margin: 8px 0;
+  max-width: 670px;
+}
+.compass p {
+  max-width: 680px;
+  margin: 0;
+  font-size: 13px;
+}
+.compass .toolbar {
+  margin-bottom: 0;
+}
+.compass-symbol {
+  font-family: Georgia, serif;
+  font-size: 100px;
+  line-height: 1;
+  color: var(--accent);
+  opacity: 0.8;
+}
+.day-complete,
+.training-readiness {
+  padding: 18px 20px;
+  background: var(--soft);
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  margin-bottom: 20px;
+}
+.day-complete {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+}
+.day-complete small {
+  display: block;
+  margin-top: 4px;
+}
+.training-readiness p {
+  margin: 7px 0 0;
+}
+.mini-stat {
+  padding: 15px;
+  border: 1px solid var(--border);
+  background: var(--soft);
+  border-radius: 13px;
+}
+.mini-stat small,
+.mini-stat strong {
+  display: block;
+}
+.mini-stat strong {
+  font-size: 22px;
+}
+.data-progress {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0;
+}
+.data-progress span {
+  padding: 7px 10px;
+  font-size: 12px;
+  background: var(--soft);
+  border-radius: 8px;
+}
+.micro-row {
+  padding: 18px 0;
+  border-bottom: 1px solid var(--border);
+}
+.micro-row h3 {
+  margin: 0;
+}
+.micro-row p {
+  margin: 7px 0 3px;
+  font-size: 12px;
+}
+.micro-row small {
+  display: block;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  margin-top: 8px;
+}
+.food-result {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+.food-result .food-row {
+  border: 0;
+}
+.food-shortcuts {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.food-shortcuts .icon-button {
+  font-size: 23px;
+  color: var(--accent);
+}
+.food-shortcuts .secondary {
+  min-height: 44px;
+  padding: 8px 14px;
+}
+.section-head strong {
+  flex-shrink: 0;
+}
+.footnote,
+small,
+.food-row small,
+.set-row small {
+  font-size: 12px;
+}
+.bottom-nav button {
+  font-size: 12px;
+  min-height: 50px;
+}
+.icon-button,
+.set-check,
+.water-card .row button {
+  min-height: 44px;
+  min-width: 44px;
+}
+.local-badge {
+  font-size: 11px;
+}
+.macros > div > span {
+  font-size: 11px;
+}
+.energy-copy p,
+.meal-preview p,
+.weight-card p,
+.water-card p {
+  font-size: 12px;
+}
+.pill {
+  font-size: 11px;
+}
+.set-row {
+  grid-template-columns: 1fr 65px 60px 44px;
+}
+.licenses {
+  font-size: 12px;
+}
+.muted {
+  color: var(--muted);
+}
+@media (max-width: 760px) {
+  .compass {
+    padding: 21px;
+    gap: 13px;
+    align-items: flex-start;
+  }
+  .compass-symbol {
+    font-size: 52px;
+    margin-top: 12px;
+  }
+  .compass h2 {
+    font-size: 20px;
+  }
+  .compass .eyebrow {
+    font-size: 9px;
+  }
+  .compass .toolbar {
+    gap: 8px;
+  }
+  .compass .toolbar button {
+    font-size: 12px;
+  }
+  .day-complete {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .day-complete .secondary {
+    align-self: flex-start;
+  }
+  .set-row {
+    grid-template-columns: 1fr 48px 45px 44px;
+    gap: 5px;
+  }
+  .set-row small {
+    font-size: 11px;
+  }
+  .set-row label {
+    font-size: 11px;
+  }
+  .stats-grid .mini-stat {
+    padding: 12px;
+  }
+  .mini-stat strong {
+    font-size: 19px;
+  }
+  .micro-row .section-head {
+    align-items: flex-start;
+  }
+  .micro-row .section-head h3 {
+    font-size: 15px;
+  }
+  .micro-row .section-head strong {
+    font-size: 14px;
+  }
+  .local-badge {
+    font-size: 10px;
+  }
+  .macros > div > span {
+    font-size: 10px;
+  }
+  .energy-copy p {
+    font-size: 12px;
+  }
+  .food-row small {
+    font-size: 12px;
+  }
+  .summary-strip small {
+    font-size: 11px;
+  }
+}
+
+.local-badge {
+  font-size: 12px;
+}
+/* Pocket-sized adventure, with the same readable app controls. */
+.adventure-teaser {
+  margin: 0 0 20px;
+  padding: 22px;
+  border: 1px solid #c9dac6;
+  border-radius: 24px;
+  background: linear-gradient(140deg, var(--soft), var(--surface));
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  overflow: hidden;
+  position: relative;
+}
+.adventure-teaser h2 {
+  font-size: 22px;
+  margin: 7px 0;
+  line-height: 1.25;
+}
+.adventure-teaser p {
+  margin: 8px 0 14px;
+}
+.adventure-teaser > .pokemon-sprite {
+  width: 110px;
+  height: 110px;
+  flex: 0 0 110px;
+  filter: drop-shadow(0 7px 0 #48673720);
+}
+.adventure-teaser > div > .pokemon-sprite {
+  float: right;
+}
+.pokemon-sprite {
+  object-fit: contain;
+  image-rendering: pixelated;
+  flex-shrink: 0;
+}
+.game-intro h3 {
+  font-size: 25px;
+  line-height: 1.2;
+  margin: 12px 0;
+}
+.starter-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+  margin: 22px 0;
+}
+.starter,
+.team-mon {
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  padding: 10px 3px;
+  background: var(--surface);
+  color: var(--ink);
+  min-width: 0;
+}
+.starter:hover,
+.team-mon.selected {
+  border-color: var(--accent);
+  background: var(--soft);
+}
+.starter .pokemon-sprite {
+  width: 80px;
+  height: 80px;
+}
+.starter strong,
+.team-mon strong {
+  font-size: 13px;
+}
+.starter small,
+.team-mon small {
+  font-size: 12px;
+}
+.game-world {
+  border: 2px solid var(--ink);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 5px 0 var(--border);
+}
+.game-topline {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--ink);
+  color: var(--surface);
+  font-size: 11px;
+  font-weight: 800;
+  padding: 10px;
+  letter-spacing: 0.04em;
+}
+.game-scene {
+  height: 210px;
+  position: relative;
+  isolation: isolate;
+  background: linear-gradient(#d5eee5 0 60%, #94bc75 60% 65%, #b5cf8a 65% 100%);
+  overflow: hidden;
+}
+.game-scene:before {
+  content: "";
+  position: absolute;
+  left: -15%;
+  right: -10%;
+  height: 130px;
+  bottom: 45px;
+  background: #6b9e73;
+  border-radius: 50% 65% 0 0;
+  transform: rotate(-7deg);
+  z-index: -1;
+}
+.game-cloud {
+  position: absolute;
+  background: #fff9;
+  width: 72px;
+  height: 16px;
+  top: 35px;
+  border-radius: 20px;
+}
+.cloud-one {
+  left: 24px;
+}
+.cloud-two {
+  right: 25px;
+  top: 56px;
+  width: 52px;
+}
+.scene-platform {
+  position: absolute;
+  width: 150px;
+  height: 35px;
+  border-radius: 50%;
+  background: #718f4b70;
+  bottom: 37px;
+  left: calc(50% - 75px);
+}
+.companion {
+  position: absolute;
+  width: 160px;
+  height: 160px;
+  left: calc(50% - 80px);
+  bottom: 29px;
+  animation: companion-bob 3s ease-in-out infinite;
+}
+.scene-caption {
+  position: absolute;
+  bottom: 8px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #24371a;
+}
+.game-status {
+  padding: 15px;
+  background: var(--surface);
+}
+.game-status > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.game-status .track {
+  margin: 10px 0 5px;
+}
+.game-status span {
+  font-size: 13px;
+}
+.game-section {
+  margin-top: 26px;
+}
+.game-section h3 {
+  font-size: 18px;
+}
+.quest {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  border-top: 1px solid var(--border);
+  padding: 14px 0;
+}
+.quest > div {
+  flex: 1;
+}
+.quest strong {
+  font-size: 14px;
+  line-height: 1.3;
+  display: block;
+}
+.quest small {
+  display: block;
+}
+.quest .secondary {
+  padding: 8px 12px;
+  min-height: 44px;
+}
+.quest-check {
+  width: 24px;
+  color: var(--accent);
+  font-size: 24px;
+  font-weight: 800;
+}
+.game-counters {
+  margin-top: 20px;
+}
+.game-counters strong {
+  font-size: 21px;
+}
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.team-mon .pokemon-sprite {
+  width: 80px;
+  height: 80px;
+}
+.game-event {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--border);
+  padding: 10px 0;
+}
+.game-event .pokemon-sprite {
+  width: 65px;
+  height: 65px;
+}
+.game-event p {
+  margin: 2px 0;
+}
+.event-medal {
+  display: grid;
+  place-items: center;
+  flex: 0 0 65px;
+  font-size: 30px;
+  color: var(--accent);
+}
+.battle-arena {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 0;
+  background: var(--soft);
+  border-radius: 20px;
+  gap: 8px;
+}
+.fighter {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  min-width: 0;
+}
+.fighter strong,
+.fighter span {
+  font-size: 12px;
+}
+.fighter .pokemon-sprite {
+  width: 110px;
+  height: 110px;
+  animation: battle-hop 0.9s ease-out 2;
+}
+.foe .pokemon-sprite {
+  animation-delay: 0.4s;
+}
+.battle-rounds {
+  padding-left: 23px;
+}
+.battle-rounds li {
+  padding: 8px 0;
+  animation: round-appear 0.5s both;
+  animation-delay: var(--delay);
+}
+.battle-rounds small {
+  display: block;
+}
+.still * {
+  animation: none !important;
+}
+@keyframes companion-bob {
+  50% {
+    transform: translateY(-7px);
+  }
+}
+@keyframes battle-hop {
+  50% {
+    transform: translateX(9px) translateY(-8px);
+  }
+}
+@keyframes round-appear {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .companion,
+  .fighter .pokemon-sprite,
+  .battle-rounds li {
+    animation: none;
+  }
+}
+@media (max-width: 380px) {
+  .adventure-teaser {
+    padding: 16px;
+    gap: 8px;
+  }
+  .adventure-teaser > .pokemon-sprite {
+    width: 84px;
+    height: 84px;
+    flex-basis: 84px;
+  }
+  .adventure-teaser h2 {
+    font-size: 20px;
+  }
+  .starter .pokemon-sprite,
+  .team-mon .pokemon-sprite {
+    width: 70px;
+    height: 70px;
+  }
+  .game-topline {
+    font-size: 10px;
+  }
+}
+
+:root[data-theme="dark"] .danger {
+  color: #ffaaa1;
+}
+
+.catch-ball {
+  position: absolute;
+  bottom: 15px;
+  right: 30px;
+  width: 36px;
+  height: 36px;
+  border: 3px solid #22382f;
+  border-radius: 50%;
+  background: linear-gradient(#d94c4c 0 45%, #22382f 45% 55%, #fff 55%);
+  transform: rotate(-15deg);
+}
+.catch-ball:after {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 2px solid #22382f;
+  border-radius: 50%;
+  background: #fff;
+  top: 10px;
+  left: 10px;
 }

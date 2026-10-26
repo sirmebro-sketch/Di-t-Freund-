@@ -84,6 +84,8 @@ public final class MainActivity extends ComponentActivity {
             @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) { return true; }
             @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
+                String resource = uri.toString();
+                if ("data".equals(uri.getScheme()) && (resource.startsWith("data:image/png;base64,") || resource.startsWith("data:audio/ogg;base64,"))) return null;
                 if ("https".equals(uri.getScheme()) && ORIGIN.equals(uri.getHost())) return assets.shouldInterceptRequest(uri);
                 if ("https".equals(uri.getScheme()) && "world.openfoodfacts.org".equals(uri.getHost()) && uri.getPath() != null && uri.getPath().matches("/api/v2/product/[0-9]{8,14}\\.json")) return null;
                 return new WebResourceResponse("text/plain", "UTF-8", 403, "Blocked", java.util.Collections.emptyMap(), new ByteArrayInputStream(new byte[0]));
@@ -114,7 +116,7 @@ public final class MainActivity extends ComponentActivity {
             FileOutputStream out = null;
             try {
                 JSONObject object = new JSONObject(json);
-                if (object.getInt("version") != 1) return false;
+                if (object.getInt("version") != 1 && object.getInt("version") != 2) return false;
                 out = stateFile.startWrite(); out.write(json.getBytes(StandardCharsets.UTF_8)); stateFile.finishWrite(out); return true;
             } catch (Exception e) { if (out != null) stateFile.failWrite(out); return false; }
         }
