@@ -33,7 +33,10 @@ await click('tw-remove-group');await click('tw-confirm-group');assert(!(await re
 await page.setViewportSize({width:360,height:800});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
 assert.deepEqual((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa']).analyze()).violations,[]);
 await page.screenshot({path:'test-results/training-flexible.png',fullPage:true});
-await page.evaluate(()=>document.documentElement.dataset.theme='dark');assert.deepEqual((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa']).analyze()).violations,[]);await page.screenshot({path:'test-results/training-dark.png',fullPage:true});await page.evaluate(()=>document.documentElement.dataset.theme='light');
+await page.evaluate(()=>document.documentElement.dataset.theme='dark');
+// Measure the settled theme, not a frame halfway through button background transitions.
+await page.waitForFunction(()=>[...document.querySelectorAll('button')].every(e=>e.getAnimations().every(a=>a.playState!=='running')));
+assert.deepEqual((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa']).analyze()).violations,[]);await page.screenshot({path:'test-results/training-dark.png',fullPage:true});await page.evaluate(()=>document.documentElement.dataset.theme='light');
 await click('finish-workout');await page.locator('[name="minutes"]').fill('30');await submit();s=await read();assert.equal(s.activeWorkout,null);assert.equal(s.workouts[0].sets.length,1);assert.equal(s.workouts[0].sets[0].kg,37.5);
 await click('tw-plans');await click('tw-load');assert((await read()).activeWorkout.sets.every(x=>!x.done));assert((await read()).activeWorkout.sets.some(x=>x.mode==='time'));
 // A failed write must preserve the running session.
