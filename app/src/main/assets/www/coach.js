@@ -251,9 +251,9 @@ export function trainingRoutines(s, base) {
 }
 export function previousSets(s, name) {
   return (
-    [...s.workouts]
-      .filter((w) => w.name === name)
-      .sort((a, b) => b.date.localeCompare(a.date))[0]?.sets || []
+    [...s.workouts].reverse()
+      .filter((w) => w.name === name && w.date <= today())
+      .sort((a, b) => b.date.localeCompare(a.date))[0]?.sets.filter(set=>set.done) || []
   );
 }
 export function foodKey(f) {

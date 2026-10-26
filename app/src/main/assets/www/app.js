@@ -1,3 +1,4 @@
+import {setupExerciseHistory} from './exercise-history-ui.js';
 import {nutrientParts,partWarnings} from './nutrient-parts.js';
 import {fiberIsKnown} from './nutrition-balance.js';
 import {setupEggUI} from './egg-ui.js';
@@ -656,6 +657,7 @@ const gameUI = setupGameUI({
   notify,
   close,
 });
+const exerciseHistory=setupExerciseHistory({getState:()=>state,today,sheet,btn,esc,fmt});
 const trainingUI = setupTrainingUI({ getState: () => state, commit, render, form, sheet, btn, field, num, select, esc, notify, close });
 const coachUI = setupCoachUI({
   getState: () => state,
@@ -686,6 +688,7 @@ const healthUI = setupHealthUI({
 const mealUI = setupMealUI({
   getState: () => state,
   getDate: () => date,
+  setDate: value => {date=value;tab="food";},
   commit,
   sheet,
   btn,
@@ -715,6 +718,7 @@ const actions = {
   ...atmosphere.actions,
   ...trainerUI.actions,
   ...trainingUI.actions,
+  ...exerciseHistory.actions,
   "health-history": healthHistory,
   "go-chart": () => {
     close();
@@ -976,7 +980,7 @@ const actions = {
     form(
       "Eigene Übung",
       "exercise",
-      `${field("Übungsname", "exercise", "", "text", 'required maxlength="100"')}${field("Gerät / Variante", "equipment", "Eigene Angabe", "text", 'maxlength="100"')}${num("Anzahl Sätze", "sets", 2, 1, 10, 1)}${num("Wiederholungen", "reps", 8, 1, 100, 1)}${num("Zusatzgewicht · kg", "kg", 0, 0, 500, 0.5)}`,
+      `${field("Übungsname", "exercise", "", "text", 'required maxlength="100"')}${field("Gerät / Variante", "equipment", "Eigene Angabe", "text", 'maxlength="100"')}${num("Anzahl Sätze", "sets", 2, 1, 10, 1)}${select("Erfassung", "exerciseMode", [["reps","Wiederholungen"],["time","Zeit in Sekunden"]], "reps")}<div id="custom-reps">${num("Wiederholungen", "reps", 8, 1, 100, 1)}</div><div id="custom-seconds" hidden>${num("Sekunden pro Satz", "seconds", 30, 1, 3600, 1)}</div>${num("Zusatzgewicht · kg", "kg", 0, 0, 500, 0.5)}`,
     ),
   "finish-workout": () => {
     const w = state.activeWorkout;
@@ -1015,7 +1019,7 @@ const actions = {
     const w = state.workouts.find((w) => w.id === editing);
     sheet(
       w.name,
-      `<p>${dateLabel(w.date)} · ${w.minutes} Minuten${w.effort ? " · Anstrengung " + w.effort + "/10" : ""}</p>${w.sets.map((s) => `<div class="food-row"><strong>${esc(s.exercise)}</strong><span>${s.kg} kg · ${s.mode === "time" ? s.seconds + " s" : s.reps + " Wdh."}</span></div>`).join("")}<p>${esc(w.note)}</p>${btn("Aktivität löschen", "delete-workout", "text-button danger")}`,
+      `<p>${dateLabel(w.date)} · ${w.minutes} Minuten${w.effort ? " · Anstrengung " + w.effort + "/10" : ""}</p>${w.sets.map((s) => `<div class="food-row"><strong>${esc(s.exercise)}</strong><span>${s.kg} kg · ${s.mode === "time" ? s.seconds + " s" : s.reps + " Wdh."}</span></div>`).join("")}<p>${esc(w.note)}</p>${w.sets.some(s=>s.done)?btn("Als neue Einheit starten","workout-repeat","primary",`data-id="${esc(w.id)}"`):""}${btn("Übungsverlauf","exercise-history","secondary")}${btn("Aktivität löschen", "delete-workout", "text-button danger")}`,
     );
   },
   "delete-workout": () =>
@@ -1107,7 +1111,7 @@ const actions = {
   about: () =>
     sheet(
       "Über FitDex",
-      `<h3>Dein Alltag, ohne Abo.</h3><p>Version 0.10.0 · Offline-Tagebuch für Erwachsene. Keine Werbung, Telemetrie, Konten oder kostenpflichtigen KI-Dienste.</p><h3>Datenschutz</h3><p>Deine Daten liegen im privaten App-Speicher. Android-Cloud-Backup ist deaktiviert. Die App setzt die Gerätesperre voraus; sie bietet keine eigene Verschlüsselung oder PIN. Exportdateien sind unverschlüsselt. Deinstallation entfernt lokale Daten. Sichere regelmäßig.</p><h3>Health Connect</h3><p>Optional Schritte, Schlafdauer und Gewicht lesen. Eigene Gewichte nur nach Vorschau ausdrücklich teilen. Freigaben lassen sich in Android widerrufen. Lokale Importkopien kannst du unter Schritte & Erholung entfernen; bereits geteilte Werte verwaltest du in Health Connect.</p><h3>Barcode & Kamera</h3><p>Nur nach deiner Aktion wird ein Barcode an world.openfoodfacts.org gesendet (einschließlich technisch notwendiger IP-Adresse). Kamerabilder verlassen das Gerät nicht. Nährwerttabellen werden mit Tesseract lokal erkannt; übernommene Werte müssen geprüft werden. Kein automatisches Schätzen von Mahlzeitenfotos.</p><h3>Quellen & Lizenzen</h3><p>Produktdaten: Open Food Facts (opendatacommons.org/licenses/odbl/1-0/). Datenbank ODbL, einzelne Inhalte Database Contents License. Eigene Lebensmittel sind getrennt gekennzeichnet. Prüfe die Verpackung, insbesondere Portionsgrößen und Allergene. Die App beurteilt keine Allergensicherheit.</p><p>Offline-Lebensmittel: ${usdaFoods.length} ausgewählte Datensätze aus USDA FoodData Central, SR Legacy April 2018 (CC0). Deutsche Bezeichnungen, FDC-IDs und Herkunft sind hinterlegt. US-Durchschnittswerte; keine vollständige Datenbank und kein Ersatz für aktuelle Packungsangaben. Kohlenhydrate näherungsweise ohne Ballaststoffe, Vitamin E als Alpha-Tocopherol, Folat als DFE. Fehlende Werte bleiben unbekannt.</p><p>Barcode-Erkennung: ZXing / JourneyApps (Apache 2.0). AndroidX (Apache 2.0). Foto-OCR: Tesseract4Android / Tesseract und deutsches tessdata_fast-Modell (Apache 2.0), Leptonica, libjpeg und libpng. Keine OCR-Telemetrie oder Bild-Uploads. Vollständige Hinweise im Repository.</p>${btn("Lizenztexte offline lesen", "licenses", "secondary")}<p>Zusätzliche Originalgrafiken aus Pokémon Platin: Kampfkulissen (Sunday_Domeko), Box-Hintergründe (Dragoon), The Spriters Resource. Vier kurze Originaleffekte aus Diamant/Perl (BellBlitzKing, The Sounds Resource). Hintergrundmusik: drei eigene prozedurale Kompositionen, keine Original-Soundtrackaufnahmen. Originalgrafiken aus Pokémon HeartGold/SoulSilver: PokeAPI-Sprite-Spiegel und The Spriters Resource (Menü: redblueyellow; Orte: Latias Tamer). Pokémon © Nintendo / Creatures / GAME FREAK. Inoffizielles Fanprojekt; keine freie Lizenz für die Originalgrafiken.</p><h3>Gesundheit</h3><p>Kalorienformel: Mifflin–St. Jeor (1990), Schätzung mit individuell gewähltem Aktivitätsfaktor. Bewegungsvorlagen orientieren sich an allgemeinen NHS-Empfehlungen. Keine Diagnose, Überwachung, Notfallerkennung oder garantierte Gewichtsabnahme. Gesundheitseinträge werden nicht medizinisch bewertet.</p><h3>Bedienung</h3><p>Essen: Lebensmittel wählen, Gramm eingeben, speichern. Einträge antippen zum Bearbeiten. Verlauf: pro Datum ein Gewicht. Training: Sätze bearbeiten, abhaken, abschließen. Mehr: Gesundheitsjournal, Ziele und Sicherungen. Barcode braucht Internet; alles andere funktioniert offline.</p>`,
+      `<h3>Dein Alltag, ohne Abo.</h3><p>Version 0.11.0 · Offline-Tagebuch für Erwachsene. Keine Werbung, Telemetrie, Konten oder kostenpflichtigen KI-Dienste.</p><h3>Datenschutz</h3><p>Deine Daten liegen im privaten App-Speicher. Android-Cloud-Backup ist deaktiviert. Die App setzt die Gerätesperre voraus; sie bietet keine eigene Verschlüsselung oder PIN. Exportdateien sind unverschlüsselt. Deinstallation entfernt lokale Daten. Sichere regelmäßig.</p><h3>Health Connect</h3><p>Optional Schritte, Schlafdauer und Gewicht lesen. Eigene Gewichte nur nach Vorschau ausdrücklich teilen. Freigaben lassen sich in Android widerrufen. Lokale Importkopien kannst du unter Schritte & Erholung entfernen; bereits geteilte Werte verwaltest du in Health Connect.</p><h3>Barcode & Kamera</h3><p>Nur nach deiner Aktion wird ein Barcode an world.openfoodfacts.org gesendet (einschließlich technisch notwendiger IP-Adresse). Kamerabilder verlassen das Gerät nicht. Nährwerttabellen werden mit Tesseract lokal erkannt; übernommene Werte müssen geprüft werden. Kein automatisches Schätzen von Mahlzeitenfotos.</p><h3>Quellen & Lizenzen</h3><p>Produktdaten: Open Food Facts (opendatacommons.org/licenses/odbl/1-0/). Datenbank ODbL, einzelne Inhalte Database Contents License. Eigene Lebensmittel sind getrennt gekennzeichnet. Prüfe die Verpackung, insbesondere Portionsgrößen und Allergene. Die App beurteilt keine Allergensicherheit.</p><p>Offline-Lebensmittel: ${usdaFoods.length} ausgewählte Datensätze aus USDA FoodData Central, SR Legacy April 2018 (CC0). Deutsche Bezeichnungen, FDC-IDs und Herkunft sind hinterlegt. US-Durchschnittswerte; keine vollständige Datenbank und kein Ersatz für aktuelle Packungsangaben. Kohlenhydrate näherungsweise ohne Ballaststoffe, Vitamin E als Alpha-Tocopherol, Folat als DFE. Fehlende Werte bleiben unbekannt.</p><p>Barcode-Erkennung: ZXing / JourneyApps (Apache 2.0). AndroidX (Apache 2.0). Foto-OCR: Tesseract4Android / Tesseract und deutsches tessdata_fast-Modell (Apache 2.0), Leptonica, libjpeg und libpng. Keine OCR-Telemetrie oder Bild-Uploads. Vollständige Hinweise im Repository.</p>${btn("Lizenztexte offline lesen", "licenses", "secondary")}<p>Zusätzliche Originalgrafiken aus Pokémon Platin: Kampfkulissen (Sunday_Domeko), Box-Hintergründe (Dragoon), The Spriters Resource. Vier kurze Originaleffekte aus Diamant/Perl (BellBlitzKing, The Sounds Resource). Hintergrundmusik: drei eigene prozedurale Kompositionen, keine Original-Soundtrackaufnahmen. Originalgrafiken aus Pokémon HeartGold/SoulSilver: PokeAPI-Sprite-Spiegel und The Spriters Resource (Menü: redblueyellow; Orte: Latias Tamer). Pokémon © Nintendo / Creatures / GAME FREAK. Inoffizielles Fanprojekt; keine freie Lizenz für die Originalgrafiken.</p><h3>Gesundheit</h3><p>Kalorienformel: Mifflin–St. Jeor (1990), Schätzung mit individuell gewähltem Aktivitätsfaktor. Bewegungsvorlagen orientieren sich an allgemeinen NHS-Empfehlungen. Keine Diagnose, Überwachung, Notfallerkennung oder garantierte Gewichtsabnahme. Gesundheitseinträge werden nicht medizinisch bewertet.</p><h3>Bedienung</h3><p>Essen: Lebensmittel wählen, Gramm eingeben, speichern. Einträge antippen zum Bearbeiten. Verlauf: pro Datum ein Gewicht. Training: Sätze bearbeiten, abhaken, abschließen. Mehr: Gesundheitsjournal, Ziele und Sicherungen. Barcode braucht Internet; alles andere funktioniert offline.</p>`,
     ),
 };
 document.addEventListener("click", (e) => {
@@ -1134,6 +1138,7 @@ document.addEventListener("input", (e) => {
 });
 document.addEventListener("change", (e) => {
   trendsUI.change(e.target);
+  if(e.target.name==="exerciseMode"){const timed=e.target.value==="time";$("#custom-reps").hidden=timed;$("#custom-seconds").hidden=!timed;$('[name="reps"]').disabled=timed;$('[name="seconds"]').disabled=!timed;}
   if (e.target.name === "equipmentFilter") trainingUI.results();
   if (e.target.id === "day") {
     if (e.target.value && e.target.value <= today()) {
@@ -1323,7 +1328,7 @@ document.addEventListener("submit", (e) => {
       case "exercise":
         ok = commit((s) =>
           s.activeWorkout.sets.push(
-            ...makeSets({name:d.exercise.trim(),equipment:d.equipment?.trim()||"Eigene Angabe",mode:"reps"}, number(d.sets,1,10), number(d.reps,1,100), number(d.kg,0,500)),
+            ...makeSets({name:d.exercise.trim(),equipment:d.equipment?.trim()||"Eigene Angabe",mode:d.exerciseMode==="time"?"time":"reps"}, number(d.sets,1,10), d.exerciseMode==="time"?1:number(d.reps,1,100), number(d.kg,0,500), d.exerciseMode==="time"?number(d.seconds,1,3600):30),
           ),
         );
         break;
@@ -1341,7 +1346,7 @@ document.addEventListener("submit", (e) => {
           });
           s.activeWorkout = null;
         });
-        timerEnd = 0;
+        if(ok)timerEnd = 0;
         break;
       case "activity":
         ok = commit((s) =>

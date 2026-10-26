@@ -3,6 +3,7 @@ import { meals, totals, number, today } from "./core.js";
 export function setupMealUI({
   getState,
   getDate,
+  setDate,
   commit,
   sheet,
   btn,
@@ -98,6 +99,7 @@ export function setupMealUI({
         throw Error("Bitte heute oder ein früheres Datum wählen.");
       if (commit((s) => addMeal(s, id, { date, meal, amounts: values }))) {
         selected = null;
+        setDate(date);
         close();
         render();
         notify(

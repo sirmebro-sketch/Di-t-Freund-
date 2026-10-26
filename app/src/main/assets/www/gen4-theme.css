@@ -871,3 +871,7 @@ select {
   align-self: flex-start;
   min-width: 32px;
 }
+
+/* Exercise history and comparison */
+.exercise-chart{width:100%;height:auto;color:var(--ink);background:var(--soft);border:1px solid var(--border);border-radius:10px}.exercise-chart text{font:13px system-ui;fill:currentColor}.exercise-last{padding:10px;border-left:3px solid var(--accent);background:var(--soft);font-size:13px}.exercise-last p{margin:4px 0}.exercise-last .text-button{min-height:44px}
+.exercise-chart text{font-size:20px}.exercise-table{width:100%;border-collapse:collapse;font-size:14px}.exercise-table caption{text-align:left;font-weight:700;margin:10px 0}.exercise-table th,.exercise-table td{text-align:left;padding:10px 6px;border-bottom:1px solid var(--border)}@media(max-width:600px){.exercise-controls{grid-template-columns:1fr!important}}

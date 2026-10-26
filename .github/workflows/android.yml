@@ -67,6 +67,7 @@ jobs:
           node tests/nutrition-balance-ui.mjs
           node tests/eggs-ui.mjs
           node tests/nutrient-parts-ui.mjs
+          node tests/exercise-history-ui.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

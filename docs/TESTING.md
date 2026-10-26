@@ -103,3 +103,7 @@ Erster Android-Prüflauf für die neue native OCR und aggregierten Health-Abfrag
 ## Version 0.10.0 · Nährwertdetails & Qualitätsdurchgang
 
 53 Module syntaxgeprüft; 82 Unit-Tests. Sechs neue Domänentests zu Null/Unbekannt/Teilmengen, OFF-Einheiten, Rezepten/Vorlagen, OCR-Widersprüchen, USDA-Unterwerten und Sicherungen mit doppelten IDs. Neue Browserprüfung `tests/nutrient-parts-ui.mjs` für Fotoübernahme, optionale Ballaststoffe, Zucker/Fettarten, Portion/Tagesbilanz, gezielte Korrekturen, fehlgeschlagene Writes, historischen Bestand, Trends, CSV und zeitbasierte Trainingssätze. Zusammen mit den bestehenden Abläufen 14 Browser-Testprogramme in CI. Kleine/telefon-/desktopbreite Ansichten und helle/dunkle Bilanz mit axe-core; keine vollständige Zertifizierung. Android-Build/Lint und Release-Signatur separat im Workflow. Native Hardware weiterhin nur simuliert.
+
+## Version 0.11.0 · Übungsverlauf
+
+55 App-Module syntaxgeprüft, 86 Unit-Tests. Vier neue Domänentests trennen Varianten/Modi, filtern zukünftige und nicht absolvierte Sätze, aggregieren mehrere Einheiten pro Tag, erhalten echte Nullwerte und prüfen unveränderte Historie, neue Blockkennungen, Kapazitätsgrenzen sowie Schutz laufender Einheiten. `exercise-history-ui.mjs` ergänzt den 15. Browserablauf: Diagramm/Tabelle/Zeiträume, hell/dunkel und 320/393/1280 px mit axe, bewusstes Kopieren, eigene Zeitübungen, fehlgeschlagener Abschluss, Wiederholung und Reload sowie Datumswechsel nach Mahlzeitenvorlagen. Native Hardware bleibt simuliert.
