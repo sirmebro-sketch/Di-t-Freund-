@@ -16,11 +16,25 @@ jobs:
         with:
           node-version: '22'
       - run: npm run check && npm test
+      - run: npm install --no-save --package-lock=false playwright@1.56.1
+      - run: npx playwright install --with-deps chromium
+      - name: Browser flow tests
+        run: |
+          python3 -m http.server 4173 --directory app/src/main/assets/www &
+          node tests/ui.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: UI-Screenshots
+          path: test-results/
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
       - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: false
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
